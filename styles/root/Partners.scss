@@ -1,0 +1,93 @@
+.partners {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 48px 48px 64px;
+  text-align: center;
+
+  @media (max-width: 980px) {
+    padding: 36px 24px 48px;
+  }
+}
+
+.partners__label {
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+.partners__track {
+  overflow: hidden;
+  width: 100%;
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    #000 8%,
+    #000 92%,
+    transparent 100%
+  );
+}
+
+.partners__strip {
+  display: flex;
+  align-items: center;
+  width: max-content;
+  gap: 56px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  animation: partners-slide 22s linear infinite;
+
+  li {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+  }
+
+  &:hover {
+    animation-play-state: paused;
+  }
+
+  li:hover {
+    color: var(--ink);
+  }
+
+  @media (max-width: 980px) {
+    gap: 36px;
+
+    li {
+      font-size: 15px;
+    }
+  }
+}
+
+// Names travel left → right, wrapping seamlessly since the list is duplicated.
+@keyframes partners-slide {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .partners__strip {
+    animation: none;
+  }
+}

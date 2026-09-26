@@ -1,0 +1,120 @@
+.past-exhibitions {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 160px 48px 96px;
+
+  @media (max-width: 980px) {
+    padding: 140px 24px 64px;
+  }
+}
+
+.past-exhibitions__head {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 48px;
+}
+
+.past-exhibitions__kicker {
+  display: inline-block;
+  font-family: var(--font-script);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 2.5px;
+  text-underline-offset: 6px;
+  text-decoration-color: var(--blue);
+}
+
+.past-exhibitions__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(32px, 4.4vw, 52px);
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  margin: 14px 0 14px;
+
+  mark {
+    background: var(--blue);
+    color: #fff;
+    padding: 0 0.14em;
+    border-radius: 0.1em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+}
+
+.past-exhibitions__sub {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.past-exhibitions__empty {
+  font-family: var(--font-body);
+  color: var(--muted);
+  padding: 56px 24px;
+  text-align: center;
+  background: var(--tint-2);
+  border-radius: 20px;
+}
+
+.past-exhibitions__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.past-exhibitions__load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 40px auto 0;
+  padding: 14px 30px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+}
+
+.past-exhibitions__spinner {
+  animation: past-exhibitions-spin 0.8s linear infinite;
+}
+
+@keyframes past-exhibitions-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .past-exhibitions__spinner {
+    animation: none;
+  }
+}

@@ -1,0 +1,79 @@
+// Silo Campus Tradefair — Exhibitions & Event Portal
+// Google Fonts: Anton (display), Poppins (body), Caveat (script accent)
+@import url('https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;500;600;700&family=Caveat:wght@700&display=swap');
+
+:root {
+  // ---- Brand colors ----
+  --blue: #0015F8;
+  --blue-d: #0010C4;
+  --sky: #118FFE;
+  --navy: #1D2FB5;
+  --ink: #0A0F2E;
+
+  // ---- Surfaces ----
+  --white: #FFFFFF;
+  --tint: #EAF3FF;
+  --tint-2: #F4F8FF;
+  --line: #DCE6F5;
+  --muted: #5B6485;
+
+  // ---- Status colors ----
+  --ok: #0B7F58;
+  --ok-bg: #E4F7EF;
+  --ok-line: #B7E8D3;
+
+  --bad: #C7343A;
+  --bad-bg: #FDECEC;
+  --bad-line: #F6C4C6;
+
+  --warn: #8A5A00;
+  --warn-bg: #FFF6DD;
+  --warn-line: #F3DDA0;
+
+  // ---- Typography ----
+  --font-display: 'Anton', 'Impact', 'Arial Narrow', sans-serif;
+  --font-body: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-script: 'Caveat', 'Segoe Script', cursive;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  // ---- Elevation ----
+  --shadow: 0 12px 32px rgba(10, 15, 46, 0.08);
+
+  // ---- Radii ----
+  --radius-sm: 10px;
+  --radius-md: 14px;
+  --radius-lg: 22px;
+  --radius-pill: 999px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--white);
+  color: var(--ink);
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-display);
+}
+
+p {
+  font-family: var(--font-body);
+}
+
+button {
+  font-family: var(--font-body);
+  cursor: pointer;
+}

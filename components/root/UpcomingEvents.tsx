@@ -1,0 +1,37 @@
+import { getUpcomingEvents } from "@/lib/upcoming-events";
+import { UpcomingEventCard } from "./UpcomingEventCard";
+import { RedirectButton } from "../essentials/LinkButton";
+
+import "@/styles/root/UpcomingEvents.scss";
+
+export const UpcomingEvents = async () => {
+    const events = await getUpcomingEvents(3);
+
+    return (
+        <section id="upcoming-exhibitions" className="upcoming-events" data-aos="fade-up">
+            <div className="upcoming-events__head">
+                <div>
+                    <p className="upcoming-events__kicker">Upcoming Exhibitions.</p>
+                    <h2 className="upcoming-events__title">
+                        Don&apos;t miss <mark>what's next.</mark>
+                    </h2>
+                </div>
+                <RedirectButton className="upcoming-events__see-more" href="/upcoming-exhibitions">
+                    See all exhibitions
+                </RedirectButton>
+            </div>
+
+            {events.length === 0 ? (
+                <p className="upcoming-events__empty">
+                    New exhibitions will show up here as soon as they&apos;re announced.
+                </p>
+            ) : (
+                <div className="upcoming-events__grid">
+                    {events.map((event) => (
+                        <UpcomingEventCard key={event.id} event={event} />
+                    ))}
+                </div>
+            )}
+        </section>
+    );
+};

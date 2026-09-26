@@ -1,0 +1,313 @@
+.upcoming-events {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 80px 48px 96px;
+
+  @media (max-width: 980px) {
+    padding: 56px 24px 64px;
+  }
+}
+
+.upcoming-events__head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 36px;
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+}
+
+.upcoming-events__kicker {
+  display: inline-block;
+  font-family: var(--font-script);
+  font-size: 24px;
+  line-height: 1;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 2.5px;
+  text-underline-offset: 6px;
+  text-decoration-color: var(--blue);
+}
+
+.upcoming-events__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(28px, 3.4vw, 42px);
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  margin-top: 12px;
+
+  mark {
+    background: var(--blue);
+    color: #fff;
+    padding: 0 0.14em;
+    border-radius: 0.1em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+}
+
+.upcoming-events__see-more {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 13px 26px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: border-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+}
+
+.upcoming-events__empty {
+  font-family: var(--font-body);
+  color: var(--muted);
+  padding: 40px;
+  text-align: center;
+  background: var(--tint-2);
+  border-radius: 20px;
+}
+
+.upcoming-events__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+// ---------- card ----------
+
+.upcoming-event-card {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  overflow: hidden;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: var(--shadow);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 18px 40px rgba(10, 15, 46, 0.14);
+  }
+
+  &:hover .upcoming-event-card__media img {
+    transform: scale(1.05);
+  }
+}
+
+.upcoming-event-card__media {
+  position: relative;
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  background: var(--tint);
+
+  img {
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+}
+
+.upcoming-event-card__status {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #fff;
+  backdrop-filter: blur(2px);
+
+  &.is-open {
+    background: var(--blue);
+  }
+
+  &.is-soon {
+    background: var(--navy);
+  }
+
+  &.is-full {
+    background: var(--muted);
+  }
+}
+
+.upcoming-event-card__body {
+  padding: 16px 18px 18px;
+
+  h3 {
+    font-family: var(--font-body);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  p {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    font-family: var(--font-body);
+    font-size: 12.5px;
+    color: var(--muted);
+    margin-top: 6px;
+
+    svg {
+      flex-shrink: 0;
+      color: var(--blue);
+    }
+  }
+}
+
+.upcoming-event-card__dot {
+  margin: 0 2px;
+}
+
+.upcoming-exhibitions {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 160px 48px 96px;
+
+  @media (max-width: 980px) {
+    padding: 140px 24px 64px;
+  }
+}
+
+.upcoming-exhibitions__head {
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 48px;
+}
+
+.upcoming-exhibitions__kicker {
+  display: inline-block;
+  font-family: var(--font-script);
+  font-size: 26px;
+  line-height: 1;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-thickness: 2.5px;
+  text-underline-offset: 6px;
+  text-decoration-color: var(--blue);
+}
+
+.upcoming-exhibitions__title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: clamp(32px, 4.4vw, 52px);
+  line-height: 1.05;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  margin: 14px 0 14px;
+
+  mark {
+    background: var(--blue);
+    color: #fff;
+    padding: 0 0.14em;
+    border-radius: 0.1em;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+  }
+}
+
+.upcoming-exhibitions__sub {
+  font-family: var(--font-body);
+  font-size: 16px;
+  color: var(--muted);
+}
+
+.upcoming-exhibitions__empty {
+  font-family: var(--font-body);
+  color: var(--muted);
+  padding: 56px 24px;
+  text-align: center;
+  background: var(--tint-2);
+  border-radius: 20px;
+}
+
+.upcoming-exhibitions__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.upcoming-exhibitions__load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 40px auto 0;
+  padding: 14px 30px;
+  border-radius: 999px;
+  border: 1.5px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease;
+
+  &:hover:not(:disabled) {
+    border-color: var(--blue);
+    color: var(--blue);
+  }
+
+  &:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+}
+
+.upcoming-exhibitions__spinner {
+  animation: upcoming-exhibitions-spin 0.8s linear infinite;
+}
+
+@keyframes upcoming-exhibitions-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .upcoming-exhibitions__spinner {
+    animation: none;
+  }
+}
