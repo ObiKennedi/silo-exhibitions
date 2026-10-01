@@ -11,6 +11,11 @@
     gap: 36px;
     padding: 64px 24px;
   }
+
+  @media (max-width: 580px) {
+    padding: 48px 16px;
+    gap: 28px;
+  }
 }
 
 .contact__kicker {
@@ -139,6 +144,11 @@
   @media (max-width: 900px) {
     padding: 26px;
   }
+
+  @media (max-width: 580px) {
+    padding: 20px 16px;
+    border-radius: 18px;
+  }
 }
 
 .contact-form {
@@ -207,6 +217,10 @@
 
   &:hover:not(:disabled) {
     background: var(--blue-d);
+  }
+
+  @media (max-width: 500px) {
+    width: 100%;
   }
 
   &:disabled {

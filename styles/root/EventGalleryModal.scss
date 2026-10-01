@@ -119,6 +119,11 @@
   flex-shrink: 0;
   scrollbar-width: thin;
 
+  @media (max-width: 600px) {
+    padding: 8px 12px;
+    gap: 8px;
+  }
+
   &::-webkit-scrollbar {
     height: 4px;
   }
@@ -138,6 +143,12 @@
   border: 2px solid transparent;
   padding: 0;
   cursor: pointer;
+
+  @media (max-width: 600px) {
+    width: 62px;
+    height: 44px;
+    border-radius: 8px;
+  }
   background: var(--tint);
   opacity: 0.6;
   transition: transform 0.2s ease, opacity 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
@@ -242,10 +253,23 @@
 
   &--prev {
     left: 16px;
+
+    @media (max-width: 600px) {
+      left: 8px;
+    }
   }
 
   &--next {
     right: 16px;
+
+    @media (max-width: 600px) {
+      right: 8px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    width: 36px;
+    height: 36px;
   }
 }
 

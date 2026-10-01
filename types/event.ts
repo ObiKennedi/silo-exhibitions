@@ -6,6 +6,7 @@ export interface EventMedia {
     url: string;
     thumbnail?: string;
     alt?: string;
+    cloudinaryPublicId?: string;
 }
 
 export interface PastEvent {
@@ -15,6 +16,7 @@ export interface PastEvent {
     location: string;
     date: string;
     coverImage: string;
+    coverImagePublicId?: string;
     media: EventMedia[];
 }
 

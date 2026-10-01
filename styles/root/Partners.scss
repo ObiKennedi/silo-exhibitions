@@ -7,6 +7,10 @@
   @media (max-width: 980px) {
     padding: 36px 24px 48px;
   }
+
+  @media (max-width: 580px) {
+    padding: 28px 16px 36px;
+  }
 }
 
 .partners__label {
@@ -72,6 +76,14 @@
 
     li {
       font-size: 15px;
+    }
+  }
+
+  @media (max-width: 580px) {
+    gap: 28px;
+
+    li {
+      font-size: 14px;
     }
   }
 }

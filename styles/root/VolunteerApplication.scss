@@ -7,6 +7,10 @@
   @media (max-width: 768px) {
     padding: 100px 16px 64px;
   }
+
+  @media (max-width: 580px) {
+    padding: 90px 14px 56px;
+  }
 }
 
 .volunteer-hero {
@@ -415,6 +419,11 @@
   max-width: 640px;
   margin: 0 auto;
 
+  @media (max-width: 500px) {
+    padding: 32px 16px;
+    border-radius: 18px;
+  }
+
   &__icon {
     width: 72px;
     height: 72px;
@@ -504,5 +513,17 @@
     gap: 12px;
     justify-content: center;
     flex-wrap: wrap;
+
+    @media (max-width: 500px) {
+      flex-direction: column;
+      width: 100%;
+
+      a,
+      button {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+      }
+    }
   }
 }

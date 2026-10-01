@@ -1,4 +1,5 @@
-import { UpcomingEvent } from "@/types/upcoming-event";
+import { prisma } from "@/lib/prisma";
+import { UpcomingEvent, UpcomingEventStatus } from "@/types/upcoming-event";
 
 export interface UpcomingEventsPage {
     events: UpcomingEvent[];
@@ -6,152 +7,271 @@ export interface UpcomingEventsPage {
     total: number;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.trim();
+/**
+ * Maps a Prisma Event record (with relations) to the UpcomingEvent frontend interface.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function mapPrismaToUpcomingEvent(event: any): UpcomingEvent {
+    const statusMap: Record<string, UpcomingEventStatus> = {
+        REGISTRATION_OPEN: "Registration open",
+        COMING_SOON: "Coming soon",
+        SOLD_OUT: "Sold out",
+        CLOSED: "Sold out",
+    };
 
-export const UPCOMING_EVENTS: UpcomingEvent[] = [
-    {
-        id: "evt_upcoming_1",
-        slug: "silo-campus-tradefair-2026",
-        title: "Silo Campus Tradefair 2026",
-        venue: "Main Campus Arena, Owerri",
-        startDate: "2026-11-14",
-        endDate: "2026-11-16",
-        flier: "/events/silo-campus-tradefair-2026/flier.jpg",
-        status: "Registration open",
+    const startDateStr =
+        event.startDate instanceof Date
+            ? event.startDate.toISOString().split("T")[0]
+            : String(event.startDate || "");
 
-        writeUp:
-            "Three days of stalls, live stage shows and pitch sessions from campus businesses. " +
-            "The Silo Campus Tradefair brings together vetted vendors and thousands of students " +
-            "and residents looking for real deals — food, fashion, tech, beauty and more, all in " +
-            "one arena. Whether you're coming to shop or to sell, this is where campus business happens.",
+    const endDateStr =
+        event.endDate instanceof Date
+            ? event.endDate.toISOString().split("T")[0]
+            : event.endDate
+            ? String(event.endDate)
+            : startDateStr;
+
+    return {
+        id: event.id,
+        slug: event.slug,
+        title: event.title,
+        venue: event.venue || event.location || "",
+        startDate: startDateStr,
+        endDate: endDateStr,
+        flier: event.flierUrl || event.coverImageUrl || "",
+        flierPublicId: event.flierPublicId || undefined,
+        coverImageUrl: event.coverImageUrl || undefined,
+        coverImagePublicId: event.coverImagePublicId || undefined,
+        status: statusMap[event.registrationStatus] || "Registration open",
+        writeUp: event.writeUp || "",
 
         vendorCall: {
-            enabled: true,
+            enabled: Boolean(event.vendorCallEnabled),
             description:
-                "Stalls are open to any registered business. Reserve your spot, get your vendor code, and meet thousands of buyers over three days.",
-            applyUrl: "/upcoming-exhibitions/silo-campus-tradefair-2026/apply-vendor",
+                event.vendorCallDescription ||
+                "Apply for a stall at this exhibition. Select your booth size and payment plan.",
+            applyUrl: `/${event.slug}/apply-vendor`,
         },
 
         volunteerCall: {
-            enabled: true,
+            enabled: Boolean(event.volunteerCallEnabled),
             description:
-                "Ushers, gate staff and stage crew get a meal, a T-shirt and a certificate of participation.",
-            applyUrl: "/upcoming-exhibitions/silo-campus-tradefair-2026/volunteer",
+                event.volunteerCallDescription ||
+                "Join our on-ground crew, ushering, logistics and stage team.",
+            applyUrl: `/${event.slug}/volunteer`,
         },
 
-        waitlistEnabled: true,
+        waitlistEnabled: Boolean(event.waitlistEnabled),
+        whatsappUrl: event.whatsappUrl || "",
 
-        whatsappUrl: "https://wa.me/2348000000000",
+        rideBooking: event.rideBookingEnabled
+            ? {
+                  enabled: true,
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  pickupPoints: (event.pickupPoints || []).map((p: any) => ({
+                      id: p.id,
+                      name: p.name,
+                      time: p.time,
+                  })),
+                  bookUrl: event.rideBookingUrl || `/${event.slug}/book-ride`,
+              }
+            : undefined,
 
-        rideBooking: {
-            enabled: true,
-            pickupPoints: [
-                { id: "p1", name: "Main Gate", time: "Every 15 mins, 9am–7pm" },
-                { id: "p2", name: "Hostel Road", time: "Every 15 mins, 9am–7pm" },
-                { id: "p3", name: "Junction Park", time: "Every 30 mins, 9am–7pm" },
-            ],
-            bookUrl: "/upcoming-exhibitions/silo-campus-tradefair-2026/book-ride",
-        },
-
-        cashlessPolicy:
-            "This is a cashless event. All stalls accept transfers and card payments only — please come prepared to pay digitally.",
+        cashlessPolicy: event.cashlessPolicy || undefined,
+        importantTerms: event.importantTerms || undefined,
 
         exhibitionPlan: {
-            summary:
-                "Stalls are allocated on a first-come basis by size and category. Vendors are expected to arrive by 8:30am for gate checks and keep their stall staffed through closing time each day.",
-            documentUrl: "/events/silo-campus-tradefair-2026/exhibition-plan.pdf",
+            summary: event.exhibitionPlanSummary || "",
+            documentUrl: event.exhibitionPlanDocUrl || undefined,
         },
 
-        sponsors: [
-            { id: "s1", name: "Aethelon Trades", tier: "Headline" },
-            { id: "s2", name: "Navy & Orange Investments", tier: "Gold" },
-            { id: "s3", name: "Slasham", tier: "Gold" },
-            { id: "s4", name: "Campus Kicks", tier: "Silver" },
-        ],
-    },
-];
-
-/**
- * Pulls one page of upcoming events.
- * Falls back to UPCOMING_EVENTS directly when API_BASE is unset or invalid,
- * preventing server-side relative fetch errors.
- */
-export async function getUpcomingEventsPage(page = 1, limit = 12): Promise<UpcomingEventsPage> {
-    if (API_BASE && (API_BASE.startsWith("http://") || API_BASE.startsWith("https://"))) {
-        try {
-            const res = await fetch(`${API_BASE}/api/events/upcoming?page=${page}&limit=${limit}`, {
-                next: { revalidate: 60 },
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    const start = (page - 1) * limit;
-                    return {
-                        events: data.slice(start, start + limit),
-                        hasMore: start + limit < data.length,
-                        total: data.length,
-                    };
-                }
-                return data as UpcomingEventsPage;
-            }
-        } catch (err) {
-            console.error("getUpcomingEventsPage fetch error:", err);
-        }
-    }
-
-    const total = UPCOMING_EVENTS.length;
-    const start = (page - 1) * limit;
-    const events = UPCOMING_EVENTS.slice(start, start + limit);
-    const hasMore = start + limit < total;
-
-    return {
-        events,
-        hasMore,
-        total,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sponsors: (event.sponsors || []).map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            tier: s.tier,
+            logoUrl: s.logoUrl,
+            logoPublicId: s.logoPublicId,
+        })),
     };
 }
 
-/** Used by the homepage strip, which just wants the first N events flat. */
+/**
+ * Pulls a paginated list of upcoming exhibitions directly from the database.
+ * If the database has no records or is unreachable, safely returns empty array.
+ */
+export async function getUpcomingEventsPage(page = 1, limit = 12): Promise<UpcomingEventsPage> {
+    try {
+        const skip = Math.max(0, (page - 1) * limit);
+        const now = new Date();
+
+        const upcomingWhere = {
+            status: "PUBLISHED" as const,
+            AND: [
+                {
+                    // Exclude events manually moved to PAST for galleries
+                    OR: [
+                        { eventType: null },
+                        { eventType: { not: "PAST" as const } },
+                    ],
+                },
+                {
+                    // Date is ongoing or future
+                    OR: [
+                        { endDate: { gte: now } },
+                        { endDate: null, startDate: { gte: now } },
+                    ],
+                },
+            ],
+        };
+
+        const [events, total] = await Promise.all([
+            prisma.event.findMany({
+                where: upcomingWhere,
+                include: {
+                    pickupPoints: {
+                        orderBy: { order: "asc" },
+                    },
+                    sponsors: {
+                        orderBy: { order: "asc" },
+                    },
+                },
+                orderBy: {
+                    startDate: "asc",
+                },
+                skip,
+                take: limit,
+            }),
+            prisma.event.count({
+                where: upcomingWhere,
+            }),
+        ]);
+
+        return {
+            events: events.map(mapPrismaToUpcomingEvent),
+            hasMore: skip + events.length < total,
+            total,
+        };
+    } catch (err) {
+        console.warn("[getUpcomingEventsPage] Database query returned empty / offline:", err);
+        return {
+            events: [],
+            hasMore: false,
+            total: 0,
+        };
+    }
+}
+
+/**
+ * Used by the homepage strip, which fetches the first N upcoming exhibitions.
+ */
 export async function getUpcomingEvents(limit = 3): Promise<UpcomingEvent[]> {
     const { events } = await getUpcomingEventsPage(1, limit);
     return events;
 }
 
-/** Single event lookup by slug. */
-export async function getUpcomingEventBySlug(slug: string): Promise<UpcomingEvent | null> {
-    if (API_BASE && (API_BASE.startsWith("http://") || API_BASE.startsWith("https://"))) {
-        try {
-            const res = await fetch(`${API_BASE}/api/events/${slug}`, {
-                next: { revalidate: 60 },
+/**
+ * Looks up a single upcoming exhibition by its URL slug or location directly from the database.
+ * Supports exact slugs as well as friendly location shortcuts (e.g. /futo, /owerri, /unilag, /unn).
+ * Only returns PUBLISHED events unless includeDrafts is true (e.g. for staff preview).
+ */
+export async function getUpcomingEventBySlug(
+    slug: string,
+    options?: { includeDrafts?: boolean }
+): Promise<UpcomingEvent | null> {
+    try {
+        const cleanSlug = decodeURIComponent(slug).trim().toLowerCase();
+
+        // 1. Direct match by exact slug
+        let event = await prisma.event.findFirst({
+            where: {
+                slug: cleanSlug,
+                ...(options?.includeDrafts ? {} : { status: "PUBLISHED" }),
+            },
+            include: {
+                pickupPoints: {
+                    orderBy: { order: "asc" },
+                },
+                sponsors: {
+                    orderBy: { order: "asc" },
+                },
+            },
+        });
+
+        // 2. If not found by exact slug, match by location, venue, or title keyword
+        if (!event) {
+            event = await prisma.event.findFirst({
+                where: {
+                    OR: [
+                        { slug: { equals: cleanSlug, mode: "insensitive" } },
+                        { slug: { contains: cleanSlug, mode: "insensitive" } },
+                        { location: { contains: cleanSlug, mode: "insensitive" } },
+                        { venue: { contains: cleanSlug, mode: "insensitive" } },
+                        { title: { contains: cleanSlug, mode: "insensitive" } },
+                    ],
+                    ...(options?.includeDrafts ? {} : { status: "PUBLISHED" }),
+                },
+                include: {
+                    pickupPoints: {
+                        orderBy: { order: "asc" },
+                    },
+                    sponsors: {
+                        orderBy: { order: "asc" },
+                    },
+                },
+                orderBy: {
+                    startDate: "asc",
+                },
             });
-
-            if (res.ok) {
-                return (await res.json()) as UpcomingEvent;
-            }
-        } catch (err) {
-            console.error("getUpcomingEventBySlug fetch error:", err);
         }
-    }
 
-    return UPCOMING_EVENTS.find((e) => e.slug === slug) ?? null;
+        if (!event) return null;
+        return mapPrismaToUpcomingEvent(event);
+    } catch (err) {
+        console.warn(`[getUpcomingEventBySlug] Unable to load event "${slug}" from database:`, err);
+        return null;
+    }
 }
 
-/** Joins the waitlist for a specific event (runs from client). */
+/**
+ * Submits an email to the waitlist for a specific event.
+ */
 export async function joinWaitlist(slug: string, email: string): Promise<boolean> {
     try {
-        const base =
-            API_BASE && (API_BASE.startsWith("http://") || API_BASE.startsWith("https://"))
-                ? API_BASE
-                : "";
-        const res = await fetch(`${base}/api/events/${slug}/waitlist`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email }),
+        const cleanSlug = decodeURIComponent(slug).trim().toLowerCase();
+
+        const event = await prisma.event.findFirst({
+            where: {
+                OR: [
+                    { slug: cleanSlug },
+                    { slug: { equals: cleanSlug, mode: "insensitive" } },
+                    { location: { contains: cleanSlug, mode: "insensitive" } },
+                    { venue: { contains: cleanSlug, mode: "insensitive" } },
+                ],
+                status: "PUBLISHED",
+            },
+            select: { id: true },
         });
-        return res.ok;
+
+        if (!event) return false;
+
+        await prisma.eventWaitlist.upsert({
+            where: {
+                eventId_email: {
+                    eventId: event.id,
+                    email: email.trim().toLowerCase(),
+                },
+            },
+            create: {
+                eventId: event.id,
+                email: email.trim().toLowerCase(),
+            },
+            update: {},
+        });
+
+        return true;
     } catch (err) {
-        console.error("joinWaitlist:", err);
+        console.error("[joinWaitlist] Error recording waitlist entry:", err);
         return false;
     }
 }

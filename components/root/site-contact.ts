@@ -1,10 +1,9 @@
-import { XIcon, FacebookIcon, InstagramIcon, TikTokIcon } from "./SocialIcons";
+import { FacebookIcon, InstagramIcon, TikTokIcon } from "./SocialIcons";
 
 export const SOCIALS = [
-    { name: "X", url: "https://x.com/silo_exhibitions", icon: XIcon },
+    { name: "Instagram", url: "https://www.instagram.com/silo_exhibitions?stkn=Mjh6MXB6bjJ2YWZq&utm_source=qr", icon: InstagramIcon },
+    { name: "TikTok", url: "https://www.tiktok.com/@siloexhibition", icon: TikTokIcon },
     { name: "Facebook", url: "https://facebook.com/siloexhibitions", icon: FacebookIcon },
-    { name: "TikTok", url: "https://tiktok.com/@siloexhibitions", icon: TikTokIcon },
-    { name: "Instagram", url: "https://instagram.com/siloexhibitions", icon: InstagramIcon },
 ];
 
 export const WHATSAPP_URL = "https://wa.me/2348000000000";

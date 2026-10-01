@@ -4,8 +4,6 @@
 import { useState, FormEvent } from "react";
 import { Loader2, CheckCircle2 } from "lucide-react";
 
-import { joinWaitlist } from "@/lib/upcoming-events";
-
 export const WaitlistForm = ({ slug }: { slug: string }) => {
     const [email, setEmail] = useState("");
     const [state, setState] = useState<"idle" | "loading" | "done" | "error">("idle");
@@ -14,8 +12,16 @@ export const WaitlistForm = ({ slug }: { slug: string }) => {
         e.preventDefault();
         setState("loading");
 
-        const ok = await joinWaitlist(slug, email);
-        setState(ok ? "done" : "error");
+        try {
+            const res = await fetch(`/api/events/${slug}/waitlist`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+            setState(res.ok ? "done" : "error");
+        } catch {
+            setState("error");
+        }
     };
 
     if (state === "done") {

@@ -18,6 +18,7 @@ import {
 
 import { UpcomingEvent } from "@/types/upcoming-event";
 import { MonnifyModal, MonnifyPaymentSuccess } from "./MonnifyModal";
+import { EventCountdown } from "./EventCountdown";
 import "@/styles/root/StallApplication.scss";
 
 interface Props {
@@ -141,8 +142,9 @@ const STALL_CONFIGS: StallConfig[] = [
 
 export const StallApplicationForm = ({ event }: Props) => {
     // Selection state
-    const [selectedStallId, setSelectedStallId] = useState<StallId>("mega");
+    const [selectedStallId, setSelectedStallId] = useState<StallId>("compact");
     const [selectedPlanId, setSelectedPlanId] = useState<PaymentPlanId>("full");
+    const [showForm, setShowForm] = useState(false);
 
     // Form inputs state
     const [businessName, setBusinessName] = useState("");
@@ -174,8 +176,16 @@ export const StallApplicationForm = ({ event }: Props) => {
     const handleStallSelect = (stallId: StallId) => {
         setSelectedStallId(stallId);
         const stall = STALL_CONFIGS.find((s) => s.id === stallId)!;
-        // Default to revenue percentage if mega, otherwise full
         setSelectedPlanId(stall.availablePlans[0].id);
+    };
+
+    const handleChoosePlan = (stallId: StallId, planId: PaymentPlanId) => {
+        setSelectedStallId(stallId);
+        setSelectedPlanId(planId);
+        setShowForm(true);
+        setTimeout(() => {
+            document.getElementById("vendor-form-section")?.scrollIntoView({ behavior: "smooth" });
+        }, 60);
     };
 
     const isFormValid =
@@ -301,7 +311,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                             <Printer size={16} /> Print Receipt
                         </button>
                         <Link
-                            href={`/upcoming-exhibitions/${event.slug}`}
+                            href={`/${event.slug}`}
                             className="upcoming-events__see-more"
                         >
                             Back to Exhibition Page
@@ -316,7 +326,7 @@ export const StallApplicationForm = ({ event }: Props) => {
         <main className="stall-page">
             {/* Header Hero */}
             <header className="stall-hero">
-                <Link href={`/upcoming-exhibitions/${event.slug}`} className="stall-hero__back">
+                <Link href={`/${event.slug}`} className="stall-hero__back">
                     <ArrowLeft size={16} /> Back to {event.title}
                 </Link>
                 <p className="stall-hero__kicker">Vendor Stall Application.</p>
@@ -338,14 +348,20 @@ export const StallApplicationForm = ({ event }: Props) => {
                     Reserve your booth at Silo Exhibitions. Select your stall size, choose your preferred payment
                     schedule, accept the vendor terms, and complete your reservation instantly via Monnify.
                 </p>
+
+                <EventCountdown
+                    targetDate={event.startDate}
+                    title="Exhibition Starts In"
+                    subtitle="Secure your stall package before registration closes"
+                />
             </header>
 
             <form onSubmit={handleOpenMonnify}>
                 {/* STEP 1: Select Stall Size */}
-                <section className="stall-section">
+                <section id="stall-packages-section" className="stall-section">
                     <div className="stall-section__head">
-                        <h2>Step 1: Choose Your Stall Size</h2>
-                        <p>Select the booth dimension that fits your merchandise and brand presence.</p>
+                        <h2>Step 1: Choose Your Stall Size &amp; Plan</h2>
+                        <p>Select the booth dimension that fits your merchandise and brand presence, then click &quot;I want this&quot; to open the application.</p>
                     </div>
 
                     <div className="stall-grid">
@@ -400,6 +416,17 @@ export const StallApplicationForm = ({ event }: Props) => {
                                             </li>
                                         ))}
                                     </ul>
+
+                                    <button
+                                        type="button"
+                                        className="stall-card__want-btn"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleChoosePlan(stall.id, defaultPlan.id);
+                                        }}
+                                    >
+                                        I want this
+                                    </button>
                                 </div>
                             );
                         })}
@@ -429,6 +456,17 @@ export const StallApplicationForm = ({ event }: Props) => {
                                             ₦{plan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#64748b" }}>due now</small>
                                         </div>
                                         <p className="plan-option__desc">{plan.description}</p>
+
+                                        <button
+                                            type="button"
+                                            className="plan-option__want-btn"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleChoosePlan(activeStall.id, plan.id);
+                                            }}
+                                        >
+                                            I want this
+                                        </button>
                                     </div>
                                 );
                             })}
@@ -468,196 +506,250 @@ export const StallApplicationForm = ({ event }: Props) => {
                     </div>
                 </section>
 
-                {/* STEP 2: Vendor Business Information */}
-                <section className="stall-section">
-                    <div className="stall-section__head">
-                        <h2>Step 2: Business &amp; Contact Details</h2>
-                        <p>Tell us about your brand and products so we can prepare your exhibitor materials.</p>
-                    </div>
-
-                    <div className="stall-form-grid">
-                        <div className="stall-field">
-                            <label htmlFor="biz-name">Brand / Business Name *</label>
-                            <input
-                                id="biz-name"
-                                type="text"
-                                required
-                                placeholder="e.g. Campus Kicks / Shiloh Grills"
-                                value={businessName}
-                                onChange={(e) => setBusinessName(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="stall-field">
-                            <label htmlFor="category">Business Category *</label>
-                            <select
-                                id="category"
-                                value={category}
-                                onChange={(e) => setCategory(e.target.value)}
-                            >
-                                <option value="Fashion & Apparel">Fashion &amp; Apparel (Shoes, Clothes, Bags)</option>
-                                <option value="Food & Drinks">Food, Confectionery &amp; Drinks</option>
-                                <option value="Tech & Gadgets">Tech, Phones &amp; Accessories</option>
-                                <option value="Beauty & Skincare">Beauty, Perfumes &amp; Skincare</option>
-                                <option value="Art & Crafts">Art, Books &amp; Handmade Crafts</option>
-                                <option value="Services & Agency">Digital Services, Media &amp; Printing</option>
-                                <option value="Other">Other Retail Goods</option>
-                            </select>
-                        </div>
-
-                        <div className="stall-field">
-                            <label htmlFor="contact-name">Contact Person (Full Name) *</label>
-                            <input
-                                id="contact-name"
-                                type="text"
-                                required
-                                placeholder="e.g. Obi Kennedy"
-                                value={contactName}
-                                onChange={(e) => setContactName(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="stall-field">
-                            <label htmlFor="contact-phone">WhatsApp / Phone Number *</label>
-                            <input
-                                id="contact-phone"
-                                type="tel"
-                                required
-                                placeholder="e.g. 08012345678"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="stall-field">
-                            <label htmlFor="contact-email">Email Address *</label>
-                            <input
-                                id="contact-email"
-                                type="email"
-                                required
-                                placeholder="e.g. business@gmail.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="stall-field">
-                            <label htmlFor="instagram">Instagram / Website Handle</label>
-                            <input
-                                id="instagram"
-                                type="text"
-                                placeholder="@yourbrandname or www.yourbrand.com"
-                                value={instagram}
-                                onChange={(e) => setInstagram(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="stall-field stall-form-grid__full">
-                            <label htmlFor="description">Products or Services You Will Be Selling *</label>
-                            <textarea
-                                id="description"
-                                required
-                                placeholder="Briefly describe what items or services you will showcase at your stall..."
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="stall-field stall-form-grid__full">
-                            <label htmlFor="power">Power &amp; Electrical Requirements</label>
-                            <select
-                                id="power"
-                                value={powerNeeds}
-                                onChange={(e) => setPowerNeeds(e.target.value)}
-                            >
-                                <option value="Standard (phone/POS charging)">
-                                    Standard (Phone charging, POS terminal, lighting)
-                                </option>
-                                <option value="Medium (laptops, display screens, blenders)">
-                                    Medium (Laptops, display monitors, low-power appliances)
-                                </option>
-                                <option value="Heavy (fryers, microwaves, sound speakers)">
-                                    Heavy (Electric fryers, microwaves, sound equipment — requires approval)
-                                </option>
-                            </select>
-                        </div>
-                    </div>
-                </section>
-
-                {/* STEP 3: Terms & Conditions Agreement */}
-                <section className="stall-section">
-                    <div className="stall-section__head">
-                        <h2>Step 3: Review Terms &amp; Conditions</h2>
-                        <p>You must review and accept the official exhibitor terms prior to payment.</p>
-                    </div>
-
-                    <div className="stall-terms">
-                        <h4 className="stall-terms__title">Silo Exhibitions Vendor Stall Agreement &amp; Rules</h4>
-                        <ol>
-                            <li>
-                                <b>Stall Setup &amp; Timing:</b> Vendors must complete stall setup between 7:30 AM
-                                and 8:30 AM each morning. Stalls must remain active and staffed until the official
-                                closing time of 7:30 PM daily.
-                            </li>
-                            <li>
-                                <b>Payment Structure for Largest Store (Grand Mega Pavilion):</b> Vendors booking the
-                                largest store (Grand Mega Pavilion) have two clear options:
-                                (a) <b>Flat Rate (Pay Once):</b> A single ₦120,000 one-time flat fee with zero daily revenue sharing; OR 
-                                (b) <b>Pay Daily:</b> A ₦25,000 setup deposit paid today via Monnify, followed by daily remittance of 
-                                <b>10% of total daily gross sales revenue</b> submitted to the Silo Exhibitions Audit Desk every evening by 8:30 PM. 
-                                <b>The percentage applies to total gross sales revenue, NOT net profit.</b> Failure to submit daily sales logs or underreporting results in stall cancellation and forfeiture of deposit.
-                            </li>
-                            <li>
-                                <b>Cashless Policy Compliance:</b> This tradefair operates under a digital cashless policy.
-                                All stalls must offer buyers bank transfer or card/POS payment methods to maintain quick
-                                lines and safety.
-                            </li>
-                            <li>
-                                <b>Booth Cleanliness &amp; Safety:</b> Vendors must maintain their space in a clean, hygienic
-                                manner and dispose of waste in designated bins. Open flames without fire clearance are strictly
-                                prohibited.
-                            </li>
-                            <li>
-                                <b>Cancellation &amp; Refunds:</b> Stall reservation fees and deposits are non-refundable within
-                                14 days of the scheduled exhibition opening date.
-                            </li>
-                        </ol>
-                    </div>
-
-                    <label className="stall-agreement">
-                        <input
-                            type="checkbox"
-                            checked={termsAccepted}
-                            onChange={(e) => setTermsAccepted(e.target.checked)}
-                        />
-                        <span>
-                            I have read, understood, and accept the <strong>Silo Exhibitions Vendor Stall Terms &amp; Conditions</strong>.
-                            {selectedStallId === "mega" && selectedPlanId === "revenue_percentage" && (
-                                <> I explicitly acknowledge and agree that the 10% daily share is calculated strictly on <strong>TOTAL GROSS REVENUE and NOT on profit</strong>.</>
-                            )}
-                        </span>
-                    </label>
-
-                    {/* Summary & Checkout Action */}
-                    <div className="stall-summary-bar">
-                        <div className="stall-summary-bar__info">
-                            <div>Selected Booking Summary</div>
-                            <h3>₦{activePlan.dueNow.toLocaleString()}</h3>
+                {/* PROMPT (when form not yet opened) OR FORM (when 'I want this' is clicked) */}
+                {!showForm ? (
+                    <div className="stall-choose-prompt">
+                        <Sparkles size={28} className="stall-choose-prompt__icon" />
+                        <div className="stall-choose-prompt__content">
+                            <h3>Ready to register your brand?</h3>
                             <p>
-                                {activeStall.title} · {activePlan.name}
-                                {activePlan.isRevenueShare && " (+ 10% Daily Gross Revenue)"}
+                                Choose your stall package above and click <strong>&quot;I want this&quot;</strong> to open the vendor application and secure your space.
                             </p>
                         </div>
-
-                        <button
-                            type="submit"
-                            className="stall-summary-bar__btn"
-                            disabled={!isFormValid}
-                        >
-                            <Lock size={16} /> Pay ₦{activePlan.dueNow.toLocaleString()} via Monnify
-                        </button>
                     </div>
-                </section>
+                ) : (
+                    <div id="vendor-form-section" className="stall-form-section-wrapper">
+                        {/* Selected Plan Callout Banner */}
+                        <div className="stall-selected-banner">
+                            <div className="stall-selected-banner__info">
+                                <CheckCircle2 size={26} className="stall-selected-banner__check" />
+                                <div>
+                                    <span className="stall-selected-banner__kicker">Selected Package:</span>
+                                    <h3 className="stall-selected-banner__title">
+                                        {activeStall.title} ({activeStall.size}) — {activePlan.name}
+                                    </h3>
+                                    <p className="stall-selected-banner__price">
+                                        <strong>₦{activePlan.dueNow.toLocaleString()}</strong> due now to confirm booking
+                                        {activePlan.isRevenueShare && " (+ 10% daily gross revenue share)"}
+                                    </p>
+                                </div>
+                            </div>
+                            <button
+                                type="button"
+                                className="stall-selected-banner__change-btn"
+                                onClick={() => {
+                                    document.getElementById("stall-packages-section")?.scrollIntoView({ behavior: "smooth" });
+                                }}
+                            >
+                                Change Plan
+                            </button>
+                        </div>
+
+                        {/* STEP 2: Vendor Business Information */}
+                        <section className="stall-section">
+                            <div className="stall-section__head">
+                                <h2>Step 2: Business &amp; Contact Details</h2>
+                                <p>Tell us about your brand and products so we can prepare your exhibitor materials.</p>
+                            </div>
+
+                            <div className="stall-form-grid">
+                                <div className="stall-field">
+                                    <label htmlFor="biz-name">Brand / Business Name *</label>
+                                    <input
+                                        id="biz-name"
+                                        type="text"
+                                        required
+                                        placeholder="e.g. Campus Kicks / Shiloh Grills"
+                                        value={businessName}
+                                        onChange={(e) => setBusinessName(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="stall-field">
+                                    <label htmlFor="category">Business Category *</label>
+                                    <select
+                                        id="category"
+                                        value={category}
+                                        onChange={(e) => setCategory(e.target.value)}
+                                    >
+                                        <option value="Fashion & Apparel">Fashion &amp; Apparel (Shoes, Clothes, Bags)</option>
+                                        <option value="Food & Drinks">Food, Confectionery &amp; Drinks</option>
+                                        <option value="Tech & Gadgets">Tech, Phones &amp; Accessories</option>
+                                        <option value="Beauty & Skincare">Beauty, Perfumes &amp; Skincare</option>
+                                        <option value="Art & Crafts">Art, Books &amp; Handmade Crafts</option>
+                                        <option value="Services & Agency">Digital Services, Media &amp; Printing</option>
+                                        <option value="Other">Other Retail Goods</option>
+                                    </select>
+                                </div>
+
+                                <div className="stall-field">
+                                    <label htmlFor="contact-name">Contact Person (Full Name) *</label>
+                                    <input
+                                        id="contact-name"
+                                        type="text"
+                                        required
+                                        placeholder="e.g. Obi Kennedy"
+                                        value={contactName}
+                                        onChange={(e) => setContactName(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="stall-field">
+                                    <label htmlFor="contact-phone">WhatsApp / Phone Number *</label>
+                                    <input
+                                        id="contact-phone"
+                                        type="tel"
+                                        required
+                                        placeholder="e.g. 08012345678"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="stall-field">
+                                    <label htmlFor="contact-email">Email Address *</label>
+                                    <input
+                                        id="contact-email"
+                                        type="email"
+                                        required
+                                        placeholder="e.g. business@gmail.com"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="stall-field">
+                                    <label htmlFor="instagram">Instagram / Website Handle</label>
+                                    <input
+                                        id="instagram"
+                                        type="text"
+                                        placeholder="@yourbrandname or www.yourbrand.com"
+                                        value={instagram}
+                                        onChange={(e) => setInstagram(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="stall-field stall-form-grid__full">
+                                    <label htmlFor="description">Products or Services You Will Be Selling *</label>
+                                    <textarea
+                                        id="description"
+                                        required
+                                        placeholder="Briefly describe what items or services you will showcase at your stall..."
+                                        value={description}
+                                        onChange={(e) => setDescription(e.target.value)}
+                                    />
+                                </div>
+
+                                <div className="stall-field stall-form-grid__full">
+                                    <label htmlFor="power">Power &amp; Electrical Requirements</label>
+                                    <select
+                                        id="power"
+                                        value={powerNeeds}
+                                        onChange={(e) => setPowerNeeds(e.target.value)}
+                                    >
+                                        <option value="Standard (phone/POS charging)">
+                                            Standard (Phone charging, POS terminal, lighting)
+                                        </option>
+                                        <option value="Medium (laptops, display screens, blenders)">
+                                            Medium (Laptops, display monitors, low-power appliances)
+                                        </option>
+                                        <option value="Heavy (fryers, microwaves, sound speakers)">
+                                            Heavy (Electric fryers, microwaves, sound equipment — requires approval)
+                                        </option>
+                                    </select>
+                                </div>
+                            </div>
+                        </section>
+
+                        {/* STEP 3: Terms & Conditions Agreement */}
+                        <section className="stall-section">
+                            <div className="stall-section__head">
+                                <h2>Step 3: Review Terms &amp; Conditions</h2>
+                                <p>You must review and accept the official exhibitor terms prior to payment.</p>
+                            </div>
+
+                            <div className="stall-terms">
+                                <h4 className="stall-terms__title">Silo Exhibitions Vendor Stall Agreement &amp; Rules</h4>
+
+                                {/* Dynamically Rendered Important Terms Uploaded by Admin */}
+                                {event.importantTerms && (
+                                    <div className="stall-terms__admin-box">
+                                        <div className="stall-terms__admin-badge">
+                                            <ShieldCheck size={14} /> Official Terms for {event.title}
+                                        </div>
+                                        <div className="stall-terms__admin-content">
+                                            {event.importantTerms.split("\n").filter(Boolean).map((term, i) => (
+                                                <p key={i}>• {term}</p>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                <ol>
+                                    <li>
+                                        <b>Stall Setup &amp; Timing:</b> Vendors must complete stall setup between 7:30 AM
+                                        and 8:30 AM each morning. Stalls must remain active and staffed until the official
+                                        closing time of 7:30 PM daily.
+                                    </li>
+                                    <li>
+                                        <b>Payment Structure for Largest Store (Grand Mega Pavilion):</b> Vendors booking the
+                                        largest store (Grand Mega Pavilion) have two clear options:
+                                        (a) <b>Flat Rate (Pay Once):</b> A single ₦120,000 one-time flat fee with zero daily revenue sharing; OR 
+                                        (b) <b>Pay Daily:</b> A ₦25,000 setup deposit paid today via Monnify, followed by daily remittance of 
+                                        <b>10% of total daily gross sales revenue</b> submitted to the Silo Exhibitions Audit Desk every evening by 8:30 PM. 
+                                        <b>The percentage applies to total gross sales revenue, NOT net profit.</b> Failure to submit daily sales logs or underreporting results in stall cancellation and forfeiture of deposit.
+                                    </li>
+                                    <li>
+                                        <b>Cashless &amp; Digital Payment Policy:</b> {event.cashlessPolicy || "This tradefair operates under a digital cashless policy. All stalls must offer buyers bank transfer or card/POS payment methods to maintain quick lines and safety."}
+                                    </li>
+                                    <li>
+                                        <b>Booth Cleanliness &amp; Safety:</b> Vendors must maintain their space in a clean, hygienic
+                                        manner and dispose of waste in designated bins. Open flames without fire clearance are strictly
+                                        prohibited.
+                                    </li>
+                                    <li>
+                                        <b>Cancellation &amp; Refunds:</b> Stall reservation fees and deposits are non-refundable within
+                                        14 days of the scheduled exhibition opening date.
+                                    </li>
+                                </ol>
+                            </div>
+
+                            <label className="stall-agreement">
+                                <input
+                                    type="checkbox"
+                                    checked={termsAccepted}
+                                    onChange={(e) => setTermsAccepted(e.target.checked)}
+                                />
+                                <span>
+                                    I have read, understood, and accept the <strong>Silo Exhibitions Vendor Stall Terms &amp; Conditions</strong>.
+                                    {selectedStallId === "mega" && selectedPlanId === "revenue_percentage" && (
+                                        <> I explicitly acknowledge and agree that the 10% daily share is calculated strictly on <strong>TOTAL GROSS REVENUE and NOT on profit</strong>.</>
+                                    )}
+                                </span>
+                            </label>
+
+                            {/* Summary & Checkout Action */}
+                            <div className="stall-summary-bar">
+                                <div className="stall-summary-bar__info">
+                                    <div>Selected Booking Summary</div>
+                                    <h3>₦{activePlan.dueNow.toLocaleString()}</h3>
+                                    <p>
+                                        {activeStall.title} · {activePlan.name}
+                                        {activePlan.isRevenueShare && " (+ 10% Daily Gross Revenue)"}
+                                    </p>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    className="stall-summary-bar__btn"
+                                    disabled={!isFormValid}
+                                >
+                                    <Lock size={16} /> Pay ₦{activePlan.dueNow.toLocaleString()} via Monnify
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+                )}
             </form>
 
             {/* Monnify Checkout Modal */}

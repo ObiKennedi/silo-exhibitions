@@ -14,6 +14,11 @@
     padding: 56px 24px 64px;
   }
 
+  @media (max-width: 580px) {
+    padding: 48px 16px 64px;
+    gap: 32px;
+  }
+
   &__head {
     display: flex;
     flex-direction: column;
@@ -150,7 +155,8 @@
     box-shadow: var(--shadow, 0 12px 32px rgba(10, 15, 46, 0.08));
 
     @media (max-width: 600px) {
-      padding: 24px 20px;
+      padding: 20px 16px;
+      border-radius: 18px;
     }
   }
 }
@@ -228,6 +234,10 @@
     font-size: 14.5px;
     font-weight: 600;
     cursor: pointer;
+
+    @media (max-width: 600px) {
+      width: 100%;
+    }
     transition: background 0.2s ease, transform 0.2s ease;
 
     &:hover:not(:disabled) {

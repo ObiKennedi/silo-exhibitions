@@ -6,6 +6,10 @@
   @media (max-width: 980px) {
     padding: 56px 24px 64px;
   }
+
+  @media (max-width: 580px) {
+    padding: 44px 16px 56px;
+  }
 }
 
 .past-events__head {
@@ -75,6 +79,11 @@
     border-color: var(--blue);
     color: var(--blue);
   }
+
+  @media (max-width: 580px) {
+    width: 100%;
+    text-align: center;
+  }
 }
 
 .past-events__empty {
@@ -93,10 +102,12 @@
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr 1fr;
+    gap: 18px;
   }
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 

@@ -10,6 +10,8 @@ export interface Sponsor {
     id: string;
     name: string;
     tier?: "Headline" | "Gold" | "Silver" | "Partner";
+    logoUrl?: string;
+    logoPublicId?: string;
 }
 
 export interface UpcomingEvent {
@@ -20,6 +22,9 @@ export interface UpcomingEvent {
     startDate: string;
     endDate: string;
     flier: string;
+    flierPublicId?: string;
+    coverImageUrl?: string;
+    coverImagePublicId?: string;
     status: UpcomingEventStatus;
     writeUp: string;
 
@@ -46,6 +51,7 @@ export interface UpcomingEvent {
     };
 
     cashlessPolicy?: string;
+    importantTerms?: string;
 
     exhibitionPlan: {
         summary: string;

@@ -6,6 +6,10 @@
   @media (max-width: 980px) {
     padding: 140px 24px 64px;
   }
+
+  @media (max-width: 580px) {
+    padding: 110px 16px 48px;
+  }
 }
 
 .past-exhibitions__head {
@@ -68,10 +72,12 @@
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr 1fr;
+    gap: 18px;
   }
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
+    gap: 16px;
   }
 }
 
@@ -95,6 +101,11 @@
   &:hover:not(:disabled) {
     border-color: var(--blue);
     color: var(--blue);
+  }
+
+  @media (max-width: 480px) {
+    width: 100%;
+    max-width: 320px;
   }
 
   &:disabled {

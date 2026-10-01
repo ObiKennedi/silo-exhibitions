@@ -1,26 +1,11 @@
 import { NextResponse } from "next/server";
-import { PLACEHOLDER_EVENTS } from "@/lib/events";
-// import { prisma } from "@/lib/prisma";
+import { getPastEventsPage } from "@/lib/events";
 
 export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
-    const pageParam = searchParams.get("page");
-    const limit = Number(searchParams.get("limit") ?? 12);
+    const limit = Math.max(1, Number(searchParams.get("limit") ?? 12));
+    const page = Math.max(1, Number(searchParams.get("page") ?? 1));
 
-    if (pageParam !== null) {
-        const page = Math.max(1, Number(pageParam) || 1);
-        const start = (page - 1) * limit;
-        const total = PLACEHOLDER_EVENTS.length;
-        const events = PLACEHOLDER_EVENTS.slice(start, start + limit);
-        const hasMore = start + limit < total;
-
-        return NextResponse.json({
-            events,
-            hasMore,
-            total,
-        });
-    }
-
-    const events = PLACEHOLDER_EVENTS.slice(0, limit);
-    return NextResponse.json(events);
+    const result = await getPastEventsPage(page, limit);
+    return NextResponse.json(result);
 }

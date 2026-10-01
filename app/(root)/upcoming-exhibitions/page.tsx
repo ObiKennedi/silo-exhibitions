@@ -28,7 +28,7 @@ export default async function UpcomingExhibitionsPage() {
 
             {events.length === 0 ? (
                 <p className="upcoming-events__empty">
-                    New exhibitions will show up here as soon as they&apos;re announced.
+                    Upcoming exhibitions will appear here as soon as they are announced.
                 </p>
             ) : (
                 <div className="upcoming-events__grid">

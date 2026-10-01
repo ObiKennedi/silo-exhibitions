@@ -192,7 +192,7 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
                             <Printer size={16} /> Print Confirmation
                         </button>
                         <Link
-                            href={`/upcoming-exhibitions/${event.slug}`}
+                            href={`/${event.slug}`}
                             className="upcoming-events__see-more"
                         >
                             Back to Exhibition Page
@@ -206,7 +206,7 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
     return (
         <main className="volunteer-page">
             <header className="volunteer-hero">
-                <Link href={`/upcoming-exhibitions/${event.slug}`} className="volunteer-hero__back">
+                <Link href={`/${event.slug}`} className="volunteer-hero__back">
                     <ArrowLeft size={16} /> Back to {event.title}
                 </Link>
                 <p className="volunteer-hero__kicker">Join The Crew.</p>

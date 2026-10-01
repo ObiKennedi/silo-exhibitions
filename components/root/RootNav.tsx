@@ -65,7 +65,7 @@ export const RootNav = () => {
         };
 
         const handleResize = () => {
-            if (window.innerWidth > 900) {
+            if (window.innerWidth > 980) {
                 setIsOpen(false);
             }
         };

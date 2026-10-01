@@ -1,0 +1,984 @@
+// styles/user/UserHome.scss
+// User Dashboard styling: Welcome banner, Metric counters,
+// "The ones you've signed up for" (Stall Bookings & Passes),
+// "All Upcoming Tradefairs" catalog, filters, search, and Digital Pass modal.
+
+.ud-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+
+  // ── Welcome Banner ────────────────────────────────────────────────────────
+  &__welcome {
+    position: relative;
+    overflow: hidden;
+    padding: 32px 28px;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #0A0F2E 0%, #121A4B 60%, #1D2FB5 100%);
+    color: #FFFFFF;
+    box-shadow: 0 16px 36px rgba(10, 15, 46, 0.16);
+
+    &::after {
+      content: "";
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(17, 143, 254, 0.28) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    &::before {
+      content: "";
+      position: absolute;
+      bottom: -40px;
+      left: 20%;
+      width: 180px;
+      height: 180px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 21, 248, 0.24) 0%, transparent 75%);
+      pointer-events: none;
+    }
+  }
+
+  &__welcome-top {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+  }
+
+  &__welcome-copy {
+    max-width: 640px;
+  }
+
+  &__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--sky);
+    margin-bottom: 8px;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: var(--font-display, "Anton", Impact, sans-serif);
+    font-size: clamp(28px, 4.5vw, 42px);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    line-height: 1.1;
+    color: #FFFFFF;
+
+    mark {
+      background: none;
+      color: #79BAFF;
+    }
+  }
+
+  &__script {
+    font-family: var(--font-script, "Caveat", cursive);
+    font-size: 24px;
+    color: #FFDE59;
+    margin-left: 8px;
+    font-weight: 700;
+    transform: rotate(-2deg);
+    display: inline-block;
+  }
+
+  &__sub {
+    margin: 10px 0 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.78);
+  }
+
+  &__welcome-actions {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+  }
+
+  // ── Stat Counters ─────────────────────────────────────────────────────────
+  &__stats {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-top: 28px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+
+    @media (min-width: 768px) {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  &__stat-card {
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.06);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 200ms ease, background-color 200ms ease;
+
+    &:hover {
+      transform: translateY(-2px);
+      background: rgba(255, 255, 255, 0.1);
+    }
+  }
+
+  &__stat-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 4px;
+  }
+
+  &__stat-value {
+    font-family: var(--font-display, "Anton", Impact, sans-serif);
+    font-size: clamp(24px, 3vw, 32px);
+    font-weight: 400;
+    line-height: 1;
+    color: #FFFFFF;
+  }
+
+  &__stat-hint {
+    margin-top: 4px;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  // ── Quick Nav Switcher Bar ────────────────────────────────────────────────
+  &__nav-tabs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px;
+    border-radius: 16px;
+    background: #FFFFFF;
+    border: 1px solid var(--line, #DCE6F5);
+    box-shadow: 0 4px 16px rgba(10, 15, 46, 0.04);
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__tab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    color: var(--muted, #5B6485);
+    font-family: var(--font-body, system-ui, sans-serif);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 180ms ease;
+
+    &:hover {
+      color: var(--ink, #0A0F2E);
+      background: var(--tint, #EAF3FF);
+    }
+
+    &--active {
+      background: var(--blue, #0015F8) !important;
+      color: #FFFFFF !important;
+      box-shadow: 0 4px 14px rgba(0, 21, 248, 0.25);
+    }
+  }
+
+  &__tab-count {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(0, 0, 0, 0.08);
+
+    .ud-dashboard__tab-btn--active & {
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFFFFF;
+    }
+  }
+
+  // ── Section Container ─────────────────────────────────────────────────────
+  &__section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  &__section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--line, #DCE6F5);
+  }
+
+  &__section-title {
+    margin: 0;
+    font-family: var(--font-display, "Anton", Impact, sans-serif);
+    font-size: clamp(24px, 3.5vw, 32px);
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    color: var(--ink, #0A0F2E);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__section-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: var(--font-body, system-ui, sans-serif);
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--tint, #EAF3FF);
+    color: var(--blue, #0015F8);
+  }
+
+  &__section-desc {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: var(--muted, #5B6485);
+  }
+
+  // ── Filter & Search Toolbar ───────────────────────────────────────────────
+  &__toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 260px;
+    max-width: 420px;
+  }
+
+  &__search-icon {
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    color: var(--muted, #5B6485);
+    pointer-events: none;
+  }
+
+  &__search-input {
+    width: 100%;
+    height: 44px;
+    padding: 8px 16px 8px 42px;
+    border-radius: 12px;
+    border: 1px solid var(--line, #DCE6F5);
+    background: #FFFFFF;
+    font-family: var(--font-body, system-ui, sans-serif);
+    font-size: 14px;
+    color: var(--ink, #0A0F2E);
+    outline: none;
+    transition: border-color 150ms ease, box-shadow 150ms ease;
+
+    &::placeholder {
+      color: #94A3B8;
+    }
+
+    &:focus {
+      border-color: var(--blue, #0015F8);
+      box-shadow: 0 0 0 3px rgba(0, 21, 248, 0.12);
+    }
+  }
+
+  &__filters {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  &__chip {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line, #DCE6F5);
+    background: #FFFFFF;
+    color: var(--muted, #5B6485);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 150ms ease;
+
+    &:hover {
+      border-color: var(--blue, #0015F8);
+      color: var(--blue, #0015F8);
+    }
+
+    &--active {
+      background: var(--ink, #0A0F2E);
+      border-color: var(--ink, #0A0F2E);
+      color: #FFFFFF;
+    }
+  }
+
+  // ── Bookings Grid (Signed up tradefairs) ───────────────────────────────────
+  &__bookings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  // ── Upcoming Tradefairs Grid ──────────────────────────────────────────────
+  &__events-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+
+    @media (min-width: 680px) {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    @media (min-width: 1024px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  // ── Empty State ───────────────────────────────────────────────────────────
+  &__empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 56px 24px;
+    border-radius: 20px;
+    border: 2px dashed var(--line, #DCE6F5);
+    background: #FFFFFF;
+
+    &-icon {
+      display: grid;
+      place-items: center;
+      width: 68px;
+      height: 68px;
+      border-radius: 50%;
+      background: var(--tint, #EAF3FF);
+      color: var(--blue, #0015F8);
+      margin-bottom: 16px;
+    }
+
+    &-title {
+      margin: 0 0 8px;
+      font-family: var(--font-display, "Anton", Impact, sans-serif);
+      font-size: 24px;
+      color: var(--ink, #0A0F2E);
+    }
+
+    &-desc {
+      max-width: 480px;
+      margin: 0 0 24px;
+      font-size: 14px;
+      color: var(--muted, #5B6485);
+      line-height: 1.6;
+    }
+  }
+}
+
+// ─── Booking / Signed-Up Card (Ticket Style) ──────────────────────────────────
+.ud-booking-card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr;
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1px solid var(--line, #DCE6F5);
+  box-shadow: 0 8px 24px rgba(10, 15, 46, 0.05);
+  overflow: hidden;
+  transition: transform 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 36px rgba(10, 15, 46, 0.09);
+    border-color: #B5D2FF;
+  }
+
+  @media (min-width: 860px) {
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+
+  // Visual Media on the left/top
+  &__visual {
+    position: relative;
+    min-height: 200px;
+    background: #0A0F2E;
+    overflow: hidden;
+
+    @media (min-width: 860px) {
+      min-height: 100%;
+    }
+  }
+
+  &__image {
+    object-fit: cover;
+    transition: transform 400ms ease;
+
+    .ud-booking-card:hover & {
+      transform: scale(1.04);
+    }
+  }
+
+  &__overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(10, 15, 46, 0.2) 0%, rgba(10, 15, 46, 0.85) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 16px;
+    color: #FFFFFF;
+  }
+
+  &__status-pill {
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    backdrop-filter: blur(8px);
+
+    &--success {
+      background: rgba(11, 127, 88, 0.9);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(11, 127, 88, 0.35);
+    }
+
+    &--pending {
+      background: rgba(220, 130, 0, 0.92);
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px rgba(220, 130, 0, 0.35);
+    }
+
+    &--failed {
+      background: rgba(199, 52, 58, 0.9);
+      color: #FFFFFF;
+    }
+  }
+
+  &__days-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #FFDE59;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+  }
+
+  // Content body on the right
+  &__content {
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    gap: 18px;
+  }
+
+  &__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  &__title {
+    margin: 0;
+    font-family: var(--font-display, "Anton", Impact, sans-serif);
+    font-size: 22px;
+    line-height: 1.2;
+    color: var(--ink, #0A0F2E);
+
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        color: var(--blue, #0015F8);
+      }
+    }
+  }
+
+  &__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 16px;
+    margin-top: 6px;
+    font-size: 13px;
+    color: var(--muted, #5B6485);
+
+    &-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+  }
+
+  // Booking Code Badge & Copy
+  &__code-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 10px;
+    background: var(--tint-2, #F4F8FF);
+    border: 1px dashed var(--blue, #0015F8);
+    font-family: var(--font-mono, monospace);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--blue, #0015F8);
+    cursor: pointer;
+    transition: all 150ms ease;
+
+    &:hover {
+      background: var(--tint, #EAF3FF);
+    }
+  }
+
+  // Stall & Plan Breakdown Grid
+  &__details-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: var(--tint-2, #F4F8FF);
+  }
+
+  &__detail {
+    display: flex;
+    flex-direction: column;
+
+    &-label {
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted, #5B6485);
+      margin-bottom: 2px;
+    }
+
+    &-val {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--ink, #0A0F2E);
+    }
+  }
+
+  // Card Bottom Actions
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--line, #DCE6F5);
+  }
+
+  &__btn-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+}
+
+// ─── Upcoming Tradefair Card ──────────────────────────────────────────────────
+.ud-event-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 1px solid var(--line, #DCE6F5);
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(10, 15, 46, 0.04);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 16px 36px rgba(10, 15, 46, 0.1);
+    border-color: #B5D2FF;
+  }
+
+  &__registered-ribbon {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 5;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: #0B7F58;
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    box-shadow: 0 4px 12px rgba(11, 127, 88, 0.4);
+  }
+
+  &__media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    background: #0A0F2E;
+    overflow: hidden;
+  }
+
+  &__image {
+    object-fit: cover;
+    transition: transform 400ms ease;
+
+    .ud-event-card:hover & {
+      transform: scale(1.05);
+    }
+  }
+
+  &__status-badge {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    z-index: 4;
+    padding: 5px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    backdrop-filter: blur(8px);
+
+    &--open {
+      background: rgba(0, 21, 248, 0.88);
+      color: #FFFFFF;
+    }
+
+    &--soon {
+      background: rgba(220, 130, 0, 0.88);
+      color: #FFFFFF;
+    }
+
+    &--full {
+      background: rgba(199, 52, 58, 0.88);
+      color: #FFFFFF;
+    }
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 20px;
+    gap: 14px;
+  }
+
+  &__date-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--blue, #0015F8);
+  }
+
+  &__title {
+    margin: 0;
+    font-family: var(--font-display, "Anton", Impact, sans-serif);
+    font-size: 20px;
+    line-height: 1.25;
+    color: var(--ink, #0A0F2E);
+
+    a {
+      color: inherit;
+      text-decoration: none;
+
+      &:hover {
+        color: var(--blue, #0015F8);
+      }
+    }
+  }
+
+  &__venue {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted, #5B6485);
+  }
+
+  &__desc {
+    margin: 0;
+    font-size: 13px;
+    color: #64748B;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  &__foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 1px solid var(--line, #DCE6F5);
+  }
+}
+
+// ─── Digital Pass Modal ───────────────────────────────────────────────────────
+.ud-pass-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+
+  &__scrim {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 15, 46, 0.7);
+    backdrop-filter: blur(6px);
+  }
+
+  &__dialog {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 540px;
+    max-height: 90vh;
+    overflow-y: auto;
+    border-radius: 24px;
+    background: #FFFFFF;
+    box-shadow: 0 24px 64px rgba(10, 15, 46, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line, #DCE6F5);
+  }
+
+  &__header-title {
+    margin: 0;
+    font-family: var(--font-display, "Anton", Impact, sans-serif);
+    font-size: 20px;
+    color: var(--ink, #0A0F2E);
+  }
+
+  &__pass-badge {
+    padding: 24px;
+    background: linear-gradient(180deg, #FAFCFF 0%, #F1F6FF 100%);
+    margin: 20px;
+    border-radius: 18px;
+    border: 2px dashed #BFD7FF;
+  }
+
+  &__pass-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #D8E5F8;
+  }
+
+  &__pass-brand {
+    font-family: var(--font-display, "Anton", Impact, sans-serif);
+    font-size: 24px;
+    color: var(--blue, #0015F8);
+    letter-spacing: 0.04em;
+  }
+
+  &__pass-status {
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 700;
+    background: #0B7F58;
+    color: #FFFFFF;
+  }
+
+  &__pass-barcode {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    margin-top: 20px;
+    padding: 16px;
+    background: #FFFFFF;
+    border-radius: 12px;
+    border: 1px solid #D8E5F8;
+
+    &-lines {
+      width: 80%;
+      height: 48px;
+      background: repeating-linear-gradient(
+        90deg,
+        #0A0F2E,
+        #0A0F2E 3px,
+        transparent 3px,
+        transparent 6px,
+        #0A0F2E 6px,
+        #0A0F2E 10px,
+        transparent 10px,
+        transparent 12px
+      );
+    }
+
+    &-code {
+      font-family: var(--font-mono, monospace);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink, #0A0F2E);
+      letter-spacing: 0.15em;
+    }
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid var(--line, #DCE6F5);
+    background: #FFFFFF;
+    border-bottom-left-radius: 24px;
+    border-bottom-right-radius: 24px;
+  }
+}
+
+// ─── Button Utilities ─────────────────────────────────────────────────────────
+.ud-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 12px;
+  border: none;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 180ms ease;
+
+  &--primary {
+    background: var(--blue, #0015F8);
+    color: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(0, 21, 248, 0.28);
+
+    &:hover {
+      background: var(--blue-d, #0010C4);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0, 21, 248, 0.35);
+    }
+  }
+
+  &--secondary {
+    background: var(--tint, #EAF3FF);
+    color: var(--blue, #0015F8);
+
+    &:hover {
+      background: #D8E8FF;
+      color: var(--blue-d, #0010C4);
+    }
+  }
+
+  &--outline {
+    background: transparent;
+    border: 1px solid var(--line, #DCE6F5);
+    color: var(--ink, #0A0F2E);
+
+    &:hover {
+      border-color: var(--blue, #0015F8);
+      color: var(--blue, #0015F8);
+      background: var(--tint, #EAF3FF);
+    }
+  }
+
+  &--success {
+    background: #0B7F58;
+    color: #FFFFFF;
+
+    &:hover {
+      background: #096847;
+    }
+  }
+
+  &--warning {
+    background: #DC8200;
+    color: #FFFFFF;
+
+    &:hover {
+      background: #B86D00;
+    }
+  }
+
+  &--sm {
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
+    border-radius: 8px;
+  }
+}

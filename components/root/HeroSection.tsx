@@ -40,7 +40,7 @@ export const Hero = () => {
         <section className="hero">
             <div className="hero__copy">
                 <p className="hero__kicker" data-aos="fade-down">
-                    Building Businesses.
+                    .... Building businesses
                 </p>
 
                 <h1 className="hero__title" data-aos="fade-up" data-aos-delay="100">
@@ -57,10 +57,10 @@ export const Hero = () => {
                 </p>
 
                 <div className="hero__cta" data-aos="fade-up" data-aos-delay="300">
-                    <RedirectButton className="hero__cta-primary" href="/upcoming-exhibitions">
-                        Explore exhibitions
+                    <RedirectButton className="hero__cta-primary" href="#upcoming-exhibitions">
+                        Become a vendor
                     </RedirectButton>
-                    <a className="hero__cta-play" href="/about">
+                    <a className="hero__cta-play" href="#about">
                         <span className="hero__play-icon">
                             <Play size={12} fill="currentColor" />
                         </span>
@@ -71,7 +71,7 @@ export const Hero = () => {
                 <ul className="hero__stats" data-aos="fade-up" data-aos-delay="400">
                     <li><b>240+</b> exhibitors</li>
                     <li><b>18</b> campuses reached</li>
-                    <li><b>500K+</b> visitors welcomed</li>
+                    <li><b>₦2.4M+</b> Revenue generated</li>
                 </ul>
             </div>
 
@@ -115,10 +115,10 @@ export const Hero = () => {
                             +148%
                         </span>
                     </div>
-                    <b>₦2.4M+</b>
+                    <b>10K+</b>
                     <div className="hero__stat-footer">
                         <TrendingUp size={14} className="hero__trend-icon" />
-                        <span>Average vendor revenue</span>
+                        <span>Buyers Reached</span>
                     </div>
                 </div>
 
@@ -169,7 +169,7 @@ export const Hero = () => {
                         </i>
                     </div>
                     <div>
-                        <b>500+ businesses</b>
+                        <b>100+ businesses</b>
                         <small>built with Silo</small>
                     </div>
                 </div>

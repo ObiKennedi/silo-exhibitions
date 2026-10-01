@@ -5,23 +5,10 @@ import {
     FaLocationDot,
 } from "react-icons/fa6";
 
-import { XIcon, FacebookIcon, InstagramIcon, TikTokIcon } from "./SocialIcons";
+import { SOCIALS, WHATSAPP_URL, PHONE, EMAIL, ADDRESS } from "./site-contact";
 import { ContactForm } from "./ContactForm";
 
 import "@/styles/contact/Contact.scss";
-
-// Swap these for the real handles / numbers / address.
-const SOCIALS = [
-    { name: "X", url: "https://x.com/silo_exhibitions", icon: XIcon },
-    { name: "Facebook", url: "https://facebook.com/siloexhibitions", icon: FacebookIcon },
-    { name: "TikTok", url: "https://tiktok.com/@siloexhibitions", icon: TikTokIcon },
-    { name: "Instagram", url: "https://instagram.com/siloexhibitions", icon: InstagramIcon },
-];
-
-const WHATSAPP_URL = "https://wa.me/2348000000000";
-const PHONE = "+234 800 000 0000";
-const EMAIL = "hello@silo.events";
-const ADDRESS = "12 Tetlow Road, Owerri, Imo State, Nigeria";
 
 export const Contact = () => {
     return (

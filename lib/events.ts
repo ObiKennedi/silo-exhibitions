@@ -1,3 +1,4 @@
+import { prisma } from "@/lib/prisma";
 import { PastEvent } from "@/types/event";
 
 export interface PastEventsPage {
@@ -6,111 +7,126 @@ export interface PastEventsPage {
     total: number;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL?.trim();
-
-export const PLACEHOLDER_EVENTS: PastEvent[] = [
-    {
-        id: "evt_1",
-        slug: "owerri-tradefair-2025",
-        title: "Owerri Campus Tradefair",
-        location: "Main Campus Arena, Owerri",
-        date: "2025-11-15",
-        coverImage: "/events/owerri-2025/cover.jpg",
-        media: [
-            { id: "m1", type: "image", url: "/events/owerri-2025/1.jpg" },
-            { id: "m2", type: "image", url: "/events/owerri-2025/2.jpg" },
-            { id: "m3", type: "image", url: "/events/owerri-2025/cover.jpg" },
-        ],
-    },
-    {
-        id: "evt_2",
-        slug: "uyo-food-fest-2025",
-        title: "Uyo Food & Lifestyle Expo",
-        location: "Students' Union Square, Uyo",
-        date: "2025-08-02",
-        coverImage: "/events/uyo-2025/cover.jpg",
-        media: [
-            { id: "m1", type: "image", url: "/events/uyo-2025/1.jpg" },
-            { id: "m2", type: "image", url: "/events/uyo-2025/2.jpg" },
-            { id: "m3", type: "image", url: "/events/uyo-2025/cover.jpg" },
-        ],
-    },
-    {
-        id: "evt_3",
-        slug: "enugu-tech-tradefair-2025",
-        title: "Enugu Campus Tradefair",
-        location: "Convocation Grounds, Enugu",
-        date: "2025-06-20",
-        coverImage: "/events/enugu-2025/cover.jpg",
-        media: [
-            { id: "m1", type: "image", url: "/events/enugu-2025/1.jpg" },
-            { id: "m2", type: "image", url: "/events/enugu-2025/2.jpg" },
-            { id: "m3", type: "image", url: "/events/enugu-2025/cover.jpg" },
-        ],
-    },
-];
-
 /**
- * Pulls one page of past events, each with its uploaded gallery media.
- * Supports pagination and falls back to PLACEHOLDER_EVENTS if API_BASE is unset.
+ * Maps a Prisma Event record (with relations) to the PastEvent frontend interface.
  */
-export async function getPastEventsPage(page = 1, limit = 12): Promise<PastEventsPage> {
-    if (API_BASE && (API_BASE.startsWith("http://") || API_BASE.startsWith("https://"))) {
-        try {
-            const res = await fetch(`${API_BASE}/api/events/past?page=${page}&limit=${limit}`, {
-                next: { revalidate: 60 },
-            });
-
-            if (res.ok) {
-                const data = await res.json();
-                if (Array.isArray(data)) {
-                    const start = (page - 1) * limit;
-                    return {
-                        events: data.slice(start, start + limit),
-                        hasMore: start + limit < data.length,
-                        total: data.length,
-                    };
-                }
-                return data as PastEventsPage;
-            }
-        } catch (err) {
-            console.error("getPastEventsPage fetch error:", err);
-        }
-    }
-
-    const total = PLACEHOLDER_EVENTS.length;
-    const start = (page - 1) * limit;
-    const events = PLACEHOLDER_EVENTS.slice(start, start + limit);
-    const hasMore = start + limit < total;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function mapPrismaToPastEvent(event: any): PastEvent {
+    const dateStr =
+        event.startDate instanceof Date
+            ? event.startDate.toISOString().split("T")[0]
+            : String(event.startDate || "");
 
     return {
-        events,
-        hasMore,
-        total,
+        id: event.id,
+        slug: event.slug,
+        title: event.title,
+        location: event.location || event.venue || "",
+        date: dateStr,
+        coverImage: event.coverImageUrl || event.flierUrl || "",
+        coverImagePublicId: event.coverImagePublicId || undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        media: (event.media || []).map((m: any) => ({
+            id: m.id,
+            type: (m.type === "VIDEO" || m.type === "video" ? "video" : "image") as "image" | "video",
+            url: m.url,
+            thumbnail: m.thumbnailUrl || m.url,
+            alt: m.alt || event.title,
+            cloudinaryPublicId: m.cloudinaryPublicId || undefined,
+        })),
     };
 }
 
-/** Used by the homepage strip, which just wants the first N events flat. */
+/**
+ * Empty placeholder for backward compatibility.
+ */
+export const PLACEHOLDER_EVENTS: PastEvent[] = [];
+
+/**
+ * Pulls a paginated list of past exhibitions directly from the database.
+ * If the database has no records or is unreachable, returns empty array.
+ */
+export async function getPastEventsPage(page = 1, limit = 12): Promise<PastEventsPage> {
+    try {
+        const skip = Math.max(0, (page - 1) * limit);
+        const now = new Date();
+
+        const pastWhere = {
+            status: "PUBLISHED" as const,
+            OR: [
+                { endDate: { lt: now } },
+                { endDate: null, startDate: { lt: now } },
+                { eventType: "PAST" as const },
+            ],
+        };
+
+        const [events, total] = await Promise.all([
+            prisma.event.findMany({
+                where: pastWhere,
+                include: {
+                    media: {
+                        orderBy: { order: "asc" },
+                    },
+                },
+                orderBy: {
+                    startDate: "desc",
+                },
+                skip,
+                take: limit,
+            }),
+            prisma.event.count({
+                where: pastWhere,
+            }),
+        ]);
+
+        return {
+            events: events.map(mapPrismaToPastEvent),
+            hasMore: skip + events.length < total,
+            total,
+        };
+    } catch (err) {
+        console.warn("[getPastEventsPage] Database query returned empty / offline:", err);
+        return {
+            events: [],
+            hasMore: false,
+            total: 0,
+        };
+    }
+}
+
+/**
+ * Used by the homepage strip, which fetches the first N past exhibitions.
+ */
 export async function getPastEvents(limit = 6): Promise<PastEvent[]> {
     const { events } = await getPastEventsPage(1, limit);
     return events;
 }
 
-/** Single event, used if a past event ever gets its own share-able page. */
-export async function getPastEventBySlug(slug: string): Promise<PastEvent | null> {
-    if (API_BASE && (API_BASE.startsWith("http://") || API_BASE.startsWith("https://"))) {
-        try {
-            const res = await fetch(`${API_BASE}/api/events/past/${slug}`, {
-                next: { revalidate: 60 },
-            });
+/**
+ * Looks up a single past exhibition by its URL slug from the database.
+ * Only returns PUBLISHED events unless includeDrafts is true (e.g. for staff preview).
+ */
+export async function getPastEventBySlug(
+    slug: string,
+    options?: { includeDrafts?: boolean }
+): Promise<PastEvent | null> {
+    try {
+        const event = await prisma.event.findFirst({
+            where: {
+                slug,
+                ...(options?.includeDrafts ? {} : { status: "PUBLISHED" }),
+            },
+            include: {
+                media: {
+                    orderBy: { order: "asc" },
+                },
+            },
+        });
 
-            if (res.ok) {
-                return (await res.json()) as PastEvent;
-            }
-        } catch (err) {
-            console.error("getPastEventBySlug fetch error:", err);
-        }
+        if (!event) return null;
+        return mapPrismaToPastEvent(event);
+    } catch (err) {
+        console.warn(`[getPastEventBySlug] Unable to load event "${slug}" from database:`, err);
+        return null;
     }
-
-    return PLACEHOLDER_EVENTS.find((e) => e.slug === slug) ?? null;
 }

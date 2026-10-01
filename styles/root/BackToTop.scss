@@ -1,0 +1,94 @@
+// Back To Top Floating Button Styles
+.back-to-top {
+  position: fixed;
+  bottom: 96px;
+  right: 28px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 99;
+  box-shadow: 0 6px 20px rgba(10, 15, 46, 0.14), 0 2px 8px rgba(0, 21, 248, 0.08);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(16px) scale(0.9);
+  transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              visibility 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease;
+
+  @media (max-width: 600px) {
+    bottom: 84px;
+    right: 18px;
+    width: 44px;
+    height: 44px;
+  }
+
+  &.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+  }
+
+  &:hover {
+    transform: translateY(-4px) scale(1.06);
+    box-shadow: 0 10px 28px rgba(0, 21, 248, 0.28), 0 4px 10px rgba(10, 15, 46, 0.12);
+
+    .back-to-top__ring-bg {
+      fill: var(--blue, #0015f8);
+    }
+
+    .back-to-top__ring-progress {
+      stroke: #ffffff;
+    }
+
+    .back-to-top__icon {
+      color: #ffffff;
+      transform: translateY(-2px);
+    }
+  }
+
+  &:active {
+    transform: translateY(0) scale(0.94);
+  }
+
+  &__ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+    pointer-events: none;
+  }
+
+  &__ring-bg {
+    fill: #ffffff;
+    stroke: #e2e8f0;
+    stroke-width: 2.5;
+    transition: fill 0.22s ease;
+  }
+
+  &__ring-progress {
+    fill: transparent;
+    stroke: var(--blue, #0015f8);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.12s ease-out, stroke 0.22s ease;
+  }
+
+  &__icon {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--blue, #0015f8);
+    transition: color 0.22s ease, transform 0.22s ease;
+  }
+}

@@ -17,7 +17,7 @@ export const UpcomingEventCard = ({ event }: { event: UpcomingEvent }) => {
     });
 
     return (
-        <Link href={`/upcoming-exhibitions/${event.slug}`} className="upcoming-event-card">
+        <Link href={`/${event.slug}`} className="upcoming-event-card">
             <div className="upcoming-event-card__media">
                 <Image
                     src={event.flier}

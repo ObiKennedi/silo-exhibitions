@@ -7,6 +7,10 @@
   @media (max-width: 768px) {
     padding: 100px 16px 64px;
   }
+
+  @media (max-width: 580px) {
+    padding: 90px 14px 56px;
+  }
 }
 
 .stall-hero {
@@ -248,6 +252,34 @@
       }
     }
   }
+
+  &__want-btn {
+    margin-top: 18px;
+    width: 100%;
+    padding: 12px 18px;
+    background: var(--blue, #0015f8);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 14px rgba(0, 21, 248, 0.2);
+
+    &:hover {
+      background: #0011c7;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(0, 21, 248, 0.3);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
 }
 
 // Payment Plan Selector inside chosen stall
@@ -337,6 +369,32 @@
     color: var(--muted, #5b6485);
     line-height: 1.45;
   }
+
+  &__want-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 10px 14px;
+    background: var(--blue, #0015f8);
+    color: #ffffff;
+    border: none;
+    border-radius: 9px;
+    font-weight: 700;
+    font-size: 13px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: #0011c7;
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: scale(0.98);
+    }
+  }
 }
 
 // CRITICAL REVENUE WARNING CALLOUT BOX
@@ -375,6 +433,114 @@
         color: #b45309;
         text-decoration: underline;
       }
+    }
+  }
+}
+
+// Prompt shown when form has not been activated yet
+.stall-choose-prompt {
+  background: linear-gradient(135deg, #f0f7ff 0%, #e0e7ff 100%);
+  border: 2px dashed #93c5fd;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+
+  &__icon {
+    font-size: 32px;
+    animation: bounceSlow 2s infinite ease-in-out;
+  }
+
+  &__text {
+    h4 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #1e3a8a;
+      margin-bottom: 6px;
+    }
+
+    p {
+      font-size: 14.5px;
+      color: #3b82f6;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+  }
+}
+
+@keyframes bounceSlow {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+// Banner displayed when a package is selected and the form is shown
+.stall-selected-banner {
+  background: #f8fafc;
+  border: 1.5px solid #cbd5e1;
+  border-left: 5px solid var(--blue, #0015f8);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  &__info {
+    h4 {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--ink, #0a0f2e);
+      margin: 4px 0 2px;
+    }
+
+    p {
+      font-size: 13.5px;
+      color: var(--muted, #5b6485);
+
+      strong {
+        color: var(--blue, #0015f8);
+      }
+    }
+  }
+
+  &__badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--blue, #0015f8);
+    background: #eff6ff;
+    padding: 2px 8px;
+    border-radius: 6px;
+  }
+
+  &__change-btn {
+    padding: 8px 16px;
+    background: #ffffff;
+    border: 1.5px solid #cbd5e1;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+      border-color: var(--blue, #0015f8);
+      color: var(--blue, #0015f8);
+      background: #eff6ff;
     }
   }
 }
@@ -446,6 +612,31 @@
     margin-bottom: 12px;
   }
 
+  &__admin-box {
+    background: #ffffff;
+    border: 1.5px solid #93c5fd;
+    border-left: 4px solid var(--blue, #0015f8);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 14px;
+
+    h4 {
+      font-size: 13.5px;
+      font-weight: 700;
+      color: #1e3a8a;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 6px;
+    }
+
+    p {
+      font-size: 13px;
+      line-height: 1.55;
+      color: #334155;
+      white-space: pre-line;
+    }
+  }
+
   ol {
     padding-left: 20px;
     display: flex;
@@ -506,6 +697,17 @@
   background: linear-gradient(135deg, #0a0f2e 0%, #1d2fb5 100%);
   border-radius: 18px;
   color: #ffffff;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px 16px;
+
+    &__btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
 
   &__info {
     div {

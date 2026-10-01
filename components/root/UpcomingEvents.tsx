@@ -1,6 +1,7 @@
 import { getUpcomingEvents } from "@/lib/upcoming-events";
 import { UpcomingEventCard } from "./UpcomingEventCard";
 import { RedirectButton } from "../essentials/LinkButton";
+import { EventCountdown } from "./EventCountdown";
 
 import "@/styles/root/UpcomingEvents.scss";
 
@@ -23,14 +24,23 @@ export const UpcomingEvents = async () => {
 
             {events.length === 0 ? (
                 <p className="upcoming-events__empty">
-                    New exhibitions will show up here as soon as they&apos;re announced.
+                    Upcoming exhibitions will appear here as soon as they are announced.
                 </p>
             ) : (
-                <div className="upcoming-events__grid">
-                    {events.map((event) => (
-                        <UpcomingEventCard key={event.id} event={event} />
-                    ))}
-                </div>
+                <>
+                    <div style={{ marginBottom: 28, maxWidth: 540 }}>
+                        <EventCountdown
+                            targetDate={events[0].startDate}
+                            title={`Next Exhibition Countdown`}
+                            subtitle={`${events[0].title} • ${events[0].venue}`}
+                        />
+                    </div>
+                    <div className="upcoming-events__grid">
+                        {events.map((event) => (
+                            <UpcomingEventCard key={event.id} event={event} />
+                        ))}
+                    </div>
+                </>
             )}
         </section>
     );

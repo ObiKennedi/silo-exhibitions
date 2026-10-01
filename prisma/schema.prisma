@@ -1,0 +1,383 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id            String   @id
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  role       String?   @default("user")
+  banned     Boolean?  @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  twoFactorEnabled Boolean? @default(false)
+
+  sessions              Session[]
+  accounts              Account[]
+  twoFactors            TwoFactor[]
+  vendorApplications    VendorApplication[]
+  volunteerApplications VolunteerApplication[]
+  createdEvents         Event[]                @relation("EventCreatedBy")
+  publishedEvents       Event[]                @relation("EventPublishedBy")
+
+  @@map("users")
+}
+
+// ==========================================
+// EXHIBITIONS & EVENTS (Past and Upcoming)
+// Images stored on Cloudinary
+// ==========================================
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum EventType {
+  UPCOMING
+  PAST
+}
+
+enum RegistrationStatus {
+  REGISTRATION_OPEN
+  COMING_SOON
+  SOLD_OUT
+  CLOSED
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+model Event {
+  id                    String              @id @default(cuid())
+  slug                  String              @unique
+  title                 String
+  tagline               String?
+  venue                 String              // Venue, arena or campus space
+  location              String?             // City, State or Campus (e.g., "Owerri, Imo State")
+  startDate             DateTime
+  endDate               DateTime?
+  eventType             EventType?          // Optional manual override. If null, derived dynamically from startDate / endDate
+  status                EventStatus         @default(DRAFT)
+  registrationStatus    RegistrationStatus  @default(REGISTRATION_OPEN)
+  isFeatured            Boolean             @default(false)
+  writeUp               String?             @db.Text
+  cashlessPolicy        String?             @db.Text
+  importantTerms        String?             @db.Text
+  whatsappUrl           String?
+  waitlistEnabled       Boolean             @default(false)
+
+  // Cloudinary media assets
+  coverImageUrl         String?             // Cloudinary URL for cards/hero
+  coverImagePublicId    String?             // Cloudinary public ID for transformations
+  flierUrl              String?             // Cloudinary flier poster image URL
+  flierPublicId         String?             // Cloudinary public ID
+  exhibitionPlanDocUrl  String?             // Cloudinary PDF / floorplan document URL
+  exhibitionPlanSummary String?             @db.Text
+
+  // Calls for participation
+  vendorCallEnabled     Boolean             @default(true)
+  vendorCallDescription String?             @db.Text
+  volunteerCallEnabled  Boolean             @default(true)
+  volunteerCallDescription String?          @db.Text
+
+  // Ride booking service
+  rideBookingEnabled    Boolean             @default(false)
+  rideBookingUrl        String?
+
+  // Audit trail
+  createdById           String?
+  createdBy             User?               @relation("EventCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  publishedById         String?
+  publishedBy           User?               @relation("EventPublishedBy", fields: [publishedById], references: [id], onDelete: SetNull)
+  publishedAt           DateTime?
+
+  // Relations
+  media                 EventMedia[]
+  sponsors              EventSponsor[]
+  pickupPoints          RidePickupPoint[]
+  vendorApplications    VendorApplication[]
+  volunteerApplications VolunteerApplication[]
+  waitlistEntries       EventWaitlist[]
+
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([status])
+  @@index([status, startDate])
+  @@index([status, endDate])
+  @@index([eventType])
+  @@index([startDate])
+  @@index([createdById])
+  @@index([publishedById])
+  @@map("events")
+}
+
+model EventMedia {
+  id                 String    @id @default(cuid())
+  eventId            String
+  event              Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  type               MediaType @default(IMAGE)
+
+  // Cloudinary media fields
+  url                String    // Cloudinary secure delivery URL
+  cloudinaryPublicId String?   // Cloudinary public ID (e.g. "silo-exhibitions/events/media/evt1_photo1")
+  thumbnailUrl       String?   // Cloudinary auto-optimized thumbnail URL
+  alt                String?
+  caption            String?
+  width              Int?
+  height             Int?
+  format             String?   // "webp", "jpg", "png", "mp4"
+  order              Int       @default(0)
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([eventId])
+  @@map("event_media")
+}
+
+model EventSponsor {
+  id                 String    @id @default(cuid())
+  eventId            String
+  event              Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  name               String
+  tier               String    @default("Partner") // "Headline" | "Gold" | "Silver" | "Partner"
+  websiteUrl         String?
+
+  // Cloudinary logo asset
+  logoUrl            String?   // Cloudinary URL
+  logoPublicId       String?   // Cloudinary public ID
+  order              Int       @default(0)
+
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([eventId])
+  @@map("event_sponsors")
+}
+
+model RidePickupPoint {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  name      String
+  time      String
+  order     Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@map("ride_pickup_points")
+}
+
+model EventWaitlist {
+  id        String   @id @default(cuid())
+  eventId   String
+  event     Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  email     String
+  name      String?
+  phone     String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, email])
+  @@index([eventId])
+  @@map("event_waitlists")
+}
+
+// ==========================================
+// VENDOR & VOLUNTEER APPLICATIONS
+// Vendors do NOT need an account to register & pay (userId is optional)
+// ==========================================
+
+enum PaymentStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+  EXPIRED
+  CANCELLED
+}
+
+model VendorApplication {
+  id                 String        @id @default(cuid())
+  bookingCode        String        @unique
+
+  // Event relation (optional relation allows records during migration/offline)
+  eventId            String?
+  event              Event?        @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  eventSlug          String
+
+  // User relation is OPTIONAL: guest checkout without an account is fully supported
+  userId             String?
+  user               User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Vendor / Guest contact information
+  businessName       String
+  category           String
+  contactName        String
+  email              String
+  phone              String
+  instagram          String?
+  description        String?       @db.Text
+  powerNeeds         String?
+
+  // Cloudinary branding assets (stall logo / banner)
+  logoUrl            String?       // Cloudinary URL
+  logoPublicId       String?       // Cloudinary public ID
+
+  // Stall & Plan details
+  stallId            String
+  stallTitle         String
+  planId             String
+  planName           String
+  dueNow             Decimal       @db.Decimal(12, 2)
+  isRevenueShare     Boolean       @default(false)
+  revenuePercentage  Decimal?      @db.Decimal(5, 2)
+
+  // Monnify checkout details
+  paymentStatus      PaymentStatus @default(PENDING)
+  paymentReference   String?       @unique
+  transactionId      String?
+  paidAmount         Decimal?      @db.Decimal(12, 2)
+  channel            String?
+  paidAt             DateTime?
+  holdExpiresAt      DateTime?     // Expirable reservation hold (e.g., 15 minutes)
+
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+
+  @@index([eventId])
+  @@index([eventSlug])
+  @@index([eventId, stallId])
+  @@index([eventSlug, stallId])
+  @@index([stallId, paymentStatus])
+  @@index([holdExpiresAt])
+  @@index([userId])
+  @@index([email])
+  @@index([email, userId])
+  @@index([paymentStatus])
+  @@map("vendor_applications")
+}
+
+model VolunteerApplication {
+  id               String   @id @default(cuid())
+  volunteerCode    String   @unique
+
+  // Event relation
+  eventId          String?
+  event            Event?   @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  eventSlug        String
+
+  // User relation is OPTIONAL: volunteers can apply without an account
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Volunteer contact & preferences
+  fullName         String
+  email            String
+  phone            String
+  primaryRole      String
+  institution      String?
+  daysAvailable    String?
+  tshirtSize       String?
+  experience       String?  @db.Text
+  emergencyContact String?
+  status           String   @default("PENDING") // PENDING, APPROVED, REJECTED
+
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([eventSlug])
+  @@index([userId])
+  @@index([email])
+  @@index([email, userId])
+  @@map("volunteer_applications")
+}
+
+model Session {
+  id        String   @id
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  impersonatedBy String?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model Account {
+  id                    String    @id
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("accounts")
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@map("verifications")
+}
+
+model TwoFactor {
+  id          String @id
+  secret      String
+  backupCodes String
+  verified                Boolean?  @default(false)
+  failedVerificationCount Int?      @default(0)
+  lockedUntil             DateTime?
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("two_factors")
+}
