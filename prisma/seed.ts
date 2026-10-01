@@ -26,7 +26,7 @@ async function seed() {
         writeUp:
           "Silo Campus Tradefair brings together over 120 student brands, tech startups, artisans, and food vendors for 4 days of explosive campus commerce and networking.",
         cashlessPolicy: "All stalls are equipped with Silo instant QR cashless paypoints for seamless campus sales.",
-        whatsappUrl: "https://wa.me/2348000000000",
+        whatsappUrl: "https://wa.me/2349063508366",
         vendorCallEnabled: true,
         vendorCallDescription:
           "Book your booth now! Choose between Standard Booth, Prime Corner, or Food Hub.",
@@ -67,7 +67,7 @@ async function seed() {
         writeUp:
           "The flagship Lagos campus exhibition connecting leading consumer brands, student makers, fashion designers and fintech innovators.",
         cashlessPolicy: "Strictly cashless event supported by digital payment partners.",
-        whatsappUrl: "https://wa.me/2348000000000",
+        whatsappUrl: "https://wa.me/2349063508366",
         vendorCallEnabled: true,
         volunteerCallEnabled: true,
         rideBookingEnabled: false,

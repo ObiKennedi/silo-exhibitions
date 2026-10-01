@@ -103,3 +103,37 @@
     animation: none;
   }
 }
+
+.partners__cta-wrap {
+  margin-top: 24px;
+}
+
+.partners__cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-body, sans-serif);
+  font-size: 13.5px;
+  color: var(--muted, #64748b);
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 21, 248, 0.04);
+  border: 1px solid rgba(0, 21, 248, 0.12);
+  transition: all 0.2s ease;
+
+  span {
+    color: var(--blue, #0015f8);
+    font-weight: 700;
+  }
+
+  &:hover {
+    background: rgba(0, 21, 248, 0.08);
+    border-color: rgba(0, 21, 248, 0.25);
+    transform: translateY(-1px);
+
+    span {
+      text-decoration: underline;
+    }
+  }
+}

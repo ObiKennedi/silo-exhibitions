@@ -49,7 +49,7 @@ export const USER_NAV: UserNavItem[] = [
   {
     id: "help",
     label: "Help on WhatsApp",
-    href: "https://wa.me/2348000000000",
+    href: "https://wa.me/2349063508366",
     icon: "help",
     group: "support",
     external: true,

@@ -175,7 +175,7 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
                     </div>
 
                     <a
-                        href={event.whatsappUrl || "https://wa.me/2348000000000"}
+                        href={event.whatsappUrl || "https://wa.me/2349063508366"}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="volunteer-success__whatsapp-cta"

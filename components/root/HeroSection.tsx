@@ -52,8 +52,9 @@ export const Hero = () => {
                 </h1>
 
                 <p className="hero__sub" data-aos="fade-up" data-aos-delay="200">
-                    From your first stall to your biggest campus tradefair — Silo gives your
-                    business the stage, the visitors, and the tools to grow.
+                    Welcome to Silo Exhibitions, 
+                    Where businesses get seen, customers get connected, 
+                    and brands get opportunity to grow.
                 </p>
 
                 <div className="hero__cta" data-aos="fade-up" data-aos-delay="300">
@@ -71,7 +72,7 @@ export const Hero = () => {
                 <ul className="hero__stats" data-aos="fade-up" data-aos-delay="400">
                     <li><b>240+</b> exhibitors</li>
                     <li><b>18</b> campuses reached</li>
-                    <li><b>₦2.4M+</b> Revenue generated</li>
+                    <li><b>₦2.4B</b> Revenue generated</li>
                 </ul>
             </div>
 

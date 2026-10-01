@@ -63,8 +63,8 @@ export const About = () => {
 
                 <div className="about__who-copy" data-aos="fade-up" data-aos-delay="100">
                     <blockquote className="about__vision">
-                        “We believe every trader deserves a stage, and every buyer deserves a
-                        fair price. Silo exists to put both in the same room.”
+                        “In Nigeria, it is not enough to have a good business. 
+                        If people can't see you the cant buy from you”
                     </blockquote>
                     <p className="about__signature">— Shiloh, Founder &amp; CEO</p>
                     <p className="about__kicker">Who we are</p>

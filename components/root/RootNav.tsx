@@ -27,6 +27,10 @@ const NavLinks = [
         href: "#upcoming-exhibitions",
     },
     {
+        title: "Sponsors",
+        href: "#sponsors",
+    },
+    {
         title: "Contact",
         href: "#contact",
     },

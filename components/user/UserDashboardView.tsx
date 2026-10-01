@@ -633,7 +633,7 @@ export function UserDashboardView({
         </div>
 
         <a
-          href="https://wa.me/2348000000000"
+          href="https://wa.me/2349063508366"
           target="_blank"
           rel="noopener noreferrer"
           className="ud-btn ud-btn--success"
