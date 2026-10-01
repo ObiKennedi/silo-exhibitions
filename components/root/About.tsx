@@ -8,36 +8,6 @@ import { RedirectButton } from "../essentials/LinkButton";
 
 import "@/styles/root/About.scss";
 
-const GIFT_VOUCHERS = [
-    {
-        tag: "VENDOR BONUS",
-        value: "₦15,000",
-        label: "Exhibition Credit",
-        desc: "Direct discount voucher automatically applied toward your first campus stall booking.",
-        badge: "INSTANT VOUCHER",
-        icon: Gift,
-        theme: "gold",
-    },
-    {
-        tag: "BUYER PASS",
-        value: "FREE VIP",
-        label: "Fast-Track Pass",
-        desc: "Complimentary digital entry pass with instant gate scanning for upcoming campus tradefairs.",
-        badge: "100% FREE",
-        icon: Ticket,
-        theme: "blue",
-    },
-    {
-        tag: "EXHIBITOR PERK",
-        value: "PRIORITY",
-        label: "Prime Stall Access",
-        desc: "Early-bird privileges to lock in high-footfall corner booth spaces before general opening.",
-        badge: "EXCLUSIVE",
-        icon: Zap,
-        theme: "cyan",
-    },
-];
-
 export const About = () => {
     const [isBoxOpen, setIsBoxOpen] = useState(false);
 
@@ -50,14 +20,14 @@ export const About = () => {
                     <div className="about__photo-frame">
                         <Image
                             src="/team/pic.png"
-                            alt="Shiloh The Mighty, Founder & CEO Silo Exhitions"
+                            alt="Shiloh D'Mighty, Founder & CEO Silo Exhitions"
                             fill
                             sizes="(max-width: 980px) 260px, 320px"
                         />
                     </div>
                     <span className="about__photo-badge">
                         <Sparkles size={14} />
-                        Founder &amp; CEO
+                        Shiloh D'Mighty Founder &amp; CEO
                     </span>
                 </div>
 

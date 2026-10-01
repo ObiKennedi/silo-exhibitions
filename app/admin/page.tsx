@@ -43,6 +43,7 @@ import {
 } from "lucide-react";
 
 import "@/styles/admin/AdminDashboard.scss";
+import { CloudinaryImageUpload } from "@/components/admin/CloudinaryImageUpload";
 
 type TabType = "overview" | "events" | "gallery" | "users";
 
@@ -2108,31 +2109,23 @@ export default function AdminDashboardPage() {
                     </h4>
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
-                      <div>
-                        <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                          Cover Banner Image URL
-                        </label>
-                        <input
-                          type="url"
-                          placeholder="https://images.unsplash.com/..."
-                          value={newCoverUrl}
-                          onChange={(e) => setNewCoverUrl(e.target.value)}
-                          style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
-                        />
-                      </div>
+                      <CloudinaryImageUpload
+                        label="Flier Poster Image (Main Display)"
+                        folder="silo-exhibitions/events/fliers"
+                        value={newFlierUrl}
+                        onChange={(url) => setNewFlierUrl(url)}
+                        aspectRatioHint="Recommended: 4:5 or 1:1"
+                        placeholder="Click or drag event flier to upload to Cloudinary"
+                      />
 
-                      <div>
-                        <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                          Flier Poster Image URL
-                        </label>
-                        <input
-                          type="url"
-                          placeholder="https://images.unsplash.com/..."
-                          value={newFlierUrl}
-                          onChange={(e) => setNewFlierUrl(e.target.value)}
-                          style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
-                        />
-                      </div>
+                      <CloudinaryImageUpload
+                        label="Cover Banner Image (Header)"
+                        folder="silo-exhibitions/events/covers"
+                        value={newCoverUrl}
+                        onChange={(url) => setNewCoverUrl(url)}
+                        aspectRatioHint="Recommended: 16:9 banner"
+                        placeholder="Click or drag cover banner to upload to Cloudinary"
+                      />
                     </div>
 
                     <div style={{ marginBottom: 14 }}>
@@ -2523,22 +2516,17 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 16 }}>
-                  <div>
-                    <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                      Image / Video Delivery URL *
-                    </label>
-                    <input
-                      type="url"
-                      required
-                      placeholder="https://res.cloudinary.com/... or /hero/hero1.jpeg"
-                      value={galleryMediaUrl}
-                      onChange={(e) => setGalleryMediaUrl(e.target.value)}
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
-                    />
-                  </div>
+                <div style={{ marginBottom: 16 }}>
+                  <CloudinaryImageUpload
+                    label="Media Asset (Photo or Highlight)"
+                    folder="silo-exhibitions/events/gallery"
+                    value={galleryMediaUrl}
+                    onChange={(url) => setGalleryMediaUrl(url)}
+                    placeholder="Click or drag image to upload directly to Cloudinary"
+                    required
+                  />
 
-                  <div>
+                  <div style={{ marginTop: 12 }}>
                     <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
                       Caption / Description
                     </label>

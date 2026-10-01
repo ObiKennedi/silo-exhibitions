@@ -170,7 +170,7 @@ export const Hero = () => {
                         </i>
                     </div>
                     <div>
-                        <b>100+ businesses</b>
+                        <b>500+ businesses</b>
                         <small>built with Silo</small>
                     </div>
                 </div>

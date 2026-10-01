@@ -57,7 +57,6 @@ export const Footer = () => {
             <div className="footer__main">
                 <div className="footer__brand">
                     <Image src="/logo-light.png" alt="Silo Exhibitions" width={56} height={56} />
-                    <p className="footer__tagline">Building Businesses.</p>
                     <p className="footer__blurb">
                         Silo Exhibitions links traders to buyers through curated campus tradefairs —
                         real stalls, real footfall, real sales.
