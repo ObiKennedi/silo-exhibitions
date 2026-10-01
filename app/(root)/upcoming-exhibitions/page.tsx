@@ -19,7 +19,7 @@ export default async function UpcomingExhibitionsPage() {
                     Upcoming Exhibitions.
                 </p>
                 <p style={{ color: "var(--muted, #64748b)", maxWidth: "600px", fontSize: "1.05rem" }}>
-                    Discover upcoming campus tradefairs, apply for vendor stalls, join waitlists, and reserve your spot.
+                    Discover upcoming tradefairs, apply for vendor stalls, join waitlists, and reserve your spot.
                 </p>
             </header>
 

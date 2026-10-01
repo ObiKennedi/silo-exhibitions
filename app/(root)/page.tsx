@@ -14,7 +14,6 @@ const HomePage = () => {
             <HeroSection/>
             <Partners/>
             <UpcomingEvents/>
-            <PastEvents/>
             <About/>
             <BecomeSponsor/>
             <Contact/>

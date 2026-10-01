@@ -87,7 +87,7 @@ export const BecomeSponsor = () => {
                             </div>
 
                             <p className="sponsor-chat-card__message">
-                                “Hello! We’d love to discuss sponsorship tiers tailored to your brand’s goals and target campus audience.”
+                                “Hello! We’d love to discuss sponsorship tiers tailored to your brand’s goals and target audience.”
                             </p>
 
                             <Link
@@ -100,7 +100,7 @@ export const BecomeSponsor = () => {
                                 <FaWhatsapp size={24} />
                                 <div>
                                     <strong>Become a Sponsor on WhatsApp</strong>
-                                    <small>Tap to open direct chat &bull; Quick response</small>
+                                    <small>Tap to chat with an admin &bull; Quick response</small>
                                 </div>
                                 <ArrowUpRight size={18} className="sponsor-whatsapp-btn__arrow" />
                             </Link>
