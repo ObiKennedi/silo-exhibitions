@@ -16,7 +16,7 @@ import {
     Download,
 } from "lucide-react";
 
-import { UpcomingEvent } from "@/types/upcoming-event";
+import { UpcomingEvent, StallConfig, StallPaymentPlan } from "@/types/upcoming-event";
 import { MonnifyModal, MonnifyPaymentSuccess } from "./MonnifyModal";
 import { EventCountdown } from "./EventCountdown";
 import "@/styles/root/StallApplication.scss";
@@ -25,32 +25,12 @@ interface Props {
     event: UpcomingEvent;
 }
 
-type StallId = "compact" | "corner" | "mega";
-type PaymentPlanId = "full" | "installment" | "revenue_percentage";
-
-interface StallConfig {
-    id: StallId;
-    title: string;
-    size: string;
-    badge?: string;
-    description: string;
-    features: string[];
-    availablePlans: {
-        id: PaymentPlanId;
-        name: string;
-        dueNow: number;
-        totalAmountText: string;
-        description: string;
-        isRevenueShare?: boolean;
-        revenuePercentage?: number;
-    }[];
-}
-
-const STALL_CONFIGS: StallConfig[] = [
+const DEFAULT_STALL_CONFIGS: StallConfig[] = [
     {
         id: "compact",
         title: "Standard Booth",
         size: "2m × 2m (4 sqm)",
+        price: 35000,
         description: "Ideal for student entrepreneurs, solo artisans, apparel & craft vendors.",
         features: [
             "1 Display table + 2 chairs",
@@ -141,9 +121,13 @@ const STALL_CONFIGS: StallConfig[] = [
 ];
 
 export const StallApplicationForm = ({ event }: Props) => {
+    const stallList: StallConfig[] = (event.stallsConfig && event.stallsConfig.length > 0)
+        ? event.stallsConfig
+        : DEFAULT_STALL_CONFIGS;
+
     // Selection state
-    const [selectedStallId, setSelectedStallId] = useState<StallId>("compact");
-    const [selectedPlanId, setSelectedPlanId] = useState<PaymentPlanId>("full");
+    const [selectedStallId, setSelectedStallId] = useState<string>(() => stallList[0]?.id || "compact");
+    const [selectedPlanId, setSelectedPlanId] = useState<string>(() => stallList[0]?.availablePlans?.[0]?.id || "full");
     const [showForm, setShowForm] = useState(false);
 
     // Form inputs state
@@ -168,18 +152,26 @@ export const StallApplicationForm = ({ event }: Props) => {
         planName: string;
     } | null>(null);
 
-    const activeStall = STALL_CONFIGS.find((s) => s.id === selectedStallId) ?? STALL_CONFIGS[0];
+    const activeStall = stallList.find((s) => s.id === selectedStallId) ?? stallList[0];
     const activePlan =
-        activeStall.availablePlans.find((p) => p.id === selectedPlanId) ??
-        activeStall.availablePlans[0];
+        activeStall?.availablePlans?.find((p) => p.id === selectedPlanId) ??
+        activeStall?.availablePlans?.[0] ?? {
+            id: "full",
+            name: "Full Upfront Payment",
+            dueNow: activeStall?.price || 0,
+            totalAmountText: `₦${(activeStall?.price || 0).toLocaleString()} one-off`,
+            description: "Pay 100% now for instant confirmed allocation.",
+        };
 
-    const handleStallSelect = (stallId: StallId) => {
+    const handleStallSelect = (stallId: string) => {
         setSelectedStallId(stallId);
-        const stall = STALL_CONFIGS.find((s) => s.id === stallId)!;
-        setSelectedPlanId(stall.availablePlans[0].id);
+        const stall = stallList.find((s) => s.id === stallId) || stallList[0];
+        if (stall?.availablePlans?.length) {
+            setSelectedPlanId(stall.availablePlans[0].id);
+        }
     };
 
-    const handleChoosePlan = (stallId: StallId, planId: PaymentPlanId) => {
+    const handleChoosePlan = (stallId: string, planId: string) => {
         setSelectedStallId(stallId);
         setSelectedPlanId(planId);
         setShowForm(true);
@@ -365,9 +357,10 @@ export const StallApplicationForm = ({ event }: Props) => {
                     </div>
 
                     <div className="stall-grid">
-                        {STALL_CONFIGS.map((stall) => {
+                        {stallList.map((stall) => {
                             const isSelected = stall.id === selectedStallId;
-                            const defaultPlan = stall.availablePlans[0];
+                            const defaultPlan = stall.availablePlans?.[0];
+                            const revPlan = stall.availablePlans?.find((p) => p.isRevenueShare);
 
                             return (
                                 <div
@@ -387,20 +380,20 @@ export const StallApplicationForm = ({ event }: Props) => {
 
                                     <div className="stall-card__price-wrap">
                                         <div className="stall-card__price-main">
-                                            {stall.id === "mega" ? (
+                                            {revPlan ? (
                                                 <div style={{ fontSize: "19px", lineHeight: "1.25" }}>
-                                                    <span>₦120,000 <small style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>flat once</small></span>
+                                                    <span>₦{(stall.price || defaultPlan?.dueNow || 0).toLocaleString()} <small style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>flat once</small></span>
                                                     <span style={{ fontSize: "12px", color: "var(--muted)", margin: "0 4px", fontWeight: 400 }}>or</span>
-                                                    <span style={{ color: "#d97706" }}>₦25,000 <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ 10% daily</small></span>
+                                                    <span style={{ color: "#d97706" }}>₦{revPlan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ {revPlan.revenuePercentage || 10}% daily</small></span>
                                                 </div>
                                             ) : (
-                                                `₦${defaultPlan.dueNow.toLocaleString()}`
+                                                `₦${(stall.price || defaultPlan?.dueNow || 0).toLocaleString()}`
                                             )}
                                         </div>
                                         <div className="stall-card__price-sub">
-                                            {stall.id === "mega"
+                                            {revPlan
                                                 ? "Two payment options: Flat rate once OR Pay daily"
-                                                : defaultPlan.totalAmountText}
+                                                : defaultPlan?.totalAmountText || `₦${(stall.price || 0).toLocaleString()} one-off`}
                                         </div>
                                     </div>
 
@@ -422,7 +415,12 @@ export const StallApplicationForm = ({ event }: Props) => {
                                         className="stall-card__want-btn"
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            handleChoosePlan(stall.id, defaultPlan.id);
+                                            if (defaultPlan) {
+                                                handleChoosePlan(stall.id, defaultPlan.id);
+                                            } else {
+                                                handleStallSelect(stall.id);
+                                                setShowForm(true);
+                                            }
                                         }}
                                     >
                                         I want this
@@ -435,11 +433,11 @@ export const StallApplicationForm = ({ event }: Props) => {
                     {/* Payment Plan Options for Selected Stall */}
                     <div className="stall-plans">
                         <h3 className="stall-plans__title">
-                            Payment Plans for {activeStall.title}:
+                            Payment Plans for {activeStall?.title || "Selected Stall"}:
                         </h3>
 
                         <div className="stall-plans__options">
-                            {activeStall.availablePlans.map((plan) => {
+                            {activeStall?.availablePlans?.map((plan) => {
                                 const isPlanSelected = plan.id === selectedPlanId;
 
                                 return (

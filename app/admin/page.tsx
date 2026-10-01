@@ -44,6 +44,7 @@ import {
 
 import "@/styles/admin/AdminDashboard.scss";
 import { CloudinaryImageUpload } from "@/components/admin/CloudinaryImageUpload";
+import { StallConfig, StallPaymentPlan } from "@/types/upcoming-event";
 
 type TabType = "overview" | "events" | "gallery" | "users";
 
@@ -73,6 +74,7 @@ interface AdminEvent {
   cashlessPolicy?: string | null;
   importantTerms?: string | null;
   exhibitionPlanSummary?: string | null;
+  stallsConfig?: string | null;
   vendorCallDescription?: string | null;
   whatsappUrl?: string | null;
   _count?: {
@@ -172,6 +174,123 @@ interface RecentApp {
   };
 }
 
+export function computeStallPlans(stall: {
+  price?: number;
+  enableInstallment?: boolean;
+  installmentDepositPercent?: number;
+  enableRevenueShare?: boolean;
+  revenueDepositAmount?: number;
+  revenuePercentage?: number;
+}): StallPaymentPlan[] {
+  const plans: StallPaymentPlan[] = [];
+  const price = Math.max(0, Number(stall.price) || 0);
+
+  // 1. Full Upfront Payment
+  plans.push({
+    id: "full",
+    name: "Full Upfront Payment",
+    dueNow: price,
+    totalAmountText: `₦${price.toLocaleString()} one-off`,
+    description: "Pay 100% now for instant confirmed allocation.",
+  });
+
+  // 2. Installment Plan
+  if (stall.enableInstallment !== false) {
+    const depositPct = Math.min(95, Math.max(5, stall.installmentDepositPercent ?? 50));
+    const dueNow = Math.round(price * (depositPct / 100));
+    const balance = price - dueNow;
+    plans.push({
+      id: "installment",
+      name: `2-Part Installment Plan (${depositPct}% Deposit)`,
+      dueNow,
+      totalAmountText: `₦${dueNow.toLocaleString()} now + ₦${balance.toLocaleString()} later`,
+      description: `Pay ₦${dueNow.toLocaleString()} deposit today to hold your space. Remainder due 7 days prior.`,
+    });
+  }
+
+  // 3. Revenue Share / Pay Daily
+  if (stall.enableRevenueShare) {
+    const deposit = stall.revenueDepositAmount ?? 25000;
+    const revPct = stall.revenuePercentage ?? 10;
+    plans.push({
+      id: "revenue_percentage",
+      name: `Option 2: Pay Daily (${revPct}% Daily Gross Revenue)`,
+      dueNow: deposit,
+      totalAmountText: `₦${deposit.toLocaleString()} Setup Deposit + ${revPct}% Daily Gross Revenue`,
+      description: `Lower initial commitment. Pay a ₦${deposit.toLocaleString()} setup deposit today, then remit ${revPct}% of total daily gross revenue at the end of each day.`,
+      isRevenueShare: true,
+      revenuePercentage: revPct,
+    });
+  }
+
+  return plans;
+}
+
+const DEFAULT_ADMIN_STALLS: StallConfig[] = [
+  {
+    id: "compact",
+    title: "Standard Booth",
+    size: "2m × 2m (4 sqm)",
+    price: 35000,
+    badge: "",
+    description: "Ideal for student entrepreneurs, solo artisans, apparel & craft vendors.",
+    features: [
+      "1 Display table + 2 chairs",
+      "1 Standard electrical socket (500W)",
+      "2 Official Vendor passes",
+      "Basic directory listing in campus program",
+    ],
+    availablePlans: [],
+  },
+  {
+    id: "corner",
+    title: "Prime Corner Stall",
+    size: "3m × 3m (9 sqm)",
+    price: 65000,
+    badge: "High Foot Traffic",
+    description: "Corner placement at corridor intersections with high attendee flow.",
+    features: [
+      "2 Display tables + 4 chairs",
+      "Dual high-capacity electrical sockets (1500W)",
+      "4 Official Vendor passes",
+      "Highlighted boundary on physical & digital event maps",
+      "1 Live DJ shoutout per day",
+    ],
+    availablePlans: [],
+  },
+  {
+    id: "mega",
+    title: "Grand Mega Pavilion",
+    size: "5m × 5m (25 sqm)",
+    price: 120000,
+    badge: "Largest Stall · Anchor Brand",
+    description: "Prime center-arena anchor pavilion designed for flagship campus brands and high-volume sales.",
+    features: [
+      "Massive 25 sqm center-court pavilion space",
+      "Dedicated high-amp electrical line (3000W)",
+      "8 VIP Vendor badges with early setup privileges",
+      "Stage spotlight interview & continuous MC mentions",
+      "Priority loading dock & logistics assistance",
+      "Full feature page in official exhibition digital guide",
+    ],
+    availablePlans: [],
+  },
+].map((s) => {
+  const isMega = s.id === "mega";
+  const withToggles = {
+    ...s,
+    enableInstallment: true,
+    installmentDepositPercent: 50,
+    enableRevenueShare: isMega,
+    revenueDepositAmount: 25000,
+    revenuePercentage: 10,
+  };
+  return {
+    ...withToggles,
+    availablePlans: computeStallPlans(withToggles),
+  };
+});
+
 export default function AdminDashboardPage() {
   const { data: session, isPending } = useSession();
   const router = useRouter();
@@ -238,6 +357,61 @@ export default function AdminDashboardPage() {
   const [payAsYouGoNote, setPayAsYouGoNote] = useState(
     "Pay 50% deposit now to reserve your stall. Balance due 48 hours before exhibition setup."
   );
+
+  // Stall Types & Dynamic Payment Plans Builder State
+  const [stallsList, setStallsList] = useState<StallConfig[]>(DEFAULT_ADMIN_STALLS);
+
+  const handleUpdateStall = (id: string, updates: Partial<StallConfig>) => {
+    setStallsList((prev) =>
+      prev.map((s) => {
+        if (s.id !== id) return s;
+        const merged = { ...s, ...updates };
+        return {
+          ...merged,
+          availablePlans: computeStallPlans(merged),
+        };
+      })
+    );
+  };
+
+  const handleAddStallType = () => {
+    const newId = `stall_${Date.now()}`;
+    const newStall: StallConfig = {
+      id: newId,
+      title: "Custom Vendor Stall",
+      size: "2.5m × 2.5m (6.25 sqm)",
+      price: 45000,
+      badge: "New Option",
+      description: "Great for general retail, fashion apparel, accessories, food, and tech stalls.",
+      features: [
+        "1 Display table + 2 chairs",
+        "1 Standard electrical socket (500W)",
+        "2 Official Vendor passes",
+      ],
+      enableInstallment: true,
+      installmentDepositPercent: 50,
+      enableRevenueShare: false,
+      revenueDepositAmount: 20000,
+      revenuePercentage: 10,
+      availablePlans: [],
+    };
+    newStall.availablePlans = computeStallPlans(newStall);
+    setStallsList((prev) => [...prev, newStall]);
+  };
+
+  const handleRemoveStallType = (id: string) => {
+    if (stallsList.length <= 1) {
+      alert("At least one stall type is required.");
+      return;
+    }
+    setStallsList((prev) => prev.filter((s) => s.id !== id));
+  };
+
+  const handleResetDefaultStalls = () => {
+    if (confirm("Reset all stall types to the standard default presets?")) {
+      setStallsList(DEFAULT_ADMIN_STALLS);
+    }
+  };
 
   // Terms & Conditions with Important Disclaimer Flag
   interface TermItem {
@@ -360,6 +534,7 @@ export default function AdminDashboardPage() {
     setPayAsYouGoNote(
       "Pay 50% deposit now to reserve your stall. Balance due 48 hours before exhibition setup."
     );
+    setStallsList(DEFAULT_ADMIN_STALLS);
     setTermsList([
       {
         id: "1",
@@ -423,6 +598,26 @@ export default function AdminDashboardPage() {
         "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
     );
     setNewWhatsappUrl(ev.whatsappUrl || "https://wa.me/2349063508366");
+
+    if (ev.stallsConfig) {
+      try {
+        const parsed = typeof ev.stallsConfig === "string" ? JSON.parse(ev.stallsConfig) : ev.stallsConfig;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setStallsList(
+            parsed.map((s: any) => ({
+              ...s,
+              availablePlans: s.availablePlans?.length ? s.availablePlans : computeStallPlans(s),
+            }))
+          );
+        } else {
+          setStallsList(DEFAULT_ADMIN_STALLS);
+        }
+      } catch {
+        setStallsList(DEFAULT_ADMIN_STALLS);
+      }
+    } else {
+      setStallsList(DEFAULT_ADMIN_STALLS);
+    }
 
     if (ev.exhibitionPlanSummary) {
       try {
@@ -548,6 +743,7 @@ export default function AdminDashboardPage() {
         exhibitionPlanSummary: paymentPlansSummary,
         vendorCallDescription: vendorCallDesc,
         whatsappUrl: newWhatsappUrl || undefined,
+        stallsConfig: JSON.stringify(stallsList),
         notifyUsers: editingEvent ? false : notifyUsersWithResend,
       };
 
@@ -1841,83 +2037,725 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
 
-                  {/* 3. Payment Plans Configuration */}
+                  {/* 3. Stall Types & Dynamic Payment Plans Builder */}
                   <div className="event-form-section">
-                    <h4 className="event-form-section__title">
-                      <CreditCard size={15} color="#0015f8" />
-                      <span>3. Payment Plans (One-Time vs Pay As You Go)</span>
-                    </h4>
-                    <p className="event-form-section__desc">
-                      Configure the payment modalities available to vendors during stall registration.
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        flexWrap: "wrap",
+                        gap: 10,
+                        marginBottom: 8,
+                      }}
+                    >
+                      <h4 className="event-form-section__title" style={{ margin: 0 }}>
+                        <Layers size={16} color="#0015f8" />
+                        <span>3. Stall Types &amp; Dynamic Payment Plans Builder</span>
+                      </h4>
+                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <button
+                          type="button"
+                          onClick={handleResetDefaultStalls}
+                          className="btn-secondary"
+                          style={{ padding: "6px 12px", fontSize: 12, height: "auto" }}
+                          title="Reset to 3 standard presets (Standard Booth, Corner Stall, Mega Pavilion)"
+                        >
+                          <RefreshCw size={13} />
+                          <span>Reset Presets</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleAddStallType}
+                          className="btn-primary"
+                          style={{
+                            padding: "6px 14px",
+                            fontSize: 12,
+                            height: "auto",
+                            background: "#0015f8",
+                          }}
+                        >
+                          <Plus size={14} />
+                          <span>Add Stall Type</span>
+                        </button>
+                      </div>
+                    </div>
+                    <p className="event-form-section__desc" style={{ marginBottom: 16 }}>
+                      Configure the stall options for this exhibition. When you set or adjust a stall&apos;s base price (₦), its payment plans (full upfront, 2-part installment, and optional daily revenue share) will dynamically calculate in real time.
                     </p>
 
-                    <div className="plans-config-box">
-                      {/* One-Time Payment Plan Card */}
-                      <div className={`plan-option-card ${enableOneTime ? "is-selected" : ""}`}>
-                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                          <input
-                            type="checkbox"
-                            checked={enableOneTime}
-                            onChange={(e) => setEnableOneTime(e.target.checked)}
-                            style={{ width: 18, height: 18, accentColor: "#0015f8" }}
-                          />
-                          <div>
-                            <strong style={{ fontSize: 13.5, color: "#0a0f2e" }}>
-                              One-Time Full Payment (100%)
-                            </strong>
-                            <small style={{ display: "block", color: "#64748b", marginTop: 2 }}>
-                              Standard option: Vendors pay 100% upfront upon reservation.
-                            </small>
-                          </div>
-                        </label>
-                      </div>
+                    {/* Stalls List */}
+                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                      {stallsList.map((stall, index) => {
+                        const basePrice = Math.max(0, Number(stall.price) || 0);
+                        const depositPct = stall.installmentDepositPercent ?? 50;
+                        const installmentDueNow = Math.round(basePrice * (depositPct / 100));
+                        const installmentBalance = basePrice - installmentDueNow;
+                        const revDeposit = stall.revenueDepositAmount ?? 25000;
+                        const revPct = stall.revenuePercentage ?? 10;
 
-                      {/* Pay As You Go Plan Card */}
-                      <div className={`plan-option-card ${enablePayAsYouGo ? "is-selected" : ""}`}>
-                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-                          <input
-                            type="checkbox"
-                            checked={enablePayAsYouGo}
-                            onChange={(e) => setEnablePayAsYouGo(e.target.checked)}
-                            style={{ width: 18, height: 18, accentColor: "#0015f8" }}
-                          />
-                          <div>
-                            <strong style={{ fontSize: 13.5, color: "#0a0f2e" }}>
-                              Pay As You Go (Installments / Deposit)
-                            </strong>
-                            <small style={{ display: "block", color: "#64748b", marginTop: 2 }}>
-                              Split payment: Vendors pay an initial deposit now, balance due later.
-                            </small>
-                          </div>
-                        </label>
+                        return (
+                          <div
+                            key={stall.id}
+                            style={{
+                              border: "1.5px solid #dce6f5",
+                              borderRadius: 14,
+                              background: "#ffffff",
+                              overflow: "hidden",
+                              boxShadow: "0 2px 8px rgba(10, 15, 46, 0.04)",
+                            }}
+                          >
+                            {/* Stall Card Header */}
+                            <div
+                              style={{
+                                padding: "12px 16px",
+                                background: "#f8fafc",
+                                borderBottom: "1.5px solid #e2e8f0",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                gap: 12,
+                                flexWrap: "wrap",
+                              }}
+                            >
+                              <div
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 10,
+                                  flex: 1,
+                                  minWidth: 260,
+                                }}
+                              >
+                                <span
+                                  style={{
+                                    background: "#0015f8",
+                                    color: "#ffffff",
+                                    fontSize: 11,
+                                    fontWeight: 800,
+                                    padding: "3px 8px",
+                                    borderRadius: 6,
+                                    letterSpacing: "0.04em",
+                                    textTransform: "uppercase",
+                                  }}
+                                >
+                                  Stall #{index + 1}
+                                </span>
+                                <input
+                                  type="text"
+                                  value={stall.title}
+                                  placeholder="Stall Title (e.g. Standard Booth)"
+                                  onChange={(e) =>
+                                    handleUpdateStall(stall.id, { title: e.target.value })
+                                  }
+                                  style={{
+                                    fontWeight: 700,
+                                    fontSize: 14,
+                                    color: "#0a0f2e",
+                                    padding: "4px 8px",
+                                    border: "1px solid #cbd5e1",
+                                    borderRadius: 6,
+                                    flex: 1,
+                                  }}
+                                />
+                                <input
+                                  type="text"
+                                  value={stall.size}
+                                  placeholder="Dimensions (e.g. 2m × 2m)"
+                                  onChange={(e) =>
+                                    handleUpdateStall(stall.id, { size: e.target.value })
+                                  }
+                                  style={{
+                                    fontSize: 12.5,
+                                    color: "#475569",
+                                    padding: "4px 8px",
+                                    border: "1px solid #cbd5e1",
+                                    borderRadius: 6,
+                                    width: 150,
+                                  }}
+                                />
+                              </div>
 
-                        {enablePayAsYouGo && (
-                          <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px dashed #cbd5e1" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
-                              <label style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>
-                                Initial Deposit %:
-                              </label>
-                              <input
-                                type="number"
-                                min={10}
-                                max={90}
-                                value={payAsYouGoDeposit}
-                                onChange={(e) => setPayAsYouGoDeposit(Number(e.target.value))}
-                                style={{ width: 70, padding: "5px 8px", borderRadius: 6, border: "1.5px solid #cbd5e1", fontSize: 12.5 }}
-                              />
-                              <span style={{ fontSize: 12, color: "#64748b" }}>% due upon stall booking</span>
+                              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                {stallsList.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveStallType(stall.id)}
+                                    style={{
+                                      background: "#fee2e2",
+                                      border: "1px solid #fca5a5",
+                                      color: "#b91c1c",
+                                      borderRadius: 6,
+                                      padding: "5px 8px",
+                                      cursor: "pointer",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 4,
+                                      fontSize: 11.5,
+                                      fontWeight: 600,
+                                    }}
+                                  >
+                                    <Trash2 size={13} />
+                                    <span>Remove</span>
+                                  </button>
+                                )}
+                              </div>
                             </div>
 
-                            <input
-                              type="text"
-                              value={payAsYouGoNote}
-                              onChange={(e) => setPayAsYouGoNote(e.target.value)}
-                              placeholder="e.g. Balance due 48 hours before exhibition setup"
-                              style={{ width: "100%", padding: "7px 10px", borderRadius: 6, border: "1px solid #cbd5e1", fontSize: 12 }}
-                            />
+                            {/* Stall Card Body */}
+                            <div style={{ padding: 16 }}>
+                              {/* Price and Badge Row */}
+                              <div
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "1.2fr 1fr",
+                                  gap: 16,
+                                  marginBottom: 14,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    background: "#eff6ff",
+                                    border: "1.5px solid #bfdbfe",
+                                    borderRadius: 10,
+                                    padding: 12,
+                                  }}
+                                >
+                                  <label
+                                    style={{
+                                      display: "block",
+                                      fontSize: 12,
+                                      fontWeight: 800,
+                                      color: "#1e40af",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    Base Stall Price (₦) * — Powers Dynamic Calculations
+                                  </label>
+                                  <div style={{ display: "flex", alignItems: "center" }}>
+                                    <span
+                                      style={{
+                                        background: "#dbeafe",
+                                        padding: "8px 12px",
+                                        border: "1.5px solid #93c5fd",
+                                        borderRight: "none",
+                                        borderRadius: "6px 0 0 6px",
+                                        fontSize: 14,
+                                        fontWeight: 800,
+                                        color: "#1e3a8a",
+                                      }}
+                                    >
+                                      ₦
+                                    </span>
+                                    <input
+                                      type="number"
+                                      min={0}
+                                      step={500}
+                                      value={stall.price || ""}
+                                      onChange={(e) =>
+                                        handleUpdateStall(stall.id, { price: Number(e.target.value) })
+                                      }
+                                      placeholder="35000"
+                                      style={{
+                                        flex: 1,
+                                        padding: "8px 12px",
+                                        borderRadius: "0 6px 6px 0",
+                                        border: "1.5px solid #93c5fd",
+                                        fontSize: 14,
+                                        fontWeight: 800,
+                                        color: "#0015f8",
+                                      }}
+                                    />
+                                  </div>
+                                  <small
+                                    style={{
+                                      color: "#3b82f6",
+                                      fontSize: 11,
+                                      marginTop: 4,
+                                      display: "block",
+                                    }}
+                                  >
+                                    Payment plans below dynamically adjust as you edit this price.
+                                  </small>
+                                </div>
+
+                                <div>
+                                  <label
+                                    style={{
+                                      display: "block",
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      color: "#334155",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    Card Badge (Optional)
+                                  </label>
+                                  <input
+                                    type="text"
+                                    value={stall.badge || ""}
+                                    placeholder="e.g. High Foot Traffic, Popular, Anchor Brand"
+                                    onChange={(e) =>
+                                      handleUpdateStall(stall.id, { badge: e.target.value })
+                                    }
+                                    style={{
+                                      width: "100%",
+                                      padding: "9px 12px",
+                                      borderRadius: 8,
+                                      border: "1.5px solid #cbd5e1",
+                                      fontSize: 12.5,
+                                    }}
+                                  />
+                                  <small
+                                    style={{
+                                      color: "#64748b",
+                                      fontSize: 11,
+                                      marginTop: 4,
+                                      display: "block",
+                                    }}
+                                  >
+                                    Highlight tag shown at the top of the stall card.
+                                  </small>
+                                </div>
+                              </div>
+
+                              {/* Description & Features */}
+                              <div
+                                style={{
+                                  display: "grid",
+                                  gridTemplateColumns: "1fr 1fr",
+                                  gap: 16,
+                                  marginBottom: 16,
+                                }}
+                              >
+                                <div>
+                                  <label
+                                    style={{
+                                      display: "block",
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      color: "#334155",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    Stall Description
+                                  </label>
+                                  <textarea
+                                    rows={3}
+                                    value={stall.description || ""}
+                                    placeholder="Ideal for student entrepreneurs, solo artisans, apparel & craft vendors."
+                                    onChange={(e) =>
+                                      handleUpdateStall(stall.id, { description: e.target.value })
+                                    }
+                                    style={{
+                                      width: "100%",
+                                      padding: "8px 10px",
+                                      borderRadius: 8,
+                                      border: "1.5px solid #cbd5e1",
+                                      fontSize: 12,
+                                      resize: "vertical",
+                                    }}
+                                  />
+                                </div>
+
+                                <div>
+                                  <label
+                                    style={{
+                                      display: "block",
+                                      fontSize: 12,
+                                      fontWeight: 700,
+                                      color: "#334155",
+                                      marginBottom: 4,
+                                    }}
+                                  >
+                                    Included Features / Amenities (One per line)
+                                  </label>
+                                  <textarea
+                                    rows={3}
+                                    value={(stall.features || []).join("\n")}
+                                    placeholder="1 Display table + 2 chairs&#10;1 Standard electrical socket&#10;2 Official Vendor passes"
+                                    onChange={(e) =>
+                                      handleUpdateStall(stall.id, {
+                                        features: e.target.value
+                                          .split("\n")
+                                          .filter((f) => f.trim().length > 0),
+                                      })
+                                    }
+                                    style={{
+                                      width: "100%",
+                                      padding: "8px 10px",
+                                      borderRadius: 8,
+                                      border: "1.5px solid #cbd5e1",
+                                      fontSize: 12,
+                                      resize: "vertical",
+                                    }}
+                                  />
+                                </div>
+                              </div>
+
+                              {/* DYNAMIC PAYMENT PLANS SECTION */}
+                              <div
+                                style={{
+                                  background: "linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%)",
+                                  border: "1.5px solid #cbd5e1",
+                                  borderRadius: 12,
+                                  padding: 14,
+                                }}
+                              >
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 6,
+                                    marginBottom: 12,
+                                  }}
+                                >
+                                  <CreditCard size={15} color="#0015f8" />
+                                  <strong style={{ fontSize: 13, color: "#0a0f2e" }}>
+                                    Dynamic Payment Plans for {stall.title || "This Stall"} (Calculated from ₦{basePrice.toLocaleString()}):
+                                  </strong>
+                                </div>
+
+                                <div
+                                  style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+                                    gap: 12,
+                                  }}
+                                >
+                                  {/* Plan 1: Full Payment */}
+                                  <div
+                                    style={{
+                                      background: "#ffffff",
+                                      border: "1.5px solid #93c5fd",
+                                      borderRadius: 10,
+                                      padding: 12,
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      gap: 6,
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                      }}
+                                    >
+                                      <span
+                                        style={{
+                                          fontSize: 11,
+                                          fontWeight: 800,
+                                          color: "#1e40af",
+                                          textTransform: "uppercase",
+                                        }}
+                                      >
+                                        Plan A • Full Upfront
+                                      </span>
+                                      <span
+                                        style={{
+                                          background: "#dcfce7",
+                                          color: "#15803d",
+                                          fontSize: 10.5,
+                                          fontWeight: 700,
+                                          padding: "2px 6px",
+                                          borderRadius: 4,
+                                        }}
+                                      >
+                                        Active (100%)
+                                      </span>
+                                    </div>
+                                    <div style={{ fontSize: 17, fontWeight: 800, color: "#0015f8" }}>
+                                      ₦{basePrice.toLocaleString()}
+                                      <small
+                                        style={{
+                                          fontSize: 11,
+                                          color: "#64748b",
+                                          fontWeight: 500,
+                                          marginLeft: 4,
+                                        }}
+                                      >
+                                        one-off
+                                      </small>
+                                    </div>
+                                    <p
+                                      style={{
+                                        margin: 0,
+                                        fontSize: 11.5,
+                                        color: "#64748b",
+                                        lineHeight: 1.4,
+                                      }}
+                                    >
+                                      Pay 100% now for immediate confirmed allocation.
+                                    </p>
+                                  </div>
+
+                                  {/* Plan 2: Installments */}
+                                  <div
+                                    style={{
+                                      background:
+                                        stall.enableInstallment !== false ? "#ffffff" : "#f1f5f9",
+                                      border:
+                                        stall.enableInstallment !== false
+                                          ? "1.5px solid #0015f8"
+                                          : "1.5px solid #e2e8f0",
+                                      borderRadius: 10,
+                                      padding: 12,
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      gap: 6,
+                                      opacity: stall.enableInstallment !== false ? 1 : 0.6,
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                      }}
+                                    >
+                                      <label
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 6,
+                                          cursor: "pointer",
+                                          fontSize: 11,
+                                          fontWeight: 800,
+                                          color: "#0a0f2e",
+                                          textTransform: "uppercase",
+                                        }}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={stall.enableInstallment !== false}
+                                          onChange={(e) =>
+                                            handleUpdateStall(stall.id, {
+                                              enableInstallment: e.target.checked,
+                                            })
+                                          }
+                                          style={{ width: 14, height: 14, accentColor: "#0015f8" }}
+                                        />
+                                        <span>Plan B • Installments</span>
+                                      </label>
+                                      {stall.enableInstallment !== false && (
+                                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                          <input
+                                            type="number"
+                                            min={10}
+                                            max={90}
+                                            value={depositPct}
+                                            onChange={(e) =>
+                                              handleUpdateStall(stall.id, {
+                                                installmentDepositPercent: Number(e.target.value),
+                                              })
+                                            }
+                                            style={{
+                                              width: 44,
+                                              padding: "2px 4px",
+                                              fontSize: 11,
+                                              fontWeight: 700,
+                                              borderRadius: 4,
+                                              border: "1px solid #cbd5e1",
+                                            }}
+                                          />
+                                          <span
+                                            style={{
+                                              fontSize: 10.5,
+                                              color: "#64748b",
+                                              fontWeight: 700,
+                                            }}
+                                          >
+                                            % dep
+                                          </span>
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div
+                                      style={{
+                                        fontSize: 15,
+                                        fontWeight: 800,
+                                        color:
+                                          stall.enableInstallment !== false ? "#0a0f2e" : "#94a3b8",
+                                      }}
+                                    >
+                                      ₦{installmentDueNow.toLocaleString()}{" "}
+                                      <small
+                                        style={{ color: "#16a34a", fontWeight: 700, fontSize: 11 }}
+                                      >
+                                        now
+                                      </small>{" "}
+                                      + ₦{installmentBalance.toLocaleString()}{" "}
+                                      <small
+                                        style={{ color: "#64748b", fontWeight: 600, fontSize: 11 }}
+                                      >
+                                        later
+                                      </small>
+                                    </div>
+                                    <p
+                                      style={{
+                                        margin: 0,
+                                        fontSize: 11.5,
+                                        color: "#64748b",
+                                        lineHeight: 1.4,
+                                      }}
+                                    >
+                                      Pay {depositPct}% deposit today. Balance due 7 days prior.
+                                    </p>
+                                  </div>
+
+                                  {/* Plan 3: Revenue Share / Pay Daily */}
+                                  <div
+                                    style={{
+                                      background: stall.enableRevenueShare ? "#ffffff" : "#f1f5f9",
+                                      border: stall.enableRevenueShare
+                                        ? "1.5px solid #d97706"
+                                        : "1.5px solid #e2e8f0",
+                                      borderRadius: 10,
+                                      padding: 12,
+                                      display: "flex",
+                                      flexDirection: "column",
+                                      gap: 6,
+                                      opacity: stall.enableRevenueShare ? 1 : 0.65,
+                                    }}
+                                  >
+                                    <div
+                                      style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        justifyContent: "space-between",
+                                      }}
+                                    >
+                                      <label
+                                        style={{
+                                          display: "flex",
+                                          alignItems: "center",
+                                          gap: 6,
+                                          cursor: "pointer",
+                                          fontSize: 11,
+                                          fontWeight: 800,
+                                          color: "#92400e",
+                                          textTransform: "uppercase",
+                                        }}
+                                      >
+                                        <input
+                                          type="checkbox"
+                                          checked={Boolean(stall.enableRevenueShare)}
+                                          onChange={(e) =>
+                                            handleUpdateStall(stall.id, {
+                                              enableRevenueShare: e.target.checked,
+                                            })
+                                          }
+                                          style={{ width: 14, height: 14, accentColor: "#d97706" }}
+                                        />
+                                        <span>Plan C • Pay Daily (Rev Share)</span>
+                                      </label>
+                                    </div>
+                                    {stall.enableRevenueShare ? (
+                                      <>
+                                        <div
+                                          style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: 6,
+                                            flexWrap: "wrap",
+                                          }}
+                                        >
+                                          <div
+                                            style={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 4,
+                                            }}
+                                          >
+                                            <span style={{ fontSize: 11, color: "#78350f" }}>
+                                              Dep: ₦
+                                            </span>
+                                            <input
+                                              type="number"
+                                              min={0}
+                                              step={1000}
+                                              value={revDeposit}
+                                              onChange={(e) =>
+                                                handleUpdateStall(stall.id, {
+                                                  revenueDepositAmount: Number(e.target.value),
+                                                })
+                                              }
+                                              style={{
+                                                width: 65,
+                                                padding: "2px 4px",
+                                                fontSize: 11,
+                                                fontWeight: 700,
+                                                borderRadius: 4,
+                                                border: "1px solid #fcd34d",
+                                              }}
+                                            />
+                                          </div>
+                                          <div
+                                            style={{
+                                              display: "flex",
+                                              alignItems: "center",
+                                              gap: 4,
+                                            }}
+                                          >
+                                            <span style={{ fontSize: 11, color: "#78350f" }}>
+                                              Share:
+                                            </span>
+                                            <input
+                                              type="number"
+                                              min={1}
+                                              max={50}
+                                              value={revPct}
+                                              onChange={(e) =>
+                                                handleUpdateStall(stall.id, {
+                                                  revenuePercentage: Number(e.target.value),
+                                                })
+                                              }
+                                              style={{
+                                                width: 44,
+                                                padding: "2px 4px",
+                                                fontSize: 11,
+                                                fontWeight: 700,
+                                                borderRadius: 4,
+                                                border: "1px solid #fcd34d",
+                                              }}
+                                            />
+                                            <span style={{ fontSize: 11, color: "#78350f" }}>%</span>
+                                          </div>
+                                        </div>
+                                        <div
+                                          style={{
+                                            fontSize: 14,
+                                            fontWeight: 800,
+                                            color: "#b45309",
+                                          }}
+                                        >
+                                          ₦{revDeposit.toLocaleString()}{" "}
+                                          <small style={{ fontSize: 11, color: "#92400e" }}>
+                                            dep
+                                          </small>{" "}
+                                          + {revPct}% daily
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <p
+                                        style={{
+                                          margin: "4px 0 0",
+                                          fontSize: 11.5,
+                                          color: "#94a3b8",
+                                        }}
+                                      >
+                                        Optional revenue percentage plan (ideal for mega anchor
+                                        booths).
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
                           </div>
-                        )}
-                      </div>
+                        );
+                      })}
                     </div>
                   </div>
 

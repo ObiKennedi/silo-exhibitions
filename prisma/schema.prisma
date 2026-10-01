@@ -88,6 +88,7 @@ model Event {
   flierPublicId         String?             // Cloudinary public ID
   exhibitionPlanDocUrl  String?             // Cloudinary PDF / floorplan document URL
   exhibitionPlanSummary String?             @db.Text
+  stallsConfig          String?             @db.Text // JSON string containing custom stall types & their pricing/payment plans
 
   // Calls for participation
   vendorCallEnabled     Boolean             @default(true)

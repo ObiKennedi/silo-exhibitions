@@ -14,6 +14,34 @@ export interface Sponsor {
     logoPublicId?: string;
 }
 
+export type PaymentPlanId = "full" | "installment" | "revenue_percentage" | string;
+
+export interface StallPaymentPlan {
+    id: PaymentPlanId;
+    name: string;
+    dueNow: number;
+    totalAmountText: string;
+    description: string;
+    isRevenueShare?: boolean;
+    revenuePercentage?: number;
+}
+
+export interface StallConfig {
+    id: string;
+    title: string;
+    size: string;
+    price?: number;
+    badge?: string;
+    description: string;
+    features: string[];
+    enableInstallment?: boolean;
+    installmentDepositPercent?: number;
+    enableRevenueShare?: boolean;
+    revenueDepositAmount?: number;
+    revenuePercentage?: number;
+    availablePlans: StallPaymentPlan[];
+}
+
 export interface UpcomingEvent {
     id: string;
     slug: string;
@@ -59,4 +87,6 @@ export interface UpcomingEvent {
     };
 
     sponsors: Sponsor[];
+
+    stallsConfig?: StallConfig[];
 }

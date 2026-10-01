@@ -48,6 +48,7 @@ export async function POST(req: Request) {
                 exhibitionPlanSummary,
                 vendorCallDescription,
                 whatsappUrl,
+                stallsConfig,
                 notifyUsers = true,
             } = body;
 
@@ -88,6 +89,9 @@ export async function POST(req: Request) {
                     exhibitionPlanSummary: exhibitionPlanSummary || null,
                     vendorCallDescription: vendorCallDescription || null,
                     whatsappUrl: whatsappUrl || null,
+                    stallsConfig: stallsConfig !== undefined
+                        ? (typeof stallsConfig === "string" ? stallsConfig : JSON.stringify(stallsConfig))
+                        : null,
                 },
             });
 
@@ -134,6 +138,7 @@ export async function POST(req: Request) {
                 exhibitionPlanSummary,
                 vendorCallDescription,
                 whatsappUrl,
+                stallsConfig,
             } = body;
             if (!id) {
                 return NextResponse.json({ error: "Event ID is required." }, { status: 400 });
@@ -159,6 +164,9 @@ export async function POST(req: Request) {
                     exhibitionPlanSummary: exhibitionPlanSummary !== undefined ? exhibitionPlanSummary : undefined,
                     vendorCallDescription: vendorCallDescription !== undefined ? vendorCallDescription : undefined,
                     whatsappUrl: whatsappUrl !== undefined ? whatsappUrl : undefined,
+                    stallsConfig: stallsConfig !== undefined
+                        ? (typeof stallsConfig === "string" ? stallsConfig : JSON.stringify(stallsConfig))
+                        : undefined,
                 },
             });
 

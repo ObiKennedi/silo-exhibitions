@@ -20,14 +20,14 @@ export const About = () => {
                     <div className="about__photo-frame">
                         <Image
                             src="/team/pic.png"
-                            alt="Shiloh D'Mighty, Founder & CEO Silo Exhitions"
+                            alt="Shiloh D'Mighty, Founder & CEO Silo Exhibitions"
                             fill
                             sizes="(max-width: 980px) 260px, 320px"
                         />
                     </div>
                     <span className="about__photo-badge">
                         <Sparkles size={14} />
-                        Shiloh D'Mighty Founder &amp; CEO
+                        Shiloh D&apos;Mighty &bull; Founder &amp; CEO
                     </span>
                 </div>
 
@@ -36,7 +36,7 @@ export const About = () => {
                         “In Nigeria, it is not enough to have a good business. 
                         If people can't see you, they can't buy from you”
                     </blockquote>
-                    <p className="about__signature">— Shiloh, Founder &amp; CEO</p>
+                    <p className="about__signature">— Shiloh D'Mighty, Founder &amp; CEO</p>
                     <p className="about__kicker">Who we are</p>
                     <p className="about__lead">
                         Silo Exhibitions links traders to buyers through marketplace events in campuses and cities —

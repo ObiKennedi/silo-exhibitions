@@ -93,6 +93,18 @@ export function mapPrismaToUpcomingEvent(event: any): UpcomingEvent {
             logoUrl: s.logoUrl,
             logoPublicId: s.logoPublicId,
         })),
+
+        stallsConfig: (() => {
+            if (!event.stallsConfig) return undefined;
+            try {
+                return typeof event.stallsConfig === "string"
+                    ? JSON.parse(event.stallsConfig)
+                    : event.stallsConfig;
+            } catch (err) {
+                console.warn("[mapPrismaToUpcomingEvent] Failed to parse stallsConfig JSON:", err);
+                return undefined;
+            }
+        })(),
     };
 }
 
