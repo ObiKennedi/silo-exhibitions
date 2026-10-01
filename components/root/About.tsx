@@ -50,7 +50,7 @@ export const About = () => {
                     <div className="about__photo-frame">
                         <Image
                             src="/team/pic.png"
-                            alt="Shiloh, Founder and CEO of Silo Exhibitions"
+                            alt="Shiloh The Mighty, Founder & CEO Silo Exhitions"
                             fill
                             sizes="(max-width: 980px) 260px, 320px"
                         />
@@ -64,13 +64,13 @@ export const About = () => {
                 <div className="about__who-copy" data-aos="fade-up" data-aos-delay="100">
                     <blockquote className="about__vision">
                         “In Nigeria, it is not enough to have a good business. 
-                        If people can't see you the cant buy from you”
+                        If people can't see you, they can't buy from you”
                     </blockquote>
                     <p className="about__signature">— Shiloh, Founder &amp; CEO</p>
                     <p className="about__kicker">Who we are</p>
                     <p className="about__lead">
-                        Silo Exhibitions links traders to buyers through campus tradefairs —
-                        real events, real stalls, real people. We&apos;re building the easiest
+                        Silo Exhibitions links traders to buyers through marketplace events through campuses and cities —
+                        We&apos;re building the easiest
                         way for a business to be discovered, and for a shopper to find a
                         better deal.
                     </p>
@@ -155,48 +155,8 @@ export const About = () => {
                     </h3>
 
                     <p className="about__sub about__gift-sub">
-                        Create your free Silo account today and instantly unbox your welcome reward pack — including vendor credits, VIP fast-track exhibition passes, and priority booth privileges.
+                        Create your free Silo account today and instantly unbox your welcome reward pack.
                     </p>
-
-                    {/* Temu-Style Voucher Cards */}
-                    <div className="about__gift-vouchers">
-                        {GIFT_VOUCHERS.map((voucher, i) => {
-                            const IconComponent = voucher.icon;
-                            return (
-                                <div
-                                    key={voucher.label}
-                                    className={`about__gift-voucher theme-${voucher.theme}`}
-                                    data-aos="zoom-in"
-                                    data-aos-delay={150 + i * 100}
-                                >
-                                    <div className="about__gift-voucher-notch top" />
-                                    <div className="about__gift-voucher-notch bottom" />
-
-                                    <div className="about__gift-voucher-head">
-                                        <span className="about__gift-voucher-tag">{voucher.tag}</span>
-                                        <span className="about__gift-voucher-pill">{voucher.badge}</span>
-                                    </div>
-
-                                    <div className="about__gift-voucher-value">
-                                        <b>{voucher.value}</b>
-                                        <span>{voucher.label}</span>
-                                    </div>
-
-                                    <p className="about__gift-voucher-desc">{voucher.desc}</p>
-
-                                    <div className="about__gift-voucher-footer">
-                                        <span className="about__gift-voucher-icon">
-                                            <IconComponent size={16} />
-                                        </span>
-                                        <span className="about__gift-voucher-status">
-                                            <CheckCircle2 size={13} />
-                                            Unlocked with Sign Up
-                                        </span>
-                                    </div>
-                                </div>
-                            );
-                        })}
-                    </div>
 
                     {/* Bouncy Temu-Style Call to Action */}
                     <div className="about__gift-action">

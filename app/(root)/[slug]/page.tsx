@@ -118,9 +118,22 @@ export default async function EventMicroPage({ params }: Props) {
                     <div className="event-page__notice-content">
                         {event.cashlessPolicy && <p>{event.cashlessPolicy}</p>}
                         {event.importantTerms && (
-                            <p className="event-page__notice-terms">
-                                <strong>Important Terms:</strong> {event.importantTerms}
-                            </p>
+                            <div className="event-page__notice-terms">
+                                <strong>Important Notice &amp; Terms:</strong>
+                                {event.importantTerms.includes("\n") ? (
+                                    <ul className="event-page__notice-terms-list">
+                                        {event.importantTerms
+                                            .split("\n")
+                                            .map((t: string) => t.trim())
+                                            .filter(Boolean)
+                                            .map((term: string, idx: number) => (
+                                                <li key={idx}>{term}</li>
+                                            ))}
+                                    </ul>
+                                ) : (
+                                    <span> {event.importantTerms}</span>
+                                )}
+                            </div>
                         )}
                     </div>
                 </div>

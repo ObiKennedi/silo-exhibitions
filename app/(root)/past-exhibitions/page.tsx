@@ -20,9 +20,6 @@ export default async function PastExhibitionsPage() {
         <main className="past-exhibitions">
             <header className="past-exhibitions__head">
                 <p className="past-exhibitions__kicker">Past Exhibitions.</p>
-                <h1 className="past-exhibitions__title">
-                    Every exhibition <mark>we&apos;ve hosted.</mark>
-                </h1>
                 <p className="past-exhibitions__sub">
                     Photos and highlight videos from every tradefair — tap any event to open its
                     full gallery.

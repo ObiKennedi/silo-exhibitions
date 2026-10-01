@@ -13,10 +13,9 @@ export const EMAIL = "hello@silo.events";
 export const ADDRESS = "12 Tetlow Road, Owerri, Imo State, Nigeria";
 
 export const FOOTER_SPONSORS = [
-    "Aethelon Trades",
-    "Navy & Orange Investments",
-    "Slasham",
-    "Campus Kicks",
-    "Nkem Prints",
-    "Byte Repair",
+    "Alternative Bank",
+    "KIVO",
+    "Evans Nigerian LTD",
+    "The Creative Syndicate",
+    "Vitel Wireless LTD",
 ];

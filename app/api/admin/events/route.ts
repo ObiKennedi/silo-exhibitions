@@ -32,17 +32,21 @@ export async function POST(req: Request) {
         if (action === "create") {
             const {
                 title,
+                tagline,
                 slug,
                 venue,
                 location,
                 startDate,
                 endDate,
                 status = "PUBLISHED",
+                registrationStatus = "REGISTRATION_OPEN",
                 writeUp,
                 coverImageUrl,
                 flierUrl,
                 cashlessPolicy,
                 importantTerms,
+                exhibitionPlanSummary,
+                vendorCallDescription,
                 whatsappUrl,
                 notifyUsers = true,
             } = body;
@@ -68,18 +72,21 @@ export async function POST(req: Request) {
             const created = await prisma.event.create({
                 data: {
                     title,
+                    tagline: tagline || null,
                     slug: cleanSlug,
                     venue,
                     location: location || venue,
                     startDate: startDate ? new Date(startDate) : new Date(Date.now() + 7 * 86400000),
                     endDate: endDate ? new Date(endDate) : undefined,
                     status: status as any,
-                    registrationStatus: "REGISTRATION_OPEN",
+                    registrationStatus: (registrationStatus || "REGISTRATION_OPEN") as any,
                     writeUp: writeUp || null,
                     coverImageUrl: coverImageUrl || null,
                     flierUrl: flierUrl || null,
                     cashlessPolicy: cashlessPolicy || null,
                     importantTerms: importantTerms || null,
+                    exhibitionPlanSummary: exhibitionPlanSummary || null,
+                    vendorCallDescription: vendorCallDescription || null,
                     whatsappUrl: whatsappUrl || null,
                 },
             });
@@ -108,7 +115,26 @@ export async function POST(req: Request) {
 
         // --- UPDATE EVENT ---
         if (action === "update") {
-            const { id, title, slug, venue, location, startDate, endDate, status, writeUp, cashlessPolicy, importantTerms, whatsappUrl } = body;
+            const {
+                id,
+                title,
+                tagline,
+                slug,
+                venue,
+                location,
+                startDate,
+                endDate,
+                status,
+                registrationStatus,
+                writeUp,
+                coverImageUrl,
+                flierUrl,
+                cashlessPolicy,
+                importantTerms,
+                exhibitionPlanSummary,
+                vendorCallDescription,
+                whatsappUrl,
+            } = body;
             if (!id) {
                 return NextResponse.json({ error: "Event ID is required." }, { status: 400 });
             }
@@ -117,15 +143,21 @@ export async function POST(req: Request) {
                 where: { id },
                 data: {
                     title: title || undefined,
+                    tagline: tagline !== undefined ? (tagline || null) : undefined,
                     slug: slug ? slug.toLowerCase().trim().replace(/[^a-z0-9-]/g, "-") : undefined,
                     venue: venue || undefined,
                     location: location || undefined,
                     startDate: startDate ? new Date(startDate) : undefined,
                     endDate: endDate ? new Date(endDate) : undefined,
                     status: status || undefined,
+                    registrationStatus: registrationStatus || undefined,
                     writeUp: writeUp !== undefined ? writeUp : undefined,
+                    coverImageUrl: coverImageUrl !== undefined ? coverImageUrl : undefined,
+                    flierUrl: flierUrl !== undefined ? flierUrl : undefined,
                     cashlessPolicy: cashlessPolicy !== undefined ? cashlessPolicy : undefined,
                     importantTerms: importantTerms !== undefined ? importantTerms : undefined,
+                    exhibitionPlanSummary: exhibitionPlanSummary !== undefined ? exhibitionPlanSummary : undefined,
+                    vendorCallDescription: vendorCallDescription !== undefined ? vendorCallDescription : undefined,
                     whatsappUrl: whatsappUrl !== undefined ? whatsappUrl : undefined,
                 },
             });

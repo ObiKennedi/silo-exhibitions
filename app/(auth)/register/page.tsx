@@ -68,11 +68,7 @@ export default function RegisterPage() {
   return (
     <>
       <div className="auth-title-section">
-        <span className="auth-fun-kicker">join the exhibition ~</span>
         <h1 className="auth-main-title">CREATE <mark>ACCOUNT</mark></h1>
-        <p className="auth-sub-title">
-          Join Silo Exhibitions to access exclusive events and vendor opportunities
-        </p>
       </div>
 
       {errorMsg && (

@@ -71,49 +71,8 @@ export const BecomeSponsor = () => {
                     </p>
                 </div>
 
-                {/* Benefits Grid */}
-                <div className="become-sponsor__grid">
-                    {SPONSOR_BENEFITS.map((item, idx) => {
-                        const Icon = item.icon;
-                        return (
-                            <div key={idx} className="sponsor-card" data-aos="fade-up" data-aos-delay={idx * 80}>
-                                <div className="sponsor-card__top">
-                                    <div className="sponsor-card__icon">
-                                        <Icon size={22} />
-                                    </div>
-                                    <span className="sponsor-card__stat">{item.stat}</span>
-                                </div>
-                                <h3 className="sponsor-card__title">{item.title}</h3>
-                                <p className="sponsor-card__desc">{item.desc}</p>
-                            </div>
-                        );
-                    })}
-                </div>
-
                 {/* WhatsApp Action Callout Banner */}
                 <div className="sponsor-cta-box" data-aos="zoom-in" data-aos-delay="200">
-                    <div className="sponsor-cta-box__left">
-                        <div className="sponsor-cta-box__badge">
-                            <span className="sponsor-cta-box__pulse" />
-                            <span>SPONSORSHIP DESK LIVE ON WHATSAPP</span>
-                        </div>
-                        <h3 className="sponsor-cta-box__heading">
-                            Ready to Partner with Silo Exhibitions?
-                        </h3>
-                        <p className="sponsor-cta-box__text">
-                            Our sponsorship coordinators are ready on WhatsApp to share our comprehensive partnership
-                            deck, custom stall activation packages, and headline co-branding opportunities.
-                        </p>
-
-                        <div className="sponsor-cta-box__perks">
-                            {SPONSOR_HIGHLIGHTS.map((perk, i) => (
-                                <div key={i} className="sponsor-perk">
-                                    <CheckCircle2 size={16} className="sponsor-perk__icon" />
-                                    <span>{perk}</span>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
 
                     <div className="sponsor-cta-box__right">
                         <div className="sponsor-chat-card">

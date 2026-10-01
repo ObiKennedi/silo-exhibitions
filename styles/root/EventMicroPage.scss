@@ -158,6 +158,26 @@
   &-terms {
     color: var(--muted);
     font-size: 14px;
+    margin-top: 4px;
+
+    strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    &-list {
+      margin: 6px 0 0 0;
+      padding-left: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+
+      li {
+        color: var(--muted);
+        line-height: 1.45;
+        font-size: 13.5px;
+      }
+    }
   }
 }
 

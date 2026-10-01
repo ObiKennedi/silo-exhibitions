@@ -37,6 +37,9 @@ import {
   Copy,
   Check,
   Tag,
+  CreditCard,
+  AlertTriangle,
+  Layers,
 } from "lucide-react";
 
 import "@/styles/admin/AdminDashboard.scss";
@@ -56,16 +59,20 @@ interface AdminEvent {
   id: string;
   slug: string;
   title: string;
+  tagline?: string | null;
   venue: string;
   location?: string | null;
   startDate: string;
   endDate?: string | null;
   status: string;
+  registrationStatus?: string | null;
   writeUp?: string | null;
   coverImageUrl?: string | null;
   flierUrl?: string | null;
   cashlessPolicy?: string | null;
   importantTerms?: string | null;
+  exhibitionPlanSummary?: string | null;
+  vendorCallDescription?: string | null;
   whatsappUrl?: string | null;
   _count?: {
     vendorApplications: number;
@@ -193,26 +200,75 @@ export default function AdminDashboardPage() {
     message: string;
   } | null>(null);
 
-  // New Event Form State
+  // Events Filter & Search
+  const [eventCategoryFilter, setEventCategoryFilter] = useState<
+    "ALL" | "CURRENT" | "UPCOMING" | "PAST" | "DRAFT"
+  >("ALL");
+  const [eventSearchQuery, setEventSearchQuery] = useState("");
+
+  // Event Form (Create & Edit) State
   const [showEventModal, setShowEventModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<AdminEvent | null>(null);
   const [isSubmittingEvent, setIsSubmittingEvent] = useState(false);
+
+  // Form Fields
   const [newTitle, setNewTitle] = useState("");
+  const [newTagline, setNewTagline] = useState("Campus Mega Fair");
+  const [newLocation, setNewLocation] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [newVenue, setNewVenue] = useState("");
-  const [newLocation, setNewLocation] = useState("");
   const [newStartDate, setNewStartDate] = useState("");
+  const [newStartTime, setNewStartTime] = useState("09:00");
   const [newEndDate, setNewEndDate] = useState("");
+  const [newEndTime, setNewEndTime] = useState("18:00");
   const [newWriteUp, setNewWriteUp] = useState("");
   const [newCoverUrl, setNewCoverUrl] = useState("");
   const [newFlierUrl, setNewFlierUrl] = useState("");
   const [newCashlessPolicy, setNewCashlessPolicy] = useState(
     "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
   );
-  const [newImportantTerms, setNewImportantTerms] = useState(
-    "All stalls must be set up 2 hours before opening. Vendors are responsible for keeping booth area clean."
-  );
   const [newWhatsappUrl, setNewWhatsappUrl] = useState("https://wa.me/2349063508366");
   const [notifyUsersWithResend, setNotifyUsersWithResend] = useState(true);
+
+  // Payment Plans Configuration
+  const [enableOneTime, setEnableOneTime] = useState(true);
+  const [enablePayAsYouGo, setEnablePayAsYouGo] = useState(true);
+  const [payAsYouGoDeposit, setPayAsYouGoDeposit] = useState(50);
+  const [payAsYouGoNote, setPayAsYouGoNote] = useState(
+    "Pay 50% deposit now to reserve your stall. Balance due 48 hours before exhibition setup."
+  );
+
+  // Terms & Conditions with Important Disclaimer Flag
+  interface TermItem {
+    id: string;
+    text: string;
+    isImportant: boolean;
+  }
+
+  const [termsList, setTermsList] = useState<TermItem[]>([
+    {
+      id: "1",
+      text: "All stalls are equipped with designated QR cashless paypoints for seamless campus sales.",
+      isImportant: true,
+    },
+    {
+      id: "2",
+      text: "Vendors must arrive and complete booth setup at least 2 hours prior to exhibition gate opening.",
+      isImportant: true,
+    },
+    {
+      id: "3",
+      text: "All stalls must be kept neat and free of safety hazards. Waste must be deposited in campus bins.",
+      isImportant: false,
+    },
+    {
+      id: "4",
+      text: "Merchandise and campus conduct must comply with institution rules and trade fair guidelines.",
+      isImportant: false,
+    },
+  ]);
+  const [newTermInput, setNewTermInput] = useState("");
+  const [newTermIsImportant, setNewTermIsImportant] = useState(false);
 
   // Selected Event for Terms & Policy editing
   const [editingTermsEventId, setEditingTermsEventId] = useState<string>("");
@@ -280,11 +336,162 @@ export default function AdminDashboardPage() {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  // Handle Event Creation with Resend Auto-Broadcast
-  const handleCreateEvent = async (e: React.FormEvent) => {
+  const resetEventForm = () => {
+    setEditingEvent(null);
+    setNewTitle("");
+    setNewTagline("Campus Mega Fair");
+    setNewLocation("");
+    setNewSlug("");
+    setNewVenue("");
+    setNewStartDate("");
+    setNewStartTime("09:00");
+    setNewEndDate("");
+    setNewEndTime("18:00");
+    setNewWriteUp("");
+    setNewCoverUrl("");
+    setNewFlierUrl("");
+    setNewCashlessPolicy(
+      "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
+    );
+    setEnableOneTime(true);
+    setEnablePayAsYouGo(true);
+    setPayAsYouGoDeposit(50);
+    setPayAsYouGoNote(
+      "Pay 50% deposit now to reserve your stall. Balance due 48 hours before exhibition setup."
+    );
+    setTermsList([
+      {
+        id: "1",
+        text: "All stalls are equipped with designated QR cashless paypoints for seamless campus sales.",
+        isImportant: true,
+      },
+      {
+        id: "2",
+        text: "Vendors must arrive and complete booth setup at least 2 hours prior to exhibition gate opening.",
+        isImportant: true,
+      },
+      {
+        id: "3",
+        text: "All stalls must be kept neat and free of safety hazards. Waste must be deposited in campus bins.",
+        isImportant: false,
+      },
+      {
+        id: "4",
+        text: "Merchandise and campus conduct must comply with institution rules and trade fair guidelines.",
+        isImportant: false,
+      },
+    ]);
+  };
+
+  const openCreateModal = () => {
+    resetEventForm();
+    setShowEventModal(true);
+  };
+
+  const openEditModal = (ev: AdminEvent) => {
+    setEditingEvent(ev);
+    setNewTitle(ev.title);
+    setNewTagline(ev.tagline || "Campus Mega Fair");
+    setNewLocation(ev.location || "");
+    setNewSlug(ev.slug);
+    setNewVenue(ev.venue);
+
+    if (ev.startDate) {
+      const s = new Date(ev.startDate);
+      setNewStartDate(s.toISOString().split("T")[0]);
+      setNewStartTime(s.toTimeString().slice(0, 5));
+    } else {
+      setNewStartDate("");
+      setNewStartTime("09:00");
+    }
+
+    if (ev.endDate) {
+      const e = new Date(ev.endDate);
+      setNewEndDate(e.toISOString().split("T")[0]);
+      setNewEndTime(e.toTimeString().slice(0, 5));
+    } else {
+      setNewEndDate("");
+      setNewEndTime("18:00");
+    }
+
+    setNewWriteUp(ev.writeUp || "");
+    setNewCoverUrl(ev.coverImageUrl || "");
+    setNewFlierUrl(ev.flierUrl || "");
+    setNewCashlessPolicy(
+      ev.cashlessPolicy ||
+        "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
+    );
+    setNewWhatsappUrl(ev.whatsappUrl || "https://wa.me/2349063508366");
+
+    if (ev.exhibitionPlanSummary) {
+      try {
+        const parsed = JSON.parse(ev.exhibitionPlanSummary);
+        if (parsed.oneTime !== undefined) setEnableOneTime(parsed.oneTime);
+        if (parsed.payAsYouGo !== undefined) setEnablePayAsYouGo(parsed.payAsYouGo);
+        if (parsed.depositPercentage !== undefined) setPayAsYouGoDeposit(parsed.depositPercentage);
+        if (parsed.payAsYouGoNote !== undefined) setPayAsYouGoNote(parsed.payAsYouGoNote);
+      } catch {
+        // Not JSON, keep defaults
+      }
+    }
+
+    const parsedTerms: TermItem[] = [];
+    if (ev.importantTerms) {
+      ev.importantTerms
+        .split("\n")
+        .filter(Boolean)
+        .forEach((t, i) => {
+          parsedTerms.push({ id: `imp-${i}`, text: t.trim(), isImportant: true });
+        });
+    }
+    if (parsedTerms.length > 0) {
+      setTermsList(parsedTerms);
+    }
+
+    setShowEventModal(true);
+  };
+
+  const handleLocationChange = (loc: string) => {
+    setNewLocation(loc);
+    if (!editingEvent) {
+      const generated = loc
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, "")
+        .replace(/\s+/g, "-")
+        .slice(0, 45);
+      setNewSlug(generated);
+    }
+  };
+
+  const handleAddTerm = () => {
+    if (!newTermInput.trim()) return;
+    setTermsList((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        text: newTermInput.trim(),
+        isImportant: newTermIsImportant,
+      },
+    ]);
+    setNewTermInput("");
+    setNewTermIsImportant(false);
+  };
+
+  const handleToggleTermImportant = (id: string) => {
+    setTermsList((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, isImportant: !t.isImportant } : t))
+    );
+  };
+
+  const handleRemoveTerm = (id: string) => {
+    setTermsList((prev) => prev.filter((t) => t.id !== id));
+  };
+
+  const handleSaveEvent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newTitle.trim() || !newSlug.trim() || !newVenue.trim()) {
-      alert("Please provide title, URL slug, and venue.");
+      alert("Please provide exhibition title, URL slug, and venue.");
       return;
     }
 
@@ -292,60 +499,85 @@ export default function AdminDashboardPage() {
     setNotification(null);
 
     try {
+      const startDateTime = newStartDate
+        ? `${newStartDate}T${newStartTime || "09:00"}:00`
+        : undefined;
+      const endDateTime = newEndDate
+        ? `${newEndDate}T${newEndTime || "18:00"}:00`
+        : undefined;
+
+      const importantTermsString = termsList
+        .filter((t) => t.isImportant && t.text.trim())
+        .map((t) => t.text.trim())
+        .join("\n");
+
+      const paymentPlansSummary = JSON.stringify({
+        oneTime: enableOneTime,
+        payAsYouGo: enablePayAsYouGo,
+        depositPercentage: enablePayAsYouGo ? payAsYouGoDeposit : 0,
+        payAsYouGoNote,
+      });
+
+      const vendorCallDesc = `Payment Options: ${enableOneTime ? "Full 100% Payment" : ""}${
+        enableOneTime && enablePayAsYouGo ? " | " : ""
+      }${
+        enablePayAsYouGo
+          ? `Pay As You Go (${payAsYouGoDeposit}% initial deposit. ${payAsYouGoNote})`
+          : ""
+      }`;
+
+      const action = editingEvent ? "update" : "create";
+      const payload: any = {
+        action,
+        id: editingEvent?.id,
+        title: newTitle,
+        tagline: newTagline || null,
+        slug: newSlug,
+        venue: newVenue,
+        location: newLocation || newVenue,
+        startDate: startDateTime,
+        endDate: endDateTime,
+        status: editingEvent ? editingEvent.status : "PUBLISHED",
+        registrationStatus: "REGISTRATION_OPEN",
+        writeUp: newWriteUp,
+        coverImageUrl: newCoverUrl || undefined,
+        flierUrl: newFlierUrl || undefined,
+        cashlessPolicy: newCashlessPolicy,
+        importantTerms: importantTermsString,
+        exhibitionPlanSummary: paymentPlansSummary,
+        vendorCallDescription: vendorCallDesc,
+        whatsappUrl: newWhatsappUrl || undefined,
+        notifyUsers: editingEvent ? false : notifyUsersWithResend,
+      };
+
       const res = await fetch("/api/admin/events", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "create",
-          title: newTitle,
-          slug: newSlug,
-          venue: newVenue,
-          location: newLocation || newVenue,
-          startDate: newStartDate || undefined,
-          endDate: newEndDate || undefined,
-          writeUp: newWriteUp,
-          coverImageUrl: newCoverUrl || undefined,
-          flierUrl: newFlierUrl || undefined,
-          cashlessPolicy: newCashlessPolicy,
-          importantTerms: newImportantTerms,
-          whatsappUrl: newWhatsappUrl || undefined,
-          notifyUsers: notifyUsersWithResend,
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
       if (res.ok && data.success) {
-        let msg = `Exhibition "${data.event.title}" created successfully!`;
+        let msg = editingEvent
+          ? `Exhibition "${newTitle}" updated successfully!`
+          : `Exhibition "${newTitle}" created successfully!`;
         if (data.broadcastResult?.sentCount) {
           msg += ` Automatically dispatched announcement emails via Resend to ${data.broadcastResult.sentCount} users!`;
-        } else if (data.broadcastResult?.simulated) {
-          msg += ` (Resend email simulation ran for ${data.broadcastResult.totalUsers} users).`;
         }
         setNotification({ type: "success", message: msg });
-
-        // Reset Form
         setShowEventModal(false);
-        setNewTitle("");
-        setNewSlug("");
-        setNewVenue("");
-        setNewLocation("");
-        setNewStartDate("");
-        setNewEndDate("");
-        setNewWriteUp("");
-        setNewCoverUrl("");
-        setNewFlierUrl("");
-
+        resetEventForm();
         await fetchDashboardData();
       } else {
         setNotification({
           type: "error",
-          message: data.error || "Failed to create exhibition.",
+          message: data.error || "Failed to save exhibition.",
         });
       }
     } catch (err: any) {
       setNotification({
         type: "error",
-        message: err?.message || "An error occurred creating exhibition.",
+        message: err?.message || "An error occurred saving exhibition.",
       });
     } finally {
       setIsSubmittingEvent(false);
@@ -585,6 +817,60 @@ export default function AdminDashboardPage() {
 
     return matchesName || matchesEmail || !!matchesApps;
   });
+
+  // Event Classifications: Current, Upcoming, Past, Drafts
+  const nowTime = new Date().getTime();
+
+  const isEventActivelyBooking = (ev: AdminEvent) => {
+    const isPub = ev.status === "PUBLISHED";
+    const regOpen =
+      !ev.registrationStatus || ev.registrationStatus === "REGISTRATION_OPEN";
+    const notTooPast = new Date(ev.startDate).getTime() >= nowTime - 48 * 3600 * 1000;
+    return isPub && regOpen && notTooPast;
+  };
+
+  const currentEvents = events.filter(isEventActivelyBooking);
+  const upcomingEvents = events.filter(
+    (ev) => new Date(ev.startDate).getTime() > nowTime && ev.status !== "ARCHIVED"
+  );
+  const pastEvents = events.filter(
+    (ev) => new Date(ev.startDate).getTime() <= nowTime || ev.status === "ARCHIVED"
+  );
+  const draftEvents = events.filter((ev) => ev.status === "DRAFT");
+
+  const displayedEvents = events.filter((ev) => {
+    // 1. Category Filter
+    if (eventCategoryFilter === "CURRENT" && !isEventActivelyBooking(ev)) return false;
+    if (
+      eventCategoryFilter === "UPCOMING" &&
+      (new Date(ev.startDate).getTime() <= nowTime || ev.status === "ARCHIVED")
+    )
+      return false;
+    if (
+      eventCategoryFilter === "PAST" &&
+      new Date(ev.startDate).getTime() > nowTime &&
+      ev.status !== "ARCHIVED"
+    )
+      return false;
+    if (eventCategoryFilter === "DRAFT" && ev.status !== "DRAFT") return false;
+
+    // 2. Search Query
+    if (eventSearchQuery.trim()) {
+      const q = eventSearchQuery.toLowerCase().trim();
+      const matchTitle = ev.title.toLowerCase().includes(q);
+      const matchSlug = ev.slug.toLowerCase().includes(q);
+      const matchVenue = ev.venue.toLowerCase().includes(q);
+      const matchLocation = (ev.location || "").toLowerCase().includes(q);
+      const matchTag = (ev.tagline || "").toLowerCase().includes(q);
+      return matchTitle || matchSlug || matchVenue || matchLocation || matchTag;
+    }
+
+    return true;
+  });
+
+  const importantTermsArray = termsList.filter(
+    (t) => t.isImportant && t.text.trim()
+  );
 
   return (
     <div className="admin-shell">
@@ -1170,174 +1456,735 @@ export default function AdminDashboardPage() {
         {/* ═════════════════════════════════════════════════════════════ */}
         {/* 2. EVENTS TAB                                               */}
         {/* ═════════════════════════════════════════════════════════════ */}
+        {/* ═════════════════════════════════════════════════════════════ */}
+        {/* 2. EVENTS TAB                                               */}
+        {/* ═════════════════════════════════════════════════════════════ */}
         {activeTab === "events" && (
           <>
-            {/* Create Event Modal / Card */}
+            {/* Header & Controls Card */}
+            <div className="admin-card" style={{ marginBottom: 20 }}>
+              <div
+                className="admin-card__head"
+                style={{ flexWrap: "wrap", gap: 16, alignItems: "center" }}
+              >
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <Calendar size={22} color="#0015f8" />
+                    <h3 style={{ margin: 0 }}>Exhibitions Console ({events.length})</h3>
+                  </div>
+                  <p style={{ margin: "4px 0 0" }}>
+                    Manage current actively booking events, upcoming schedules, and past trade fairs.
+                    Configure location-based slugs, payment plans, and important disclaimer terms.
+                  </p>
+                </div>
+
+                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                  <div style={{ position: "relative" }}>
+                    <Search
+                      size={14}
+                      style={{ position: "absolute", left: 10, top: 11, color: "#94a3b8" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Search title, campus, slug, tag..."
+                      value={eventSearchQuery}
+                      onChange={(e) => setEventSearchQuery(e.target.value)}
+                      style={{
+                        padding: "8px 12px 8px 32px",
+                        borderRadius: 10,
+                        border: "1.5px solid #cbd5e1",
+                        fontSize: 13,
+                        minWidth: 240,
+                      }}
+                    />
+                    {eventSearchQuery && (
+                      <button
+                        type="button"
+                        onClick={() => setEventSearchQuery("")}
+                        style={{
+                          position: "absolute",
+                          right: 8,
+                          top: 8,
+                          background: "none",
+                          border: "none",
+                          cursor: "pointer",
+                          color: "#94a3b8",
+                          padding: 2,
+                        }}
+                      >
+                        <X size={14} />
+                      </button>
+                    )}
+                  </div>
+
+                  {!showEventModal && (
+                    <button
+                      type="button"
+                      onClick={openCreateModal}
+                      className="btn-primary"
+                    >
+                      <Plus size={16} />
+                      <span>Upload Exhibition</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Event Category Filter Tabs */}
+              <div className="event-category-filters" style={{ marginTop: 14 }}>
+                <button
+                  type="button"
+                  className={`event-filter-btn ${
+                    eventCategoryFilter === "ALL" ? "is-active" : ""
+                  }`}
+                  onClick={() => setEventCategoryFilter("ALL")}
+                >
+                  <span>All ({events.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`event-filter-btn ${
+                    eventCategoryFilter === "CURRENT" ? "is-active" : ""
+                  }`}
+                  onClick={() => setEventCategoryFilter("CURRENT")}
+                >
+                  <span className="event-pulse-dot" />
+                  <span>Actively Booking ({currentEvents.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`event-filter-btn ${
+                    eventCategoryFilter === "UPCOMING" ? "is-active" : ""
+                  }`}
+                  onClick={() => setEventCategoryFilter("UPCOMING")}
+                >
+                  <Calendar size={13} />
+                  <span>Upcoming ({upcomingEvents.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`event-filter-btn ${
+                    eventCategoryFilter === "PAST" ? "is-active" : ""
+                  }`}
+                  onClick={() => setEventCategoryFilter("PAST")}
+                >
+                  <Clock size={13} />
+                  <span>Past Concluded ({pastEvents.length})</span>
+                </button>
+
+                <button
+                  type="button"
+                  className={`event-filter-btn ${
+                    eventCategoryFilter === "DRAFT" ? "is-active" : ""
+                  }`}
+                  onClick={() => setEventCategoryFilter("DRAFT")}
+                >
+                  <Edit3 size={13} />
+                  <span>Drafts ({draftEvents.length})</span>
+                </button>
+              </div>
+            </div>
+
+            {/* ── UPLOAD / EDIT EXHIBITION FORM MODAL / CARD ──────────── */}
             {showEventModal && (
-              <div className="admin-card" style={{ border: "2px solid #0015f8", background: "#f8fbff" }}>
+              <div
+                className="admin-card"
+                style={{
+                  border: "2px solid #0015f8",
+                  background: "#f8fbff",
+                  marginBottom: 24,
+                  animation: "slideUp 0.25s ease",
+                }}
+              >
                 <div className="admin-card__head">
                   <div>
-                    <h3>Create New Exhibition &amp; Broadcast Announcement</h3>
-                    <p>Enter the exhibition specifications. Resend will automatically notify all registered users upon submission.</p>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span className="status-badge is-published">
+                        {editingEvent ? "EDIT MODE" : "NEW EXHIBITION"}
+                      </span>
+                      <h3 style={{ margin: 0 }}>
+                        {editingEvent
+                          ? `Edit Specifications: ${editingEvent.title}`
+                          : "Upload New Exhibition & Announce to Users"}
+                      </h3>
+                    </div>
+                    <p style={{ margin: "4px 0 0" }}>
+                      Configure date, time, event tag, location (auto-generates URL slug), venue, payment
+                      plans, and important terms for the micro-page disclaimer.
+                    </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setShowEventModal(false)}
+                    onClick={() => {
+                      setShowEventModal(false);
+                      setEditingEvent(null);
+                    }}
                     className="btn-secondary"
                   >
                     <X size={14} /> Close
                   </button>
                 </div>
 
-                <form onSubmit={handleCreateEvent}>
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
-                    <div>
-                      <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                        Exhibition Title *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Silo Trade Fair Owerri 2026"
-                        value={newTitle}
-                        onChange={(e) => {
-                          setNewTitle(e.target.value);
-                          if (!newSlug) {
-                            setNewSlug(e.target.value.toLowerCase().trim().replace(/[^a-z0-9]/g, "-"));
-                          }
-                        }}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
-                      />
+                <form onSubmit={handleSaveEvent}>
+                  {/* 1. Event Identity & Location */}
+                  <div className="event-form-section">
+                    <h4 className="event-form-section__title">
+                      <Tag size={15} color="#0015f8" />
+                      <span>1. Event Identity, Tag &amp; Location Slug</span>
+                    </h4>
+                    <p className="event-form-section__desc">
+                      Enter the exhibition title, tag theme, and campus location. The slug will automatically derive from the location.
+                    </p>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16, marginBottom: 14 }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
+                          Exhibition Title *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Silo Campus Mega Trade Fair FUTO 2026"
+                          value={newTitle}
+                          onChange={(e) => setNewTitle(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "10px 12px",
+                            borderRadius: 8,
+                            border: "1.5px solid #cbd5e1",
+                            fontSize: 13,
+                          }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
+                          Event Tag / Category *
+                        </label>
+                        <input
+                          type="text"
+                          list="event-tags-presets"
+                          required
+                          placeholder="e.g. Campus Mega Fair, Tech & Gadgets..."
+                          value={newTagline}
+                          onChange={(e) => setNewTagline(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "10px 12px",
+                            borderRadius: 8,
+                            border: "1.5px solid #cbd5e1",
+                            fontSize: 13,
+                          }}
+                        />
+                        <datalist id="event-tags-presets">
+                          <option value="Campus Mega Fair" />
+                          <option value="Tech, Gadgets & Lifestyle" />
+                          <option value="Back to School Trade Fair" />
+                          <option value="Fashion, Beauty & Apparel" />
+                          <option value="Food, Drinks & Confectionery" />
+                          <option value="Youth Entrepreneurship Expo" />
+                        </datalist>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
+                          Location (Campus / City) *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. FUTO Campus, Owerri"
+                          value={newLocation}
+                          onChange={(e) => handleLocationChange(e.target.value)}
+                          style={{
+                            width: "100%",
+                            padding: "10px 12px",
+                            borderRadius: 8,
+                            border: "1.5px solid #cbd5e1",
+                            fontSize: 13,
+                          }}
+                        />
+                        <small style={{ color: "#64748b", fontSize: 11, display: "block", marginTop: 4 }}>
+                          Typing here auto-generates the web URL slug below.
+                        </small>
+                      </div>
+
+                      <div>
+                        <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
+                          Web URL Slug *
+                        </label>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+                          <span
+                            style={{
+                              background: "#e2e8f0",
+                              padding: "10px 10px",
+                              border: "1.5px solid #cbd5e1",
+                              borderRight: "none",
+                              borderRadius: "8px 0 0 8px",
+                              fontSize: 12,
+                              color: "#475569",
+                              fontFamily: "monospace",
+                            }}
+                          >
+                            silo.events/
+                          </span>
+                          <input
+                            type="text"
+                            required
+                            placeholder="futo-campus-owerri"
+                            value={newSlug}
+                            onChange={(e) =>
+                              setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
+                            }
+                            style={{
+                              flex: 1,
+                              padding: "10px 12px",
+                              borderRadius: "0 8px 8px 0",
+                              border: "1.5px solid #cbd5e1",
+                              fontSize: 13,
+                              fontFamily: "monospace",
+                              fontWeight: 700,
+                              color: "#0015f8",
+                            }}
+                          />
+                        </div>
+                      </div>
                     </div>
 
                     <div>
                       <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                        URL Slug * (e.g. /owerri or /futo)
+                        Specific Venue &amp; Hall *
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="e.g. owerri"
-                        value={newSlug}
-                        onChange={(e) => setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
-                    <div>
-                      <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                        Venue &amp; Hall *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. Landmark Hall, Main Campus"
+                        placeholder="e.g. Hall of Excellence & Freedom Square, FUTO Campus"
                         value={newVenue}
                         onChange={(e) => setNewVenue(e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
+                        style={{
+                          width: "100%",
+                          padding: "10px 12px",
+                          borderRadius: 8,
+                          border: "1.5px solid #cbd5e1",
+                          fontSize: 13,
+                        }}
                       />
                     </div>
+                  </div>
 
-                    <div>
-                      <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                        City / Location
-                      </label>
+                  {/* 2. Date & Time Schedule */}
+                  <div className="event-form-section">
+                    <h4 className="event-form-section__title">
+                      <Clock size={15} color="#0015f8" />
+                      <span>2. Date &amp; Time Schedule</span>
+                    </h4>
+                    <p className="event-form-section__desc">
+                      Set both date and time for opening and closing sessions.
+                    </p>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+                          Start Date *
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          value={newStartDate}
+                          onChange={(e) => setNewStartDate(e.target.value)}
+                          style={{ width: "100%", padding: "9px 10px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+                          Opening Time *
+                        </label>
+                        <input
+                          type="time"
+                          required
+                          value={newStartTime}
+                          onChange={(e) => setNewStartTime(e.target.value)}
+                          style={{ width: "100%", padding: "9px 10px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+                          End Date
+                        </label>
+                        <input
+                          type="date"
+                          value={newEndDate}
+                          onChange={(e) => setNewEndDate(e.target.value)}
+                          style={{ width: "100%", padding: "9px 10px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
+                          Closing Time
+                        </label>
+                        <input
+                          type="time"
+                          value={newEndTime}
+                          onChange={(e) => setNewEndTime(e.target.value)}
+                          style={{ width: "100%", padding: "9px 10px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Payment Plans Configuration */}
+                  <div className="event-form-section">
+                    <h4 className="event-form-section__title">
+                      <CreditCard size={15} color="#0015f8" />
+                      <span>3. Payment Plans (One-Time vs Pay As You Go)</span>
+                    </h4>
+                    <p className="event-form-section__desc">
+                      Configure the payment modalities available to vendors during stall registration.
+                    </p>
+
+                    <div className="plans-config-box">
+                      {/* One-Time Payment Plan Card */}
+                      <div className={`plan-option-card ${enableOneTime ? "is-selected" : ""}`}>
+                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                          <input
+                            type="checkbox"
+                            checked={enableOneTime}
+                            onChange={(e) => setEnableOneTime(e.target.checked)}
+                            style={{ width: 18, height: 18, accentColor: "#0015f8" }}
+                          />
+                          <div>
+                            <strong style={{ fontSize: 13.5, color: "#0a0f2e" }}>
+                              One-Time Full Payment (100%)
+                            </strong>
+                            <small style={{ display: "block", color: "#64748b", marginTop: 2 }}>
+                              Standard option: Vendors pay 100% upfront upon reservation.
+                            </small>
+                          </div>
+                        </label>
+                      </div>
+
+                      {/* Pay As You Go Plan Card */}
+                      <div className={`plan-option-card ${enablePayAsYouGo ? "is-selected" : ""}`}>
+                        <label style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+                          <input
+                            type="checkbox"
+                            checked={enablePayAsYouGo}
+                            onChange={(e) => setEnablePayAsYouGo(e.target.checked)}
+                            style={{ width: 18, height: 18, accentColor: "#0015f8" }}
+                          />
+                          <div>
+                            <strong style={{ fontSize: 13.5, color: "#0a0f2e" }}>
+                              Pay As You Go (Installments / Deposit)
+                            </strong>
+                            <small style={{ display: "block", color: "#64748b", marginTop: 2 }}>
+                              Split payment: Vendors pay an initial deposit now, balance due later.
+                            </small>
+                          </div>
+                        </label>
+
+                        {enablePayAsYouGo && (
+                          <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px dashed #cbd5e1" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                              <label style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>
+                                Initial Deposit %:
+                              </label>
+                              <input
+                                type="number"
+                                min={10}
+                                max={90}
+                                value={payAsYouGoDeposit}
+                                onChange={(e) => setPayAsYouGoDeposit(Number(e.target.value))}
+                                style={{ width: 70, padding: "5px 8px", borderRadius: 6, border: "1.5px solid #cbd5e1", fontSize: 12.5 }}
+                              />
+                              <span style={{ fontSize: 12, color: "#64748b" }}>% due upon stall booking</span>
+                            </div>
+
+                            <input
+                              type="text"
+                              value={payAsYouGoNote}
+                              onChange={(e) => setPayAsYouGoNote(e.target.value)}
+                              placeholder="e.g. Balance due 48 hours before exhibition setup"
+                              style={{ width: "100%", padding: "7px 10px", borderRadius: 6, border: "1px solid #cbd5e1", fontSize: 12 }}
+                            />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 4. Terms & Conditions & Important Disclaimer Notice */}
+                  <div className="event-form-section">
+                    <h4 className="event-form-section__title">
+                      <AlertTriangle size={15} color="#f59e0b" />
+                      <span>4. Terms &amp; Conditions &amp; Important Disclaimer Notice</span>
+                    </h4>
+                    <p className="event-form-section__desc">
+                      Add event rules. Check <strong>&quot;Mark as Important&quot;</strong> on any term to render it prominently on the micro-page disclaimer box.
+                    </p>
+
+                    {/* Interactive Terms List */}
+                    <div className="terms-builder-list">
+                      {termsList.map((term, index) => (
+                        <div
+                          key={term.id}
+                          className={`terms-builder-item ${term.isImportant ? "is-important" : ""}`}
+                        >
+                          <span style={{ fontSize: 12, fontWeight: 700, color: "#64748b", width: 22 }}>
+                            {index + 1}.
+                          </span>
+
+                          <input
+                            type="text"
+                            value={term.text}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setTermsList((prev) =>
+                                prev.map((t) => (t.id === term.id ? { ...t, text: val } : t))
+                              );
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: "7px 10px",
+                              borderRadius: 6,
+                              border: "1px solid #cbd5e1",
+                              fontSize: 13,
+                              background: "#ffffff",
+                            }}
+                          />
+
+                          <label
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              fontSize: 12,
+                              fontWeight: 700,
+                              cursor: "pointer",
+                              padding: "4px 10px",
+                              borderRadius: 6,
+                              background: term.isImportant ? "#fef3c7" : "#f1f5f9",
+                              color: term.isImportant ? "#b45309" : "#475569",
+                              border: `1px solid ${term.isImportant ? "#fde68a" : "#cbd5e1"}`,
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={term.isImportant}
+                              onChange={() => handleToggleTermImportant(term.id)}
+                              style={{ accentColor: "#f59e0b" }}
+                            />
+                            <span>{term.isImportant ? "★ Important (Disclaimer)" : "Standard"}</span>
+                          </label>
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTerm(term.id)}
+                            style={{
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              color: "#ef4444",
+                              padding: 4,
+                            }}
+                            title="Remove term"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add New Term Input */}
+                    <div style={{ display: "flex", gap: 10, marginTop: 12, flexWrap: "wrap" }}>
                       <input
                         type="text"
-                        placeholder="e.g. Owerri, Imo State"
-                        value={newLocation}
-                        onChange={(e) => setNewLocation(e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
+                        placeholder="Add a new term or policy..."
+                        value={newTermInput}
+                        onChange={(e) => setNewTermInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleAddTerm();
+                          }
+                        }}
+                        style={{
+                          flex: 1,
+                          minWidth: 260,
+                          padding: "8px 12px",
+                          borderRadius: 8,
+                          border: "1.5px solid #cbd5e1",
+                          fontSize: 13,
+                        }}
                       />
-                    </div>
-                  </div>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
-                    <div>
-                      <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                        Start Date
+                      <label
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: 6,
+                          fontSize: 12,
+                          fontWeight: 600,
+                          padding: "8px 12px",
+                          borderRadius: 8,
+                          background: "#fffbeb",
+                          border: "1px solid #fde68a",
+                          color: "#92400e",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={newTermIsImportant}
+                          onChange={(e) => setNewTermIsImportant(e.target.checked)}
+                          style={{ accentColor: "#f59e0b" }}
+                        />
+                        <span>Mark as Important</span>
                       </label>
-                      <input
-                        type="datetime-local"
-                        value={newStartDate}
-                        onChange={(e) => setNewStartDate(e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
-                      />
+
+                      <button
+                        type="button"
+                        onClick={handleAddTerm}
+                        className="btn-secondary"
+                        style={{ padding: "8px 14px", fontSize: 12.5 }}
+                      >
+                        <Plus size={14} />
+                        <span>Add Term</span>
+                      </button>
                     </div>
 
-                    <div>
-                      <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                        End Date
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={newEndDate}
-                        onChange={(e) => setNewEndDate(e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
-                      />
+                    {/* Live Micro-Page Disclaimer Notice Box Preview */}
+                    <div className="micropage-disclaimer-preview">
+                      <div className="micropage-disclaimer-preview__badge">
+                        <Wallet size={14} color="#93c5fd" />
+                        <span>LIVE PREVIEW: MICROPAGE DISCLAIMER NOTICE BOX</span>
+                      </div>
+                      {newCashlessPolicy && <p>{newCashlessPolicy}</p>}
+                      {importantTermsArray.length > 0 ? (
+                        <div
+                          style={{
+                            marginTop: 10,
+                            paddingTop: 8,
+                            borderTop: "1px dashed rgba(255, 255, 255, 0.2)",
+                          }}
+                        >
+                          <strong style={{ color: "#fcd34d", fontSize: 12 }}>
+                            Important Terms:
+                          </strong>
+                          <ul
+                            style={{
+                              margin: "6px 0 0",
+                              paddingLeft: 18,
+                              fontSize: 12.5,
+                              color: "#fef3c7",
+                            }}
+                          >
+                            {importantTermsArray.map((t) => (
+                              <li key={t.id}>{t.text}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ) : (
+                        <p style={{ color: "#94a3b8", fontSize: 12, fontStyle: "italic", marginTop: 6 }}>
+                          (No terms marked as important yet. Check &quot;Important&quot; on any term above to show it on the micro-page disclaimer box.)
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  <div style={{ marginBottom: 14 }}>
-                    <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                      Exhibition Write-Up / Description
-                    </label>
-                    <textarea
-                      rows={3}
-                      placeholder="About this exhibition..."
-                      value={newWriteUp}
-                      onChange={(e) => setNewWriteUp(e.target.value)}
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
-                    />
-                  </div>
+                  {/* 5. Media Assets & Description */}
+                  <div className="event-form-section">
+                    <h4 className="event-form-section__title">
+                      <ImageIcon size={15} color="#0015f8" />
+                      <span>5. Media Assets &amp; Description</span>
+                    </h4>
 
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
-                    <div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
+                      <div>
+                        <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
+                          Cover Banner Image URL
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://images.unsplash.com/..."
+                          value={newCoverUrl}
+                          onChange={(e) => setNewCoverUrl(e.target.value)}
+                          style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
+                          Flier Poster Image URL
+                        </label>
+                        <input
+                          type="url"
+                          placeholder="https://images.unsplash.com/..."
+                          value={newFlierUrl}
+                          onChange={(e) => setNewFlierUrl(e.target.value)}
+                          style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: 14 }}>
                       <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                        Important Terms &amp; Rules (Admin Notice)
+                        Exhibition Overview / Description
                       </label>
                       <textarea
-                        rows={2}
-                        value={newImportantTerms}
-                        onChange={(e) => setNewImportantTerms(e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
+                        rows={3}
+                        placeholder="Tell vendors and attendees what makes this exhibition special..."
+                        value={newWriteUp}
+                        onChange={(e) => setNewWriteUp(e.target.value)}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
                       />
                     </div>
 
                     <div>
                       <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                        Cashless &amp; Stall QR Policy
+                        Cashless &amp; Stall QR Paypoint Policy
                       </label>
                       <textarea
                         rows={2}
                         value={newCashlessPolicy}
                         onChange={(e) => setNewCashlessPolicy(e.target.value)}
-                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1" }}
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: 8, border: "1.5px solid #cbd5e1", fontSize: 13 }}
                       />
                     </div>
                   </div>
 
-                  {/* ── RESEND AUTO-EMAIL BROADCAST TOGGLE ── */}
-                  <div className="resend-broadcast-banner">
-                    <Mail size={22} className="resend-broadcast-banner__icon" />
-                    <div className="resend-broadcast-banner__body">
-                      <h4>Automatic Resend Email Announcement</h4>
-                      <p>
-                        When enabled, Silo will immediately dispatch a branded announcement email to all <strong>{stats.totalUsers} registered users</strong> containing direct links to book a stall and view event schedules.
-                      </p>
-                      <label className="resend-broadcast-banner__toggle">
-                        <input
-                          type="checkbox"
-                          checked={notifyUsersWithResend}
-                          onChange={(e) => setNotifyUsersWithResend(e.target.checked)}
-                        />
-                        <span>Send email announcement via Resend automatically upon creation</span>
-                      </label>
+                  {/* 6. Resend Email Broadcast Option */}
+                  {!editingEvent && (
+                    <div className="resend-broadcast-banner">
+                      <Mail size={22} className="resend-broadcast-banner__icon" />
+                      <div className="resend-broadcast-banner__body">
+                        <h4>Automatic Resend Email Announcement</h4>
+                        <p>
+                          When enabled, Silo will immediately dispatch a branded announcement email to all{" "}
+                          <strong>{stats.totalUsers} registered users</strong> containing direct links to book a stall
+                          and view event schedules.
+                        </p>
+                        <label className="resend-broadcast-banner__toggle">
+                          <input
+                            type="checkbox"
+                            checked={notifyUsersWithResend}
+                            onChange={(e) => setNotifyUsersWithResend(e.target.checked)}
+                          />
+                          <span>Send email announcement via Resend automatically upon publishing</span>
+                        </label>
+                      </div>
                     </div>
-                  </div>
+                  )}
 
+                  {/* Actions */}
                   <div style={{ display: "flex", gap: 12, marginTop: 18 }}>
                     <button
                       type="submit"
@@ -1345,11 +2192,20 @@ export default function AdminDashboardPage() {
                       className="btn-primary"
                     >
                       <Plus size={16} />
-                      <span>{isSubmittingEvent ? "Creating & Broadcasting..." : "Publish Exhibition"}</span>
+                      <span>
+                        {isSubmittingEvent
+                          ? "Processing..."
+                          : editingEvent
+                          ? "Save Exhibition Changes"
+                          : "Publish Exhibition & Broadcast"}
+                      </span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => setShowEventModal(false)}
+                      onClick={() => {
+                        setShowEventModal(false);
+                        setEditingEvent(null);
+                      }}
                       className="btn-secondary"
                     >
                       Cancel
@@ -1359,37 +2215,61 @@ export default function AdminDashboardPage() {
               </div>
             )}
 
-            {/* Exhibitions List Card */}
+            {/* ── EXHIBITIONS LISTING & MANAGEMENT ────────────────────── */}
             <div className="admin-card">
               <div className="admin-card__head">
                 <div>
-                  <h3>All Exhibitions ({events.length})</h3>
-                  <p>Manage and monitor existing trade fair micro-pages</p>
+                  <h3>
+                    {eventCategoryFilter === "ALL" && "All Exhibitions"}
+                    {eventCategoryFilter === "CURRENT" && "Currently Actively Booking Stalls"}
+                    {eventCategoryFilter === "UPCOMING" && "Upcoming Exhibitions"}
+                    {eventCategoryFilter === "PAST" && "Past Concluded Exhibitions"}
+                    {eventCategoryFilter === "DRAFT" && "Draft Exhibitions"} ({displayedEvents.length})
+                  </h3>
+                  <p>
+                    {eventCategoryFilter === "CURRENT" &&
+                      "These exhibitions are live and vendors are currently booking stalls."}
+                    {eventCategoryFilter === "UPCOMING" &&
+                      "Scheduled future trade fairs and exhibitions."}
+                    {eventCategoryFilter === "PAST" &&
+                      "Completed trade fairs archived in the database."}
+                    {eventCategoryFilter === "DRAFT" && "Unpublished exhibition drafts."}
+                    {eventCategoryFilter === "ALL" && "Comprehensive list of all platform exhibitions."}
+                  </p>
                 </div>
+
                 {!showEventModal && (
                   <button
                     type="button"
-                    onClick={() => setShowEventModal(true)}
+                    onClick={openCreateModal}
                     className="btn-primary"
                   >
                     <Plus size={16} />
-                    <span>Create Exhibition</span>
+                    <span>Upload Exhibition</span>
                   </button>
                 )}
               </div>
 
-              {events.length === 0 ? (
-                <div style={{ textAlign: "center", padding: "40px 20px" }}>
-                  <p style={{ color: "#64748b", marginBottom: 14 }}>
-                    No exhibitions currently in database. Click &quot;Create Exhibition&quot; to set up your first event!
+              {displayedEvents.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "48px 20px" }}>
+                  <Calendar size={40} color="#94a3b8" />
+                  <h4 style={{ margin: "14px 0 6px", color: "#0a0f2e", fontSize: 16 }}>
+                    No exhibitions found
+                  </h4>
+                  <p style={{ color: "#64748b", margin: "0 0 16px", fontSize: 13.5 }}>
+                    {eventSearchQuery
+                      ? "No events match your search query."
+                      : "No exhibitions found in this category filter."}
                   </p>
                   <button
                     type="button"
-                    onClick={() => setShowEventModal(true)}
-                    className="btn-primary"
+                    onClick={() => {
+                      setEventCategoryFilter("ALL");
+                      setEventSearchQuery("");
+                    }}
+                    className="btn-secondary"
                   >
-                    <Plus size={16} />
-                    <span>Create Exhibition</span>
+                    Reset Filters
                   </button>
                 </div>
               ) : (
@@ -1397,148 +2277,199 @@ export default function AdminDashboardPage() {
                   <table className="admin-table">
                     <thead>
                       <tr>
-                        <th>Exhibition</th>
-                        <th>Location &amp; Dates</th>
-                        <th>Stall Bookings</th>
+                        <th>Exhibition &amp; Tag</th>
+                        <th>Location &amp; Venue</th>
+                        <th>Dates &amp; Time</th>
+                        <th>Payment Plans</th>
+                        <th>Stalls &amp; Volunteers</th>
                         <th>Status</th>
-                        <th>Actions</th>
+                        <th style={{ textAlign: "right" }}>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {events.map((ev) => (
-                        <tr key={ev.id}>
-                          <td>
-                            <strong>{ev.title}</strong>
-                            <br />
-                            <small style={{ color: "#0015f8", fontWeight: 600 }}>/{ev.slug}</small>
-                          </td>
-                          <td>
-                            <span>{ev.venue}</span>
-                            <br />
-                            <small style={{ color: "#64748b" }}>
-                              {new Date(ev.startDate).toLocaleDateString("en-GB")}
-                            </small>
-                          </td>
-                          <td>
-                            <strong>{ev._count?.vendorApplications || 0}</strong> stalls
-                          </td>
-                          <td>
-                            <span
-                              className={`status-badge ${
-                                ev.status === "PUBLISHED" ? "is-published" : "is-draft"
-                              }`}
-                            >
-                              {ev.status}
-                            </span>
-                          </td>
-                          <td>
-                            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                              <button
-                                type="button"
-                                onClick={() => handleToggleStatus(ev)}
-                                className="btn-secondary"
-                                style={{ padding: "5px 9px", fontSize: 11 }}
+                      {displayedEvents.map((ev) => {
+                        const activelyBooking = isEventActivelyBooking(ev);
+                        const isUp =
+                          new Date(ev.startDate).getTime() > nowTime && ev.status !== "ARCHIVED";
+                        const isP =
+                          new Date(ev.startDate).getTime() <= nowTime || ev.status === "ARCHIVED";
+
+                        return (
+                          <tr key={ev.id}>
+                            <td>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 3 }}>
+                                <strong>{ev.title}</strong>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                                  <Link
+                                    href={`/${ev.slug}`}
+                                    target="_blank"
+                                    style={{
+                                      color: "#0015f8",
+                                      fontWeight: 700,
+                                      fontSize: 12,
+                                      fontFamily: "monospace",
+                                      textDecoration: "none",
+                                      display: "inline-flex",
+                                      alignItems: "center",
+                                      gap: 3,
+                                    }}
+                                  >
+                                    <span>/{ev.slug}</span>
+                                    <ExternalLink size={10} />
+                                  </Link>
+                                  {ev.tagline && (
+                                    <span
+                                      className="status-badge is-user"
+                                      style={{ fontSize: 10.5, padding: "2px 7px" }}
+                                    >
+                                      {ev.tagline}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </td>
+
+                            <td>
+                              <span>{ev.venue}</span>
+                              <br />
+                              <small style={{ color: "#64748b" }}>
+                                <MapPin size={11} style={{ display: "inline", verticalAlign: "middle" }} />{" "}
+                                {ev.location || "Campus Ground"}
+                              </small>
+                            </td>
+
+                            <td>
+                              <div style={{ fontSize: 12.5 }}>
+                                {new Date(ev.startDate).toLocaleDateString("en-GB", {
+                                  weekday: "short",
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
+                              </div>
+                              <small style={{ color: "#64748b", fontSize: 11.5 }}>
+                                {new Date(ev.startDate).toLocaleTimeString([], {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                                {ev.endDate && (
+                                  <>
+                                    {" - "}
+                                    {new Date(ev.endDate).toLocaleTimeString([], {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </>
+                                )}
+                              </small>
+                            </td>
+
+                            <td>
+                              <div style={{ display: "flex", flexDirection: "column", gap: 3, fontSize: 12 }}>
+                                <span style={{ color: "#0a0f2e", fontWeight: 600 }}>One-Time Full</span>
+                                <span style={{ color: "#0015f8", fontSize: 11 }}>Pay As You Go</span>
+                              </div>
+                            </td>
+
+                            <td>
+                              <div>
+                                <strong>{ev._count?.vendorApplications || 0}</strong>{" "}
+                                <span style={{ color: "#64748b", fontSize: 12 }}>stalls</span>
+                              </div>
+                              <small style={{ color: "#64748b" }}>
+                                {ev._count?.volunteerApplications || 0} crew
+                              </small>
+                              {ev.importantTerms && (
+                                <div
+                                  style={{
+                                    fontSize: 10.5,
+                                    color: "#d97706",
+                                    fontWeight: 700,
+                                    marginTop: 2,
+                                    display: "flex",
+                                    alignItems: "center",
+                                    gap: 3,
+                                  }}
+                                  title={ev.importantTerms}
+                                >
+                                  <span>⚠️ Important Terms Set</span>
+                                </div>
+                              )}
+                            </td>
+
+                            <td>
+                              {activelyBooking ? (
+                                <span className="status-badge is-active-booking">
+                                  <span className="event-pulse-dot" />
+                                  <span>Actively Booking</span>
+                                </span>
+                              ) : isUp ? (
+                                <span className="status-badge is-upcoming">Upcoming</span>
+                              ) : isP ? (
+                                <span className="status-badge is-past">Past</span>
+                              ) : (
+                                <span className="status-badge is-draft">{ev.status}</span>
+                              )}
+                            </td>
+
+                            <td style={{ textAlign: "right" }}>
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: 6,
+                                  alignItems: "center",
+                                  justifyContent: "flex-end",
+                                }}
                               >
-                                {ev.status === "PUBLISHED" ? "Unpublish" : "Publish"}
-                              </button>
-                              <Link
-                                href={`/${ev.slug}`}
-                                target="_blank"
-                                className="btn-secondary"
-                                style={{ padding: "5px 9px", fontSize: 11 }}
-                              >
-                                <ExternalLink size={12} />
-                              </Link>
-                              <button
-                                type="button"
-                                onClick={() => handleDeleteEvent(ev)}
-                                className="btn-danger"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                                <button
+                                  type="button"
+                                  onClick={() => openEditModal(ev)}
+                                  className="btn-secondary"
+                                  style={{ padding: "5px 9px", fontSize: 11 }}
+                                  title="Edit event specifications, payment plans, and terms"
+                                >
+                                  <Edit3 size={12} />
+                                  <span>Edit</span>
+                                </button>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleStatus(ev)}
+                                  className="btn-secondary"
+                                  style={{ padding: "5px 9px", fontSize: 11 }}
+                                  title={ev.status === "PUBLISHED" ? "Unpublish event" : "Publish event"}
+                                >
+                                  {ev.status === "PUBLISHED" ? "Unpublish" : "Publish"}
+                                </button>
+
+                                <Link
+                                  href={`/${ev.slug}`}
+                                  target="_blank"
+                                  className="btn-secondary"
+                                  style={{ padding: "5px 9px", fontSize: 11 }}
+                                  title="Preview live public micro-page"
+                                >
+                                  <ExternalLink size={12} />
+                                </Link>
+
+                                <button
+                                  type="button"
+                                  onClick={() => handleDeleteEvent(ev)}
+                                  className="btn-danger"
+                                  title="Delete event"
+                                >
+                                  <Trash2 size={12} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
               )}
             </div>
-
-            {/* Dynamic Terms & Policy Editor Card */}
-            {events.length > 0 && (
-              <div className="admin-card">
-                <div className="admin-card__head">
-                  <div>
-                    <h3>Dynamic Exhibition Terms &amp; QR Policy Manager</h3>
-                    <p>Update the official terms and cashless policy rendered on the registration and micro pages.</p>
-                  </div>
-                </div>
-
-                <form onSubmit={handleSaveTerms}>
-                  <div style={{ marginBottom: 16 }}>
-                    <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 6 }}>
-                      Select Exhibition to Configure
-                    </label>
-                    <select
-                      value={editingTermsEventId}
-                      onChange={(e) => {
-                        const id = e.target.value;
-                        setEditingTermsEventId(id);
-                        const match = events.find((ev) => ev.id === id);
-                        if (match) {
-                          setEditCashless(match.cashlessPolicy || "");
-                          setEditTerms(match.importantTerms || "");
-                        }
-                      }}
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #cbd5e1" }}
-                    >
-                      {events.map((ev) => (
-                        <option key={ev.id} value={ev.id}>
-                          {ev.title} (/{ev.slug}) — {ev.venue}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div style={{ marginBottom: 16 }}>
-                    <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                      Important Terms &amp; Conditions (Admin Notice)
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={editTerms}
-                      onChange={(e) => setEditTerms(e.target.value)}
-                      placeholder="e.g. Set up hours, security rules..."
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #cbd5e1" }}
-                    />
-                  </div>
-
-                  <div style={{ marginBottom: 20 }}>
-                    <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                      Cashless &amp; Stall QR Code Policy
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={editCashless}
-                      onChange={(e) => setEditCashless(e.target.value)}
-                      placeholder="e.g. Stalls equipped with Silo instant QR cashless paypoints..."
-                      style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1.5px solid #cbd5e1" }}
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSavingTerms}
-                    className="btn-primary"
-                  >
-                    <Edit3 size={15} />
-                    <span>{isSavingTerms ? "Saving Terms..." : "Save Terms & Policy"}</span>
-                  </button>
-                </form>
-              </div>
-            )}
           </>
         )}
 
