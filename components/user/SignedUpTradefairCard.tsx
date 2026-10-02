@@ -95,7 +95,7 @@ export function SignedUpTradefairCard({ booking, onOpenPass }: SignedUpTradefair
           >
             {isConfirmed ? (
               <>
-                <CheckCircle2 size={13} /> Confirmed Stall
+                <CheckCircle2 size={13} /> Confirmed Stand
               </>
             ) : isPending ? (
               <>
@@ -158,10 +158,10 @@ export function SignedUpTradefairCard({ booking, onOpenPass }: SignedUpTradefair
           </button>
         </div>
 
-        {/* Breakdown of stall, plan & business */}
+        {/* Breakdown of stand, plan & business */}
         <div className="ud-booking-card__details-grid">
           <div className="ud-booking-card__detail">
-            <span className="ud-booking-card__detail-label">Stall Option</span>
+            <span className="ud-booking-card__detail-label">Stand Option</span>
             <span className="ud-booking-card__detail-val">{booking.stallTitle}</span>
           </div>
 
@@ -195,7 +195,7 @@ export function SignedUpTradefairCard({ booking, onOpenPass }: SignedUpTradefair
               onClick={() => onOpenPass(booking)}
             >
               <QrCode size={15} />
-              View Stall Pass & QR
+              View Stand Pass & QR
             </button>
 
             {isPending && (

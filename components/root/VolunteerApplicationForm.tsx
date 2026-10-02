@@ -33,7 +33,7 @@ const VOLUNTEER_ROLES = [
     {
         id: "logistics",
         title: "Vendor Relations & Logistics",
-        desc: "Assist stall owners during setup, deliver exhibitor badges, and coordinate loading dock flow.",
+        desc: "Assist stand owners during setup, deliver exhibitor badges, and coordinate loading dock flow.",
     },
     {
         id: "ticketing",
@@ -43,7 +43,7 @@ const VOLUNTEER_ROLES = [
     {
         id: "media",
         title: "Media & Social Content Team",
-        desc: "Capture photos, record TikTok/Reels, interview stall vendors, and share live event highlights.",
+        desc: "Capture photos, record TikTok/Reels, interview stand vendors, and share live event highlights.",
     },
     {
         id: "stage",

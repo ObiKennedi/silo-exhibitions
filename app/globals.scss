@@ -77,3 +77,101 @@ button {
   font-family: var(--font-body);
   cursor: pointer;
 }
+
+// ─────────────────────────────────────────────────────────────
+// Universal Button Breathing Animation
+// ─────────────────────────────────────────────────────────────
+@keyframes siloBtnBreathe {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(0, 21, 248, 0.14);
+  }
+  50% {
+    transform: scale(1.032);
+    box-shadow: 0 8px 24px rgba(0, 21, 248, 0.32);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 14px rgba(0, 21, 248, 0.14);
+  }
+}
+
+@keyframes siloBtnBreatheSubtle {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.026);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+// All button elements, button-like classnames and call-to-actions
+button:not(:disabled):not([disabled]),
+.btn:not([disabled]),
+[class*="-btn"]:not([disabled]),
+[class*="__btn"]:not([disabled]),
+[class*="--btn"]:not([disabled]),
+.auth-link,
+.hero__cta-primary,
+.upcoming-events__see-more,
+.stall-plan-doc-banner__btn,
+.stall-empty-state__btn,
+.doc-btn,
+.ud-btn {
+  animation: siloBtnBreathe 2.6s ease-in-out infinite;
+  transform-origin: center center;
+  will-change: transform, box-shadow;
+
+  &:hover {
+    animation-play-state: paused;
+    transform: scale(1.045) translateY(-1px);
+  }
+
+  &:active {
+    animation-play-state: paused;
+    transform: scale(0.97) !important;
+  }
+}
+
+// Icon-only controls, navigation links, or modal close buttons: subtle breathing without heavy glow
+.ud-icon-button,
+.modal-close,
+.gallery-modal__close,
+.stall-selected-banner__change-btn,
+.ud-booking-card__code-box,
+button.ud-icon-button {
+  box-shadow: none !important;
+  animation: siloBtnBreatheSubtle 2.6s ease-in-out infinite;
+
+  &:hover {
+    animation-play-state: paused;
+    transform: scale(1.05);
+  }
+}
+
+// Disabled state: cancel animation
+button:disabled,
+button[disabled],
+.btn[disabled],
+[class*="-btn"][disabled],
+[class*="__btn"][disabled] {
+  animation: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+  cursor: not-allowed;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  .btn,
+  [class*="-btn"],
+  [class*="__btn"],
+  .auth-link,
+  .hero__cta-primary,
+  .upcoming-events__see-more {
+    animation: none !important;
+  }
+}

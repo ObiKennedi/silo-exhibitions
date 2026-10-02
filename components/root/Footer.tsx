@@ -59,7 +59,7 @@ export const Footer = () => {
                     <Image src="/logo-light.png" alt="Silo Exhibitions" width={56} height={56} />
                     <p className="footer__blurb">
                         Silo Exhibitions links traders to buyers through curated campus tradefairs —
-                        real stalls, real footfall, real sales.
+                        real stands, real footfall, real sales.
                     </p>
                     <ul className="footer__socials">
                         {SOCIALS.map(({ name, url, icon: Icon }) => (

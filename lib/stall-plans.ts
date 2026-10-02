@@ -40,10 +40,10 @@ export function computeStallPlans(stall: {
         const revPct = stall.revenuePercentage ?? 10;
         plans.push({
             id: "revenue_percentage",
-            name: `Option 2: Pay Daily (${revPct}% Daily Gross Revenue)`,
+            name: `Option 2: Pay Daily (${revPct}% Daily Total Sales)`,
             dueNow: deposit,
-            totalAmountText: `₦${deposit.toLocaleString()} Setup Deposit + ${revPct}% Daily Gross Revenue`,
-            description: `Lower initial commitment. Pay a ₦${deposit.toLocaleString()} setup deposit today, then remit ${revPct}% of total daily gross revenue at the end of each day.`,
+            totalAmountText: `₦${deposit.toLocaleString()} Setup Deposit + ${revPct}% Daily Total Sales`,
+            description: `Lower initial commitment. Pay a ₦${deposit.toLocaleString()} setup deposit today, then remit ${revPct}% of total sales at the end of each day.`,
             isRevenueShare: true,
             revenuePercentage: revPct,
         });

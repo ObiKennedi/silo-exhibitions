@@ -39,7 +39,7 @@ export async function GET(
             slug: event.slug,
         });
 
-        const filename = `silo-${event.slug}-terms-and-stall-plans.pdf`;
+        const filename = `silo-${event.slug}-terms-and-stand-plans.pdf`;
 
         return new NextResponse(pdfBuffer as any, {
             status: 200,

@@ -111,7 +111,7 @@ export function StallPassModal({ booking, onClose }: StallPassModalProps) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", background: "#FFFFFF", padding: "12px", borderRadius: "10px", border: "1px solid #E2E8F0" }}>
               <div>
                 <p style={{ margin: "0 0 2px", fontSize: "11px", color: "#64748B", textTransform: "uppercase", fontWeight: 600 }}>
-                  Allocated Stall
+                  Allocated Stand
                 </p>
                 <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#0015F8" }}>
                   {booking.stallTitle}

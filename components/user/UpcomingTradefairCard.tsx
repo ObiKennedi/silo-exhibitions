@@ -99,7 +99,7 @@ export function UpcomingTradefairCard({
               className="ud-btn ud-btn--primary ud-btn--sm"
             >
               <Store size={14} />
-              Book a Stall
+              Book a Stand
             </Link>
           ) : (
             <span style={{ fontSize: "12px", color: "var(--muted, #5B6485)", fontWeight: 500 }}>

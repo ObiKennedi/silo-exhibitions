@@ -204,12 +204,12 @@ export default async function EventMicroPage({ params }: Props) {
                 </section>
             )}
 
-            {/* ---------- Exhibition plan & Stall Plans ---------- */}
+            {/* ---------- Exhibition plan & Stand Plans ---------- */}
             <section className="event-page__section">
-                <h2>Exhibition &amp; Stall Plans</h2>
+                <h2>Exhibition &amp; Stand Plans</h2>
                 <div className="event-page__plan">
                     <FileText size={18} />
-                    <p>{event.exhibitionPlan.summary || "Official vendor booth allocations, stall packages, and payment schedules."}</p>
+                    <p>{event.exhibitionPlan.summary || "Official vendor stand allocations, packages, and payment schedules."}</p>
                 </div>
 
                 {event.stallsConfig && event.stallsConfig.length > 0 && (
@@ -248,10 +248,10 @@ export default async function EventMicroPage({ params }: Props) {
                             target="_blank"
                             rel="noopener noreferrer"
                             className="event-page__pdf-download-btn event-page__pdf-download-btn--secondary"
-                            title="Open official stall plan and floor layout document"
+                            title="Open official stand plan and floor layout document"
                         >
                             <Layers size={16} />
-                            <span>Official Stall Plan &amp; Floor Layout (PDF)</span>
+                            <span>Official Stand Plan &amp; Floor Layout (PDF)</span>
                         </a>
                     )}
                 </div>

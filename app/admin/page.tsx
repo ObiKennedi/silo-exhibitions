@@ -215,10 +215,10 @@ export function computeStallPlans(stall: {
     const revPct = stall.revenuePercentage ?? 10;
     plans.push({
       id: "revenue_percentage",
-      name: `Option 2: Pay Daily (${revPct}% Daily Gross Revenue)`,
+      name: `Option 2: Pay Daily (${revPct}% Daily Total Sales)`,
       dueNow: deposit,
-      totalAmountText: `₦${deposit.toLocaleString()} Setup Deposit + ${revPct}% Daily Gross Revenue`,
-      description: `Lower initial commitment. Pay a ₦${deposit.toLocaleString()} setup deposit today, then remit ${revPct}% of total daily gross revenue at the end of each day.`,
+      totalAmountText: `₦${deposit.toLocaleString()} Setup Deposit + ${revPct}% Daily Total Sales`,
+      description: `Lower initial commitment. Pay a ₦${deposit.toLocaleString()} setup deposit today, then remit ${revPct}% of total sales at the end of each day.`,
       isRevenueShare: true,
       revenuePercentage: revPct,
     });
@@ -230,60 +230,44 @@ export function computeStallPlans(stall: {
 const DEFAULT_ADMIN_STALLS: StallConfig[] = [
   {
     id: "compact",
-    title: "Standard Booth",
-    size: "2m × 2m (4 sqm)",
-    price: 35000,
-    badge: "",
-    description: "Ideal for student entrepreneurs, solo artisans, apparel & craft vendors.",
+    title: "Single Stand (Early Bird)",
+    size: "2m × 2m",
+    price: 200000,
+    badge: "Most Popular",
+    description: "Standard booth for single-brand exhibitions, apparel, beauty & retail vendors.",
     features: [
-      "1 Display table + 2 chairs",
-      "1 Standard electrical socket (500W)",
-      "2 Official Vendor passes",
-      "Basic directory listing in campus program",
+      "Single canopy (10 x 20 ft)",
+      "Official Booth Name Tag",
+      "Event Confirmation Flier",
+      "Brand Merchandise Package",
+      "Business Masterclass Access",
     ],
     availablePlans: [],
   },
   {
-    id: "corner",
-    title: "Prime Corner Stall",
-    size: "3m × 3m (9 sqm)",
-    price: 65000,
-    badge: "High Foot Traffic",
-    description: "Corner placement at corridor intersections with high attendee flow.",
+    id: "double",
+    title: "Double Stand (Early Bird)",
+    size: "4m × 2m (Double space)",
+    price: 300000,
+    badge: "Prime Exposure",
+    description: "Expansive double-canopy space with prime corridor placement and maximum footfall.",
     features: [
-      "2 Display tables + 4 chairs",
-      "Dual high-capacity electrical sockets (1500W)",
-      "4 Official Vendor passes",
-      "Highlighted boundary on physical & digital event maps",
-      "1 Live DJ shoutout per day",
-    ],
-    availablePlans: [],
-  },
-  {
-    id: "mega",
-    title: "Grand Mega Pavilion",
-    size: "5m × 5m (25 sqm)",
-    price: 120000,
-    badge: "Largest Stall · Anchor Brand",
-    description: "Prime center-arena anchor pavilion designed for flagship campus brands and high-volume sales.",
-    features: [
-      "Massive 25 sqm center-court pavilion space",
-      "Dedicated high-amp electrical line (3000W)",
-      "8 VIP Vendor badges with early setup privileges",
-      "Stage spotlight interview & continuous MC mentions",
-      "Priority loading dock & logistics assistance",
-      "Full feature page in official exhibition digital guide",
+      "Double canopy (20 x 20 ft)",
+      "Official Booth Name Tag",
+      "Event Confirmation Flier",
+      "Brand Merchandise Package",
+      "Business Masterclass Access",
+      "Prime corridor corner placement",
     ],
     availablePlans: [],
   },
 ].map((s) => {
-  const isMega = s.id === "mega";
   const withToggles = {
     ...s,
     enableInstallment: true,
     installmentDepositPercent: 50,
-    enableRevenueShare: isMega,
-    revenueDepositAmount: 25000,
+    enableRevenueShare: false,
+    revenueDepositAmount: 30000,
     revenuePercentage: 10,
   };
   return {
@@ -346,7 +330,7 @@ export default function AdminDashboardPage() {
   const [newCoverUrl, setNewCoverUrl] = useState("");
   const [newFlierUrl, setNewFlierUrl] = useState("");
   const [newCashlessPolicy, setNewCashlessPolicy] = useState(
-    "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
+    "All stands are equipped with designated QR cashless paypoints for seamless campus sales."
   );
   const [newWhatsappUrl, setNewWhatsappUrl] = useState("https://wa.me/2349063508366");
   const [newExhibitionPlanDocUrl, setNewExhibitionPlanDocUrl] = useState("");
@@ -357,10 +341,10 @@ export default function AdminDashboardPage() {
   const [enablePayAsYouGo, setEnablePayAsYouGo] = useState(true);
   const [payAsYouGoDeposit, setPayAsYouGoDeposit] = useState(50);
   const [payAsYouGoNote, setPayAsYouGoNote] = useState(
-    "Pay 50% deposit now to reserve your stall. Balance due 48 hours before exhibition setup."
+    "Pay 50% deposit now to reserve your stand. Balance due 48 hours before exhibition setup."
   );
 
-  // Stall Types & Dynamic Payment Plans Builder State
+  // Stand Types & Dynamic Payment Plans Builder State
   const [stallsList, setStallsList] = useState<StallConfig[]>(DEFAULT_ADMIN_STALLS);
 
   const handleUpdateStall = (id: string, updates: Partial<StallConfig>) => {
@@ -380,11 +364,11 @@ export default function AdminDashboardPage() {
     const newId = `stall_${Date.now()}`;
     const newStall: StallConfig = {
       id: newId,
-      title: "Custom Vendor Stall",
+      title: "Custom Vendor Stand",
       size: "2.5m × 2.5m (6.25 sqm)",
       price: 45000,
       badge: "New Option",
-      description: "Great for general retail, fashion apparel, accessories, food, and tech stalls.",
+      description: "Great for general retail, fashion apparel, accessories, food, and tech stands.",
       features: [
         "1 Display table + 2 chairs",
         "1 Standard electrical socket (500W)",
@@ -425,7 +409,7 @@ export default function AdminDashboardPage() {
   const [termsList, setTermsList] = useState<TermItem[]>([
     {
       id: "1",
-      text: "All stalls are equipped with designated QR cashless paypoints for seamless campus sales.",
+      text: "All stands are equipped with designated QR cashless paypoints for seamless campus sales.",
       isImportant: true,
     },
     {
@@ -435,7 +419,7 @@ export default function AdminDashboardPage() {
     },
     {
       id: "3",
-      text: "All stalls must be kept neat and free of safety hazards. Waste must be deposited in campus bins.",
+      text: "All stands must be kept neat and free of safety hazards. Waste must be deposited in campus bins.",
       isImportant: false,
     },
     {
@@ -2056,7 +2040,7 @@ export default function AdminDashboardPage() {
                     >
                       <h4 className="event-form-section__title" style={{ margin: 0 }}>
                         <Layers size={16} color="#0015f8" />
-                        <span>3. Stall Types &amp; Dynamic Payment Plans Builder</span>
+                        <span>3. Stand Types &amp; Dynamic Payment Plans Builder</span>
                       </h4>
                       <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                         <button
@@ -2064,7 +2048,7 @@ export default function AdminDashboardPage() {
                           onClick={handleResetDefaultStalls}
                           className="btn-secondary"
                           style={{ padding: "6px 12px", fontSize: 12, height: "auto" }}
-                          title="Reset to 3 standard presets (Standard Booth, Corner Stall, Mega Pavilion)"
+                          title="Reset to standard presets"
                         >
                           <RefreshCw size={13} />
                           <span>Reset Presets</span>
@@ -2081,12 +2065,12 @@ export default function AdminDashboardPage() {
                           }}
                         >
                           <Plus size={14} />
-                          <span>Add Stall Type</span>
+                          <span>Add Stand Type</span>
                         </button>
                       </div>
                     </div>
                     <p className="event-form-section__desc" style={{ marginBottom: 16 }}>
-                      Configure the stall options for this exhibition. When you set or adjust a stall&apos;s base price (₦), its payment plans (full upfront, 2-part installment, and optional daily revenue share) will dynamically calculate in real time.
+                      Configure the stand options for this exhibition. When you set or adjust a stand&apos;s base price (₦), its payment plans (full upfront, 2-part installment, and optional daily revenue share) will dynamically calculate in real time.
                     </p>
 
                     {/* Stalls List */}
@@ -2144,12 +2128,12 @@ export default function AdminDashboardPage() {
                                     textTransform: "uppercase",
                                   }}
                                 >
-                                  Stall #{index + 1}
+                                  Stand #{index + 1}
                                 </span>
                                 <input
                                   type="text"
                                   value={stall.title}
-                                  placeholder="Stall Title (e.g. Standard Booth)"
+                                  placeholder="Stand Title (e.g. Standard Stand)"
                                   onChange={(e) =>
                                     handleUpdateStall(stall.id, { title: e.target.value })
                                   }
@@ -2235,7 +2219,7 @@ export default function AdminDashboardPage() {
                                       marginBottom: 4,
                                     }}
                                   >
-                                    Base Stall Price (₦) * — Powers Dynamic Calculations
+                                    Base Stand Price (₦) * — Powers Dynamic Calculations
                                   </label>
                                   <div style={{ display: "flex", alignItems: "center" }}>
                                     <span
@@ -2343,7 +2327,7 @@ export default function AdminDashboardPage() {
                                       marginBottom: 4,
                                     }}
                                   >
-                                    Stall Description
+                                    Stand Description
                                   </label>
                                   <textarea
                                     rows={3}
@@ -2417,7 +2401,7 @@ export default function AdminDashboardPage() {
                                 >
                                   <CreditCard size={15} color="#0015f8" />
                                   <strong style={{ fontSize: 13, color: "#0a0f2e" }}>
-                                    Dynamic Payment Plans for {stall.title || "This Stall"} (Calculated from ₦{basePrice.toLocaleString()}):
+                                    Dynamic Payment Plans for {stall.title || "This Stand"} (Calculated from ₦{basePrice.toLocaleString()}):
                                   </strong>
                                 </div>
 

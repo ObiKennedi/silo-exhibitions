@@ -103,7 +103,7 @@ BT /F2 16 Tf ${leftMargin} ${currentY} Td (SILO EXHIBITIONS) ET
     // Document Title
     currentStream += `
 0.04 0.06 0.18 rg
-BT /F2 14 Tf ${leftMargin} ${currentY} Td (OFFICIAL EXHIBITOR TERMS, CONDITIONS & STALL PLANS) ET
+BT /F2 14 Tf ${leftMargin} ${currentY} Td (OFFICIAL EXHIBITOR TERMS, CONDITIONS & STAND PLANS) ET
 `;
     currentY -= 18;
 
@@ -136,11 +136,11 @@ ${leftMargin} ${currentY - 4} m ${leftMargin + contentWidth} ${currentY - 4} l S
     const termsToRender = options.terms.length > 0
         ? options.terms
         : [
-            "Stall Setup & Access: Vendors must complete booth setup between 7:30 AM and 8:30 AM each morning. Stalls must remain active and staffed until closing time daily.",
-            "Stall Plans & Allocation: Reserved booth space is guaranteed upon successful payment of the chosen stall plan. Vendors must operate strictly within assigned dimensions.",
+            "Stand Setup & Access: Vendors must complete booth setup between 7:30 AM and 8:30 AM each morning. Stands must remain active and staffed until closing time daily.",
+            "Stand Plans & Allocation: Reserved booth space is guaranteed upon successful payment of the chosen stand plan. Vendors must operate strictly within assigned dimensions.",
             "Cashless Payment Compliance: Vendors must offer digital payments (POS terminal, direct bank transfer, or QR paypoint) to buyers for fast queues and seamless audits.",
             "Booth Cleanliness & Safety: Exhibitors must keep their assigned space clean, hazard-free, and dispose of packaging in designated bins. Open flames are prohibited without clearance.",
-            "Cancellations & Forfeiture: Stall reservation fees and deposits are non-refundable within 14 days of the scheduled exhibition opening date.",
+            "Cancellations & Forfeiture: Stand reservation fees and deposits are non-refundable within 14 days of the scheduled exhibition opening date.",
         ];
 
     termsToRender.forEach((term, idx) => {
@@ -189,7 +189,7 @@ BT /F1 9.5 Tf ${leftMargin + 6} ${currentY} Td (${escapePdfText(line)}) ET
         currentY -= 6;
         currentStream += `
 0.0 0.08 0.97 rg
-BT /F2 11 Tf ${leftMargin} ${currentY} Td (3. CONFIGURED STALL PLANS & PACKAGES) ET
+BT /F2 11 Tf ${leftMargin} ${currentY} Td (3. CONFIGURED STAND PLANS & PACKAGES) ET
 0.8 0.85 0.92 RG 0.5 w
 ${leftMargin} ${currentY - 4} m ${leftMargin + contentWidth} ${currentY - 4} l S
 `;
@@ -224,7 +224,7 @@ ${leftMargin} ${currentY - 50} ${contentWidth} 50 re b
 0.04 0.09 0.18 rg
 BT /F2 9 Tf ${leftMargin + 12} ${currentY - 14} Td (ORGANIZER AUTHORIZATION & VENDOR ACCEPTANCE) ET
 0.35 0.4 0.48 rg
-BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 28} Td (By booking a stall at ${escapePdfText(options.eventTitle)}, the vendor agrees to abide by all rules above.) ET
+BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 28} Td (By booking a stand at ${escapePdfText(options.eventTitle)}, the vendor agrees to abide by all rules above.) ET
 BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 40} Td (Issued electronically by Silo Exhibitions Secretariat  |  https://siloexhibitions.com/${escapePdfText(options.slug)}) ET
 `;
     currentY -= 65;

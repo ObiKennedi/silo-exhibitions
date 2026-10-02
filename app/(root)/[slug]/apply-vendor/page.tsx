@@ -18,8 +18,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!event) return {};
 
     return {
-        title: `Book a Vendor Stall | ${event.title}`,
-        description: `Apply for an exhibition booth or stall at ${event.title}. Select your stall size, view flexible payment plans and reserve securely.`,
+        title: `Book a Vendor Stand | ${event.title}`,
+        description: `Apply for an exhibition stand at ${event.title}. Select your stand size, view flexible payment plans and reserve securely.`,
     };
 }
 
@@ -30,7 +30,7 @@ export default async function ApplyVendorPage({ params }: Props) {
     if (!event) notFound();
 
     return (
-        <Suspense fallback={<div style={{ padding: "120px 20px", textAlign: "center" }}>Loading stall options...</div>}>
+        <Suspense fallback={<div style={{ padding: "120px 20px", textAlign: "center" }}>Loading stand options...</div>}>
             <StallApplicationForm event={event} />
         </Suspense>
     );

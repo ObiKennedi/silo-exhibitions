@@ -181,7 +181,7 @@ export function UserDashboardView({
         <div className="ud-dashboard__stats">
           <div className="ud-dashboard__stat-card">
             <span className="ud-dashboard__stat-label">
-              <Store size={14} color="#79BAFF" /> Stalls Reserved
+              <Store size={14} color="#79BAFF" /> Stands Reserved
             </span>
             <span className="ud-dashboard__stat-value">{registrations.length}</span>
             <span className="ud-dashboard__stat-hint">
@@ -278,7 +278,7 @@ export function UserDashboardView({
                 </span>
               </h2>
               <p className="ud-dashboard__section-desc">
-                Your booked exhibition stalls, official gate passes, booth credentials, and payment records.
+                Your booked exhibition stands, official gate passes, booth credentials, and payment records.
               </p>
             </div>
 
@@ -322,7 +322,7 @@ export function UserDashboardView({
               <div className="ud-dashboard__empty-icon">
                 <Store size={32} />
               </div>
-              <h3 className="ud-dashboard__empty-title">You haven&apos;t booked a stall yet</h3>
+              <h3 className="ud-dashboard__empty-title">You haven&apos;t booked a stand yet</h3>
               <p className="ud-dashboard__empty-desc">
                 Reserve your exhibition booth at one of our upcoming campus tradefairs to showcase your brand, make sales, and reach thousands of student buyers.
               </p>
@@ -526,7 +526,7 @@ export function UserDashboardView({
               </div>
               <h3 className="ud-dashboard__empty-title">No transactions yet</h3>
               <p className="ud-dashboard__empty-desc">
-                When you reserve a stall or complete payments for a tradefair, all receipts and references will be listed here.
+                When you reserve a stand or complete payments for a tradefair, all receipts and references will be listed here.
               </p>
             </div>
           ) : (
@@ -624,7 +624,7 @@ export function UserDashboardView({
           </div>
           <div>
             <h4 style={{ margin: "0 0 4px", fontSize: "16px", fontWeight: 700, color: "#14532D" }}>
-              Need Help With Your Stall or Tradefair Setup?
+              Need Help With Your Stand or Tradefair Setup?
             </h4>
             <p style={{ margin: 0, fontSize: "13px", color: "#166534", maxWidth: "600px" }}>
               Our campus exhibition logistics team is available on WhatsApp to answer questions about booth allocations, power connections, signage, or invoices.

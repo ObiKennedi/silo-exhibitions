@@ -117,11 +117,16 @@ export const StallApplicationForm = ({ event }: Props) => {
             description: "Pay 100% now for instant confirmed allocation.",
         };
 
-    const handleStallSelect = (stallId: string) => {
+    const handleStallSelect = (stallId: string, autoScroll = true) => {
         setSelectedStallId(stallId);
         const stall = stallList.find((s) => s.id === stallId) || stallList[0];
         if (stall?.availablePlans?.length) {
             setSelectedPlanId(stall.availablePlans[0].id);
+        }
+        if (autoScroll) {
+            setTimeout(() => {
+                document.getElementById("payment-plans-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 60);
         }
     };
 
@@ -130,8 +135,8 @@ export const StallApplicationForm = ({ event }: Props) => {
         setSelectedPlanId(planId);
         setShowForm(true);
         setTimeout(() => {
-            document.getElementById("vendor-form-section")?.scrollIntoView({ behavior: "smooth" });
-        }, 60);
+            document.getElementById("vendor-form-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 80);
     };
 
     const isFormValid =
@@ -202,7 +207,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                     <div className="stall-success__icon">
                         <CheckCircle2 size={40} />
                     </div>
-                    <h1 className="stall-success__title">Stall Reserved!</h1>
+                    <h1 className="stall-success__title">Stand Reserved!</h1>
                     <p className="stall-success__sub">
                         Your vendor application and deposit for <b>{event.title}</b> have been confirmed via Monnify.
                     </p>
@@ -217,7 +222,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                             <b>{businessName}</b>
                         </div>
                         <div className="stall-success__ticket-row">
-                            <span>Stall Allocated</span>
+                            <span>Stand Allocated</span>
                             <b>{bookingSuccess.stallTitle} ({activeStall.size})</b>
                         </div>
                         <div className="stall-success__ticket-row">
@@ -226,8 +231,8 @@ export const StallApplicationForm = ({ event }: Props) => {
                         </div>
                         {activePlan.isRevenueShare && (
                             <div className="stall-success__ticket-row">
-                                <span>Daily Gross Revenue Share</span>
-                                <b style={{ color: "#d97706" }}>10% Daily Gross Revenue (remitted by 8:30pm)</b>
+                                <span>Daily Share of Total Sales</span>
+                                <b style={{ color: "#d97706" }}>{activePlan.revenuePercentage || 10}% of Daily Total Sales (remitted by 8:30pm)</b>
                             </div>
                         )}
                         <div className="stall-success__ticket-row">
@@ -275,9 +280,9 @@ export const StallApplicationForm = ({ event }: Props) => {
                 <Link href={`/${event.slug}`} className="stall-hero__back">
                     <ArrowLeft size={16} /> Back to {event.title}
                 </Link>
-                <p className="stall-hero__kicker">Vendor Stall Application.</p>
+                <p className="stall-hero__kicker">Vendor Stand Application.</p>
                 <h1 className="stall-hero__title">
-                    Book your stall &amp; <mark>sell to thousands.</mark>
+                    Book your stand &amp; <mark>sell to thousands.</mark>
                 </h1>
                 <div className="stall-hero__meta">
                     <span>
@@ -291,32 +296,32 @@ export const StallApplicationForm = ({ event }: Props) => {
                     </span>
                 </div>
                 <p className="stall-hero__sub">
-                    Reserve your booth at Silo Exhibitions. Select your stall size, choose your preferred payment
+                    Reserve your booth at Silo Exhibitions. Select your stand size, choose your preferred payment
                     schedule, accept the vendor terms, and complete your reservation instantly via Monnify.
                 </p>
 
                 <EventCountdown
                     targetDate={event.startDate}
                     title="Exhibition Starts In"
-                    subtitle="Secure your stall package before registration closes"
+                    subtitle="Secure your stand package before registration closes"
                 />
             </header>
 
             <form onSubmit={handleOpenMonnify}>
-                {/* STEP 1: Select Stall Size */}
+                {/* STEP 1: Select Stand Size */}
                 <section id="stall-packages-section" className="stall-section">
                     <div className="stall-section__head">
-                        <h2>Step 1: Choose Your Stall Size &amp; Plan</h2>
+                        <h2>Step 1: Choose Your Stand Size &amp; Plan</h2>
                         <p>Select the booth dimension that fits your merchandise and brand presence, then click &quot;I want this&quot; to open the application.</p>
                     </div>
 
-                    {/* Official Stall Plan & Floor Layout Document Link */}
+                    {/* Official Stand Plan & Floor Layout Document Link */}
                     {event.exhibitionPlan?.documentUrl && (
                         <div className="stall-plan-doc-banner">
                             <div className="stall-plan-doc-banner__info">
                                 <Layers size={22} className="stall-plan-doc-banner__icon" />
                                 <div>
-                                    <h4>Official Stall Plan &amp; Floor Layout Document Available</h4>
+                                    <h4>Official Stand Plan &amp; Floor Layout Document Available</h4>
                                     <p>Exhibition hall blueprint, walkways, and numbered booth allocations for {event.title}.</p>
                                 </div>
                             </div>
@@ -326,7 +331,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 rel="noopener noreferrer"
                                 className="stall-plan-doc-banner__btn"
                             >
-                                <Download size={14} /> View Stall Plan (PDF)
+                                <Download size={14} /> View Stand Plan (PDF)
                             </a>
                         </div>
                     )}
@@ -362,9 +367,15 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     <div
                                         key={stall.id}
                                         className={`stall-card ${isSelected ? "is-selected" : ""}`}
-                                        onClick={() => handleStallSelect(stall.id)}
+                                        onClick={() => handleStallSelect(stall.id, true)}
                                     >
-                                        {stall.badge && <span className="stall-card__badge-top">{stall.badge}</span>}
+                                        {stall.badge && (
+                                            <div className="stall-card__badge-wrap">
+                                                <span className="stall-card__badge-pill">
+                                                    <Sparkles size={12} /> {stall.badge}
+                                                </span>
+                                            </div>
+                                        )}
 
                                         <div className="stall-card__header">
                                             <div>
@@ -380,7 +391,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                     <div style={{ fontSize: "19px", lineHeight: "1.25" }}>
                                                         <span>₦{(stall.price || defaultPlan?.dueNow || 0).toLocaleString()} <small style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>flat once</small></span>
                                                         <span style={{ fontSize: "12px", color: "var(--muted)", margin: "0 4px", fontWeight: 400 }}>or</span>
-                                                        <span style={{ color: "#d97706" }}>₦{revPlan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ {revPlan.revenuePercentage || 10}% daily</small></span>
+                                                        <span style={{ color: "#d97706" }}>₦{revPlan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ {revPlan.revenuePercentage || 10}% daily sales</small></span>
                                                     </div>
                                                 ) : (
                                                     `₦${(stall.price || defaultPlan?.dueNow || 0).toLocaleString()}`
@@ -415,15 +426,10 @@ export const StallApplicationForm = ({ event }: Props) => {
                                             className="stall-card__want-btn"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                if (defaultPlan) {
-                                                    handleChoosePlan(stall.id, defaultPlan.id);
-                                                } else {
-                                                    handleStallSelect(stall.id);
-                                                    setShowForm(true);
-                                                }
+                                                handleStallSelect(stall.id, true);
                                             }}
                                         >
-                                            I want this
+                                            I want this &rarr;
                                         </button>
                                     </div>
                                 );
@@ -431,12 +437,17 @@ export const StallApplicationForm = ({ event }: Props) => {
                         </div>
                     )}
 
-                    {/* Payment Plan Options for Selected Stall */}
+                    {/* Payment Plan Options for Selected Stand */}
                     {stallList.length > 0 && activeStall && (
-                        <div className="stall-plans">
-                            <h3 className="stall-plans__title">
-                                Payment Plans for {activeStall?.title || "Selected Stall"}:
-                            </h3>
+                        <div id="payment-plans-section" className="stall-plans">
+                            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
+                                <h3 className="stall-plans__title" style={{ margin: 0 }}>
+                                    Step 2: Choose Payment Plan for {activeStall?.title || "Selected Stand"}:
+                                </h3>
+                                <span style={{ fontSize: "12px", color: "var(--blue, #0015f8)", background: "#eff6ff", padding: "4px 10px", borderRadius: 999, fontWeight: 600 }}>
+                                    {activeStall?.availablePlans?.length || 1} Option{(activeStall?.availablePlans?.length || 1) > 1 ? "s" : ""} Available
+                                </span>
+                            </div>
 
                             <div className="stall-plans__options">
                                 {activeStall?.availablePlans?.map((plan) => {
@@ -465,14 +476,14 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                     handleChoosePlan(activeStall.id, plan.id);
                                                 }}
                                             >
-                                                I want this
+                                                Select Plan &amp; Continue to Form &rarr;
                                             </button>
                                         </div>
                                     );
                                 })}
                             </div>
 
-                            {/* Flat rate info box when active stall has revenue share option but full is chosen */}
+                            {/* Flat rate info box when active stand has revenue share option but full is chosen */}
                             {activeStall?.enableRevenueShare && selectedPlanId === "full" && (
                                 <div style={{ marginTop: "16px", padding: "14px 18px", background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "12px", display: "flex", gap: "12px", alignItems: "center" }}>
                                     <CheckCircle2 size={22} color="#16a34a" style={{ flexShrink: 0 }} />
@@ -487,17 +498,16 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 <div className="revenue-warning-box">
                                     <AlertTriangle size={24} className="revenue-warning-box__icon" />
                                     <div className="revenue-warning-box__content">
-                                        <h4>Important Policy: {activePlan.revenuePercentage || 10}% of Daily Gross Revenue (Not Profit)</h4>
+                                        <h4>Important Policy: {activePlan.revenuePercentage || 10}% of Daily Total Sales (Not Profit)</h4>
                                         <p>
-                                            Under the {activeStall?.title || "Selected Stall"} Daily Revenue Share plan, you pay a{" "}
+                                            Under the {activeStall?.title || "Selected Stand"} Daily Revenue Share plan, you pay a{" "}
                                             <b>₦{(activePlan.dueNow).toLocaleString()} reservation &amp; setup deposit today via Monnify</b>. At the close
-                                            of each day (8:30 PM), exactly <b>{activePlan.revenuePercentage || 10}% of your TOTAL GROSS REVENUE</b> must be
+                                            of each day (8:30 PM), exactly <b>{activePlan.revenuePercentage || 10}% of your TOTAL SALES</b> must be
                                             remitted to the Silo Exhibitions Audit Desk.
                                             <br />
                                             <br />
-                                            <strong>PLEASE NOTE:</strong> This {activePlan.revenuePercentage || 10}% is calculated on your{" "}
-                                            <strong>TOTAL DAILY REVENUE</strong> (all incoming sales money across cash, POS,
-                                            and transfers), <strong>NOT ON NET PROFIT</strong>. Operational overhead, stock cost,
+                                            <strong>PLEASE NOTE:</strong> This {activePlan.revenuePercentage || 10}% is calculated strictly on your{" "}
+                                            <strong>TOTAL SALES</strong>, <strong>NOT ON NET PROFIT</strong>. Operational overhead, stock cost,
                                             or vendor expenses are NOT deductible from this calculation.
                                         </p>
                                     </div>
@@ -514,7 +524,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                         <div className="stall-choose-prompt__content">
                             <h3>Ready to register your brand?</h3>
                             <p>
-                                Choose your stall package above and click <strong>&quot;I want this&quot;</strong> to open the vendor application and secure your space.
+                                Choose your stand package above and click <strong>&quot;I want this&quot;</strong> to open the vendor application and secure your space.
                             </p>
                         </div>
                     </div>
@@ -531,25 +541,37 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     </h3>
                                     <p className="stall-selected-banner__price">
                                         <strong>₦{(activePlan?.dueNow || 0).toLocaleString()}</strong> due now to confirm booking
-                                        {activePlan?.isRevenueShare && " (+ 10% daily gross revenue share)"}
+                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 10}% daily total sales share)`}
                                     </p>
                                 </div>
                             </div>
-                            <button
-                                type="button"
-                                className="stall-selected-banner__change-btn"
-                                onClick={() => {
-                                    document.getElementById("stall-packages-section")?.scrollIntoView({ behavior: "smooth" });
-                                }}
-                            >
-                                Change Plan
-                            </button>
+                            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                                <button
+                                    type="button"
+                                    className="stall-selected-banner__change-btn"
+                                    onClick={() => {
+                                        document.getElementById("payment-plans-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                    }}
+                                >
+                                    Change Plan
+                                </button>
+                                <button
+                                    type="button"
+                                    className="stall-selected-banner__change-btn"
+                                    style={{ background: "#ffffff", color: "#1e3a8a", border: "1.5px solid #bfdbfe" }}
+                                    onClick={() => {
+                                        document.getElementById("stall-packages-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                    }}
+                                >
+                                    Change Stand
+                                </button>
+                            </div>
                         </div>
 
-                        {/* STEP 2: Vendor Business Information */}
+                        {/* STEP 3: Vendor Business Information */}
                         <section className="stall-section">
                             <div className="stall-section__head">
-                                <h2>Step 2: Business &amp; Contact Details</h2>
+                                <h2>Step 3: Business &amp; Contact Details</h2>
                                 <p>Tell us about your brand and products so we can prepare your exhibitor materials.</p>
                             </div>
 
@@ -635,7 +657,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     <textarea
                                         id="description"
                                         required
-                                        placeholder="Briefly describe what items or services you will showcase at your stall..."
+                                        placeholder="Briefly describe what items or services you will showcase at your stand..."
                                         value={description}
                                         onChange={(e) => setDescription(e.target.value)}
                                     />
@@ -662,16 +684,16 @@ export const StallApplicationForm = ({ event }: Props) => {
                             </div>
                         </section>
 
-                        {/* STEP 3: Terms & Conditions Agreement */}
+                        {/* STEP 4: Terms & Conditions Agreement */}
                         <section className="stall-section">
                             <div className="stall-section__head">
-                                <h2>Step 3: Review Terms &amp; Conditions &amp; Stall Plans</h2>
-                                <p>You must review and accept the official exhibitor terms and stall plan schedule prior to payment.</p>
+                                <h2>Step 4: Review Terms &amp; Conditions &amp; Stand Plans</h2>
+                                <p>You must review and accept the official exhibitor terms and stand plan schedule prior to payment.</p>
                             </div>
 
                             <div className="stall-terms">
                                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
-                                    <h4 className="stall-terms__title" style={{ margin: 0 }}>Silo Exhibitions Vendor Agreement &amp; Stall Plans</h4>
+                                    <h4 className="stall-terms__title" style={{ margin: 0 }}>Silo Exhibitions Vendor Agreement &amp; Stand Plans</h4>
                                     <a
                                         href={`/api/events/${event.slug}/terms-pdf`}
                                         download
@@ -727,15 +749,15 @@ export const StallApplicationForm = ({ event }: Props) => {
                                             <ul className="stall-terms__rules-list">
                                                 <li>
                                                     <span className="rule-num">1</span>
-                                                    <span><b>Stall Setup &amp; Timing:</b> Vendors must complete stall setup between 7:30 AM and 8:30 AM each morning. Stalls must remain active and staffed until the official closing time of 7:30 PM daily.</span>
+                                                    <span><b>Stand Setup &amp; Timing:</b> Vendors must complete stand setup between 7:30 AM and 8:30 AM each morning. Stands must remain active and staffed until the official closing time of 7:30 PM daily.</span>
                                                 </li>
                                                 <li>
                                                     <span className="rule-num">2</span>
-                                                    <span><b>Stall Plans &amp; Allocation:</b> Reserved booth space is guaranteed upon successful payment of the chosen stall plan. Vendors must operate strictly within assigned dimensions.</span>
+                                                    <span><b>Stand Plans &amp; Allocation:</b> Reserved booth space is guaranteed upon successful payment of the chosen stand plan. Vendors must operate strictly within assigned dimensions.</span>
                                                 </li>
                                                 <li>
                                                     <span className="rule-num">3</span>
-                                                    <span><b>Cashless &amp; Digital Payment Policy:</b> {event.cashlessPolicy || "This tradefair operates under a digital cashless policy. All stalls must offer buyers bank transfer or card/POS payment methods to maintain quick lines and safety."}</span>
+                                                    <span><b>Cashless &amp; Digital Payment Policy:</b> {event.cashlessPolicy || "This tradefair operates under a digital cashless policy. All stands must offer buyers bank transfer or card/POS payment methods to maintain quick lines and safety."}</span>
                                                 </li>
                                                 <li>
                                                     <span className="rule-num">4</span>
@@ -743,7 +765,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                 </li>
                                                 <li>
                                                     <span className="rule-num">5</span>
-                                                    <span><b>Cancellation &amp; Refunds:</b> Stall reservation fees and deposits are non-refundable within 14 days of the scheduled exhibition opening date.</span>
+                                                    <span><b>Cancellation &amp; Refunds:</b> Stand reservation fees and deposits are non-refundable within 14 days of the scheduled exhibition opening date.</span>
                                                 </li>
                                             </ul>
                                         </div>
@@ -763,14 +785,14 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     </div>
                                 )}
 
-                                {/* 3. Stall Plans & Payment Terms */}
+                                {/* 3. Stand Plans & Payment Terms */}
                                 <div className="stall-terms__block">
                                     <h5>
                                         <CreditCard size={15} color="var(--blue, #0015f8)" />
-                                        Stall Plans &amp; Payment Options
+                                        Stand Plans &amp; Payment Options
                                     </h5>
                                     <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 12px", lineHeight: 1.5 }}>
-                                        Official stall configurations and payment schedules for <b>{event.title}</b>:
+                                        Official stand configurations and payment schedules for <b>{event.title}</b>:
                                     </p>
 
                                     {/* Selected Stall Terms Callout */}
@@ -785,7 +807,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                         </div>
                                         <p style={{ fontSize: "12.5px", color: "#334155", margin: 0, lineHeight: 1.55 }}>
                                             {activePlan?.isRevenueShare ? (
-                                                <>Under this plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} setup deposit today</b> via Monnify. Exactly <b>{activePlan.revenuePercentage || 10}% of total daily gross revenue</b> (all cash, transfers, and POS sales) must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
+                                                <>Under this plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} setup deposit today</b> via Monnify. Exactly <b>{activePlan.revenuePercentage || 10}% of daily total sales</b> must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
                                             ) : activePlan?.id === "installment" ? (
                                                 <>Under this 2-part installment plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} deposit today</b> ({activeStall?.installmentDepositPercent ?? 50}%) to hold your space. The remaining balance of <b>₦{((activeStall?.price || 0) - (activePlan.dueNow || 0)).toLocaleString()}</b> is due 7 days before the exhibition opening.</>
                                             ) : (
@@ -816,13 +838,13 @@ export const StallApplicationForm = ({ event }: Props) => {
                                         ))}
                                     </div>
 
-                                    {/* Official Stall Plan / Floor Layout Document Link */}
+                                    {/* Official Stand Plan / Floor Layout Document Link */}
                                     {event.exhibitionPlan?.documentUrl && (
                                         <div className="stall-terms__doc-card">
                                             <div className="doc-info">
                                                 <Layers size={22} color="#16a34a" />
                                                 <div>
-                                                    <strong>Official Exhibition Floor Plan &amp; Stall Map (PDF)</strong>
+                                                    <strong>Official Exhibition Floor Plan &amp; Stand Map (PDF)</strong>
                                                     <span>Review hall blueprint, booth numbers, entrance walkways, and stage location</span>
                                                 </div>
                                             </div>
@@ -832,7 +854,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                 rel="noopener noreferrer"
                                                 className="doc-btn"
                                             >
-                                                <Download size={13} /> Open Stall Plan
+                                                <Download size={13} /> Open Stand Plan
                                             </a>
                                         </div>
                                     )}
@@ -846,9 +868,9 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     onChange={(e) => setTermsAccepted(e.target.checked)}
                                 />
                                 <span>
-                                    I have read, understood, and accept the official <strong>Vendor Terms &amp; Conditions</strong> and the <strong>Stall Plans</strong> for <strong>{event.title}</strong>.
+                                    I have read, understood, and accept the official <strong>Vendor Terms &amp; Conditions</strong> and the <strong>Stand Plans</strong> for <strong>{event.title}</strong>.
                                     {activePlan?.isRevenueShare && (
-                                        <> I explicitly acknowledge and agree that the {activePlan.revenuePercentage || 10}% daily share is calculated strictly on <strong>TOTAL GROSS REVENUE and NOT on profit</strong>.</>
+                                        <> I explicitly acknowledge and agree that the {activePlan.revenuePercentage || 10}% daily share is calculated strictly on <strong>TOTAL SALES and NOT on profit</strong>.</>
                                     )}
                                 </span>
                             </label>
@@ -860,7 +882,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     <h3>₦{(activePlan?.dueNow || 0).toLocaleString()}</h3>
                                     <p>
                                         {activeStall?.title} · {activePlan?.name}
-                                        {activePlan?.isRevenueShare && " (+ 10% Daily Gross Revenue)"}
+                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 10}% Daily Total Sales)`}
                                     </p>
                                 </div>
 
@@ -884,8 +906,8 @@ export const StallApplicationForm = ({ event }: Props) => {
                 customerName={contactName || businessName}
                 customerEmail={email}
                 customerPhone={phone}
-                paymentDescription={`${activeStall?.title || "Stall"} Deposit - ${event.title}`}
-                reference={`SILO-STALL-${Date.now().toString().slice(-6)}`}
+                paymentDescription={`${activeStall?.title || "Stand"} Deposit - ${event.title}`}
+                reference={`SILO-STAND-${Date.now().toString().slice(-6)}`}
                 onClose={() => setIsMonnifyOpen(false)}
                 onSuccess={handlePaymentSuccess}
             />
