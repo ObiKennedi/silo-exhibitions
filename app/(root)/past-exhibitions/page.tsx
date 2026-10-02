@@ -10,7 +10,7 @@ const PAGE_SIZE = 12;
 export const metadata: Metadata = {
     title: "Past Exhibitions | Silo Exhibitions",
     description:
-        "Browse photos and videos from every Silo Campus Tradefair and exhibition we've hosted.",
+        "Browse photos and videos from every Silo Tradefair and exhibition we've hosted.",
 };
 
 export default async function PastExhibitionsPage() {

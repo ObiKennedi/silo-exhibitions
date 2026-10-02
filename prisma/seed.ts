@@ -12,8 +12,8 @@ async function seed() {
     const event1 = await prisma.event.create({
       data: {
         slug: "futo",
-        title: "Silo Campus Tradefair 2026 — FUTO Edition",
-        tagline: "The Biggest Student & Entrepreneur Exhibition in Eastern Nigeria",
+        title: "Silo Tradefair 2026 — FUTO Edition",
+        tagline: "The Biggest Commercial & Entrepreneur Exhibition in Eastern Nigeria",
         venue: "FUTO International Convention Arena",
         location: "Owerri, Imo State",
         startDate: new Date("2026-11-12T09:00:00Z"),
@@ -24,14 +24,14 @@ async function seed() {
         coverImageUrl: "/hero/hero1.jpeg",
         flierUrl: "/events/silo-campus-tradefair-2026/flier.jpg",
         writeUp:
-          "Silo Campus Tradefair brings together over 120 student brands, tech startups, artisans, and food vendors for 4 days of explosive campus commerce and networking.",
-        cashlessPolicy: "All stalls are equipped with Silo instant QR cashless paypoints for seamless campus sales.",
+          "Silo Tradefair brings together over 120 brands, tech startups, artisans, and food vendors for 4 days of explosive commerce and networking.",
+        cashlessPolicy: "All stalls are equipped with Silo instant QR cashless paypoints for seamless tradefair sales.",
         whatsappUrl: "https://wa.me/2349063508366",
         vendorCallEnabled: true,
         vendorCallDescription:
           "Book your booth now! Choose between Standard Booth, Prime Corner, or Food Hub.",
         volunteerCallEnabled: true,
-        volunteerCallDescription: "Join our event ops crew, stage hands, and registration team.",
+        volunteerCallDescription: "Join our Content & Publicity team or Venue Management & Logistics team.",
         rideBookingEnabled: true,
         exhibitionPlanSummary: "Indoor main pavilion with 80 stalls and outdoor food village with 40 stalls.",
         pickupPoints: {
@@ -53,8 +53,8 @@ async function seed() {
     const event2 = await prisma.event.create({
       data: {
         slug: "unilag",
-        title: "Silo University Trade Expo — UNILAG",
-        tagline: "Lagos Campus Innovation & Lifestyle Fair",
+        title: "Silo Trade Expo — UNILAG",
+        tagline: "Lagos Innovation & Lifestyle Trade Fair",
         venue: "Multipurpose Hall, University of Lagos",
         location: "Akoka, Lagos State",
         startDate: new Date("2026-12-04T09:00:00Z"),
@@ -65,7 +65,7 @@ async function seed() {
         coverImageUrl: "/hero/hero2.jpeg",
         flierUrl: "/hero/hero2.jpeg",
         writeUp:
-          "The flagship Lagos campus exhibition connecting leading consumer brands, student makers, fashion designers and fintech innovators.",
+          "The flagship Lagos trade exhibition connecting leading consumer brands, makers, fashion designers and fintech innovators.",
         cashlessPolicy: "Strictly cashless event supported by digital payment partners.",
         whatsappUrl: "https://wa.me/2349063508366",
         vendorCallEnabled: true,
@@ -77,8 +77,8 @@ async function seed() {
     const event3 = await prisma.event.create({
       data: {
         slug: "unn",
-        title: "Silo University Tradefair — UNN Lions Arena",
-        tagline: "Enugu Campus Commerce & Innovation Festival",
+        title: "Silo Tradefair — UNN Lions Arena",
+        tagline: "Enugu Commerce & Innovation Festival",
         venue: "Princess Alexandria Auditorium, University of Nigeria",
         location: "Nsukka, Enugu State",
         startDate: new Date("2027-02-18T09:00:00Z"),
@@ -121,13 +121,13 @@ async function seed() {
           eventSlug: "futo",
           eventId: event?.id,
           userId: primaryUser.id,
-          businessName: "Kicks & Fits Campus",
+          businessName: "Kicks & Fits",
           category: "Fashion & Footwear",
           contactName: primaryUser.name,
           email: primaryUser.email,
           phone: "+234 812 345 6789",
           instagram: "@kicksandfits_ng",
-          description: "Premium sneakers, streetwear, and vintage varsity jackets tailored for campus fashion enthusiasts.",
+          description: "Premium sneakers, streetwear, and vintage varsity jackets tailored for urban fashion enthusiasts.",
           powerNeeds: "Standard power outlet for display lighting",
           stallId: "corner",
           stallTitle: "Prime Corner Stall (3m × 3m)",

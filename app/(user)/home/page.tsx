@@ -11,7 +11,7 @@ import "@/styles/user/UserHome.scss";
 export const metadata: Metadata = {
   title: "Exhibitor Dashboard | Silo Exhibitions",
   description:
-    "View and manage your campus tradefair stall registrations, digital exhibitor passes, and upcoming exhibitions.",
+    "View and manage your tradefair stall registrations, digital exhibitor passes, and upcoming exhibitions.",
 };
 
 interface PageProps {

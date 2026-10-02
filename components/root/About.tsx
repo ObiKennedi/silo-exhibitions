@@ -39,7 +39,7 @@ export const About = () => {
                     <p className="about__signature">— Shiloh D'Mighty, Founder &amp; CEO</p>
                     <p className="about__kicker">Who we are</p>
                     <p className="about__lead">
-                        Silo Exhibitions links traders to buyers through marketplace events in campuses and cities —
+                        Silo Exhibitions links traders to buyers through trade fairs and marketplace exhibitions across cities, venues, and commercial centers —
                         We&apos;re building the easiest
                         way for a business to be discovered, and for a shopper to find a
                         better deal.

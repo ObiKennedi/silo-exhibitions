@@ -582,7 +582,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                         id="biz-name"
                                         type="text"
                                         required
-                                        placeholder="e.g. Campus Kicks / Shiloh Grills"
+                                        placeholder="e.g. Apex Kicks / Shiloh Grills"
                                         value={businessName}
                                         onChange={(e) => setBusinessName(e.target.value)}
                                     />

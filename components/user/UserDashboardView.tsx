@@ -147,7 +147,7 @@ export function UserDashboardView({
               <span className="ud-dashboard__script">ready to exhibit?</span>
             </h1>
             <p className="ud-dashboard__sub">
-              Manage your tradefair booth reservations, access your gate passes, and discover upcoming campus exhibitions across Nigeria.
+              Manage your tradefair booth reservations, access your gate passes, and discover upcoming tradefairs &amp; exhibitions across Nigeria.
             </p>
           </div>
 
@@ -185,7 +185,7 @@ export function UserDashboardView({
             </span>
             <span className="ud-dashboard__stat-value">{registrations.length}</span>
             <span className="ud-dashboard__stat-hint">
-              {registrations.length === 1 ? "1 campus exhibition" : `${registrations.length} exhibitions`}
+              {registrations.length === 1 ? "1 tradefair booking" : `${registrations.length} tradefair bookings`}
             </span>
           </div>
 
@@ -212,7 +212,7 @@ export function UserDashboardView({
               <CalendarDays size={14} color="#A5B4FC" /> Upcoming Fairs
             </span>
             <span className="ud-dashboard__stat-value">{upcomingEvents.length}</span>
-            <span className="ud-dashboard__stat-hint">Campus tradefairs</span>
+            <span className="ud-dashboard__stat-hint">Tradefair exhibitions</span>
           </div>
         </div>
       </section>
@@ -324,7 +324,7 @@ export function UserDashboardView({
               </div>
               <h3 className="ud-dashboard__empty-title">You haven&apos;t booked a stand yet</h3>
               <p className="ud-dashboard__empty-desc">
-                Reserve your exhibition booth at one of our upcoming campus tradefairs to showcase your brand, make sales, and reach thousands of student buyers.
+                Reserve your exhibition booth at one of our upcoming tradefairs to showcase your brand, make sales, and reach thousands of eager buyers.
               </p>
               <button
                 type="button"
@@ -417,7 +417,7 @@ export function UserDashboardView({
                 </span>
               </h2>
               <p className="ud-dashboard__section-desc">
-                Discover all upcoming exhibitions, apply for vendor booths, or join the campus event team.
+                Discover all upcoming exhibitions, apply for vendor booths, or join the event crew.
               </p>
             </div>
 
@@ -427,7 +427,7 @@ export function UserDashboardView({
                 <Search size={16} className="ud-dashboard__search-icon" />
                 <input
                   type="text"
-                  placeholder="Search tradefairs by name, campus, or venue…"
+                  placeholder="Search tradefairs by name, city, or venue…"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="ud-dashboard__search-input"
@@ -627,7 +627,7 @@ export function UserDashboardView({
               Need Help With Your Stand or Tradefair Setup?
             </h4>
             <p style={{ margin: 0, fontSize: "13px", color: "#166534", maxWidth: "600px" }}>
-              Our campus exhibition logistics team is available on WhatsApp to answer questions about booth allocations, power connections, signage, or invoices.
+              Our exhibition logistics team is available on WhatsApp to answer questions about booth allocations, power connections, signage, or invoices.
             </p>
           </div>
         </div>

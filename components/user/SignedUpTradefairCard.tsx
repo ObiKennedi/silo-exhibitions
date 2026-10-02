@@ -29,7 +29,7 @@ export function SignedUpTradefairCard({ booking, onOpenPass }: SignedUpTradefair
   const event = booking.event;
   const eventTitle = event?.title || booking.eventSlug;
   const eventSlug = booking.eventSlug;
-  const venue = event?.venue || "Campus Exhibition Arena";
+  const venue = event?.venue || "Exhibition Arena / Venue";
   const imageSrc = event?.flierUrl || event?.coverImageUrl || "/hero/hero1.jpeg";
 
   // Calculate days remaining

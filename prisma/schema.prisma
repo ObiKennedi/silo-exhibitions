@@ -67,8 +67,8 @@ model Event {
   slug                  String              @unique
   title                 String
   tagline               String?
-  venue                 String              // Venue, arena or campus space
-  location              String?             // City, State or Campus (e.g., "Owerri, Imo State")
+  venue                 String              // Venue, arena, convention center or exhibition space
+  location              String?             // City, State or Location (e.g., "Owerri, Imo State")
   startDate             DateTime
   endDate               DateTime?
   eventType             EventType?          // Optional manual override. If null, derived dynamically from startDate / endDate

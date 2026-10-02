@@ -28,7 +28,7 @@ export function StallPassModal({ booking, onClose }: StallPassModalProps) {
   if (!booking) return null;
 
   const eventTitle = booking.event?.title || booking.eventSlug;
-  const venue = booking.event?.venue || "Campus Exhibition Arena";
+  const venue = booking.event?.venue || "Exhibition Arena / Venue";
   const dateStr = booking.event?.startDate
     ? new Date(booking.event.startDate).toLocaleDateString("en-GB", {
         day: "numeric",
@@ -66,7 +66,7 @@ export function StallPassModal({ booking, onClose }: StallPassModalProps) {
             <div>
               <span className="ud-pass-modal__pass-brand">SILO EXHIBITIONS</span>
               <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#64748B", textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                Campus Tradefair Credential
+                Tradefair Credential
               </p>
             </div>
             <span
@@ -152,7 +152,7 @@ export function StallPassModal({ booking, onClose }: StallPassModalProps) {
               <ul style={{ margin: 0, paddingLeft: "16px" }}>
                 <li>Present this digital pass or physical printout at the vendor gate.</li>
                 <li>Booth setup starts at 8:00 AM on opening day.</li>
-                <li>All sales are subject to Silo cashless campus policy.</li>
+                <li>All sales are subject to Silo cashless tradefair policy.</li>
               </ul>
             </div>
           </div>

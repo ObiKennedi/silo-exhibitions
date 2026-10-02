@@ -318,7 +318,7 @@ export default function AdminDashboardPage() {
 
   // Form Fields
   const [newTitle, setNewTitle] = useState("");
-  const [newTagline, setNewTagline] = useState("Campus Mega Fair");
+  const [newTagline, setNewTagline] = useState("Mega Trade Fair");
   const [newLocation, setNewLocation] = useState("");
   const [newSlug, setNewSlug] = useState("");
   const [newVenue, setNewVenue] = useState("");
@@ -330,7 +330,7 @@ export default function AdminDashboardPage() {
   const [newCoverUrl, setNewCoverUrl] = useState("");
   const [newFlierUrl, setNewFlierUrl] = useState("");
   const [newCashlessPolicy, setNewCashlessPolicy] = useState(
-    "All stands are equipped with designated QR cashless paypoints for seamless campus sales."
+    "All stands are equipped with designated QR cashless paypoints for seamless tradefair sales."
   );
   const [newWhatsappUrl, setNewWhatsappUrl] = useState("https://wa.me/2349063508366");
   const [newExhibitionPlanDocUrl, setNewExhibitionPlanDocUrl] = useState("");
@@ -409,7 +409,7 @@ export default function AdminDashboardPage() {
   const [termsList, setTermsList] = useState<TermItem[]>([
     {
       id: "1",
-      text: "All stands are equipped with designated QR cashless paypoints for seamless campus sales.",
+      text: "All stands are equipped with designated QR cashless paypoints for seamless tradefair sales.",
       isImportant: true,
     },
     {
@@ -419,12 +419,12 @@ export default function AdminDashboardPage() {
     },
     {
       id: "3",
-      text: "All stands must be kept neat and free of safety hazards. Waste must be deposited in campus bins.",
+      text: "All stands must be kept neat and free of safety hazards. Waste must be deposited in designated venue bins.",
       isImportant: false,
     },
     {
       id: "4",
-      text: "Merchandise and campus conduct must comply with institution rules and trade fair guidelines.",
+      text: "Merchandise and exhibitor conduct must comply with venue rules and trade fair guidelines.",
       isImportant: false,
     },
   ]);
@@ -500,7 +500,7 @@ export default function AdminDashboardPage() {
   const resetEventForm = () => {
     setEditingEvent(null);
     setNewTitle("");
-    setNewTagline("Campus Mega Fair");
+    setNewTagline("Mega Trade Fair");
     setNewLocation("");
     setNewSlug("");
     setNewVenue("");
@@ -513,7 +513,7 @@ export default function AdminDashboardPage() {
     setNewFlierUrl("");
     setNewExhibitionPlanDocUrl("");
     setNewCashlessPolicy(
-      "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
+      "All stalls are equipped with designated QR cashless paypoints for seamless tradefair sales."
     );
     setEnableOneTime(true);
     setEnablePayAsYouGo(true);
@@ -525,7 +525,7 @@ export default function AdminDashboardPage() {
     setTermsList([
       {
         id: "1",
-        text: "All stalls are equipped with designated QR cashless paypoints for seamless campus sales.",
+        text: "All stalls are equipped with designated QR cashless paypoints for seamless tradefair sales.",
         isImportant: true,
       },
       {
@@ -535,12 +535,12 @@ export default function AdminDashboardPage() {
       },
       {
         id: "3",
-        text: "All stalls must be kept neat and free of safety hazards. Waste must be deposited in campus bins.",
+        text: "All stalls must be kept neat and free of safety hazards. Waste must be deposited in designated venue bins.",
         isImportant: false,
       },
       {
         id: "4",
-        text: "Merchandise and campus conduct must comply with institution rules and trade fair guidelines.",
+        text: "Merchandise and exhibitor conduct must comply with venue rules and trade fair guidelines.",
         isImportant: false,
       },
     ]);
@@ -554,7 +554,7 @@ export default function AdminDashboardPage() {
   const openEditModal = (ev: AdminEvent) => {
     setEditingEvent(ev);
     setNewTitle(ev.title);
-    setNewTagline(ev.tagline || "Campus Mega Fair");
+    setNewTagline(ev.tagline || "Mega Trade Fair");
     setNewLocation(ev.location || "");
     setNewSlug(ev.slug);
     setNewVenue(ev.venue);
@@ -583,7 +583,7 @@ export default function AdminDashboardPage() {
     setNewExhibitionPlanDocUrl(ev.exhibitionPlanDocUrl || "");
     setNewCashlessPolicy(
       ev.cashlessPolicy ||
-        "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
+        "All stalls are equipped with designated QR cashless paypoints for seamless tradefair sales."
     );
     setNewWhatsappUrl(ev.whatsappUrl || "https://wa.me/2349063508366");
 
@@ -1672,7 +1672,7 @@ export default function AdminDashboardPage() {
                     />
                     <input
                       type="text"
-                      placeholder="Search title, campus, slug, tag..."
+                      placeholder="Search title, venue/city, slug, tag..."
                       value={eventSearchQuery}
                       onChange={(e) => setEventSearchQuery(e.target.value)}
                       style={{
@@ -1822,7 +1822,7 @@ export default function AdminDashboardPage() {
                       <span>1. Event Identity, Tag &amp; Location Slug</span>
                     </h4>
                     <p className="event-form-section__desc">
-                      Enter the exhibition title, tag theme, and campus location. The slug will automatically derive from the location.
+                      Enter the exhibition title, tag theme, and event location. The slug will automatically derive from the location.
                     </p>
 
                     <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16, marginBottom: 14 }}>
@@ -1833,7 +1833,7 @@ export default function AdminDashboardPage() {
                         <input
                           type="text"
                           required
-                          placeholder="e.g. Silo Campus Mega Trade Fair FUTO 2026"
+                          placeholder="e.g. Silo Grand Mega Trade Fair Lagos 2026"
                           value={newTitle}
                           onChange={(e) => setNewTitle(e.target.value)}
                           style={{
@@ -1854,7 +1854,7 @@ export default function AdminDashboardPage() {
                           type="text"
                           list="event-tags-presets"
                           required
-                          placeholder="e.g. Campus Mega Fair, Tech & Gadgets..."
+                          placeholder="e.g. Mega Trade Fair, Tech & Gadgets..."
                           value={newTagline}
                           onChange={(e) => setNewTagline(e.target.value)}
                           style={{
@@ -1866,7 +1866,7 @@ export default function AdminDashboardPage() {
                           }}
                         />
                         <datalist id="event-tags-presets">
-                          <option value="Campus Mega Fair" />
+                          <option value="Mega Trade Fair" />
                           <option value="Tech, Gadgets & Lifestyle" />
                           <option value="Back to School Trade Fair" />
                           <option value="Fashion, Beauty & Apparel" />
@@ -1879,12 +1879,12 @@ export default function AdminDashboardPage() {
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
                       <div>
                         <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
-                          Location (Campus / City) *
+                          Location (City / Venue / Campus) *
                         </label>
                         <input
                           type="text"
                           required
-                          placeholder="e.g. FUTO Campus, Owerri"
+                          placeholder="e.g. Victoria Island, Lagos / Owerri"
                           value={newLocation}
                           onChange={(e) => handleLocationChange(e.target.value)}
                           style={{
@@ -1922,7 +1922,7 @@ export default function AdminDashboardPage() {
                           <input
                             type="text"
                             required
-                            placeholder="futo-campus-owerri"
+                            placeholder="lagos-trade-expo-2026"
                             value={newSlug}
                             onChange={(e) =>
                               setNewSlug(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ""))
@@ -1949,7 +1949,7 @@ export default function AdminDashboardPage() {
                       <input
                         type="text"
                         required
-                        placeholder="e.g. Hall of Excellence & Freedom Square, FUTO Campus"
+                        placeholder="e.g. Eko Convention Center / Landmark Event Centre"
                         value={newVenue}
                         onChange={(e) => setNewVenue(e.target.value)}
                         style={{
@@ -2332,7 +2332,7 @@ export default function AdminDashboardPage() {
                                   <textarea
                                     rows={3}
                                     value={stall.description || ""}
-                                    placeholder="Ideal for student entrepreneurs, solo artisans, apparel & craft vendors."
+                                    placeholder="Ideal for emerging entrepreneurs, solo artisans, apparel & craft vendors."
                                     onChange={(e) =>
                                       handleUpdateStall(stall.id, { description: e.target.value })
                                     }
@@ -3185,7 +3185,7 @@ export default function AdminDashboardPage() {
                               <br />
                               <small style={{ color: "#64748b" }}>
                                 <MapPin size={11} style={{ display: "inline", verticalAlign: "middle" }} />{" "}
-                                {ev.location || "Campus Ground"}
+                                {ev.location || "Exhibition Arena"}
                               </small>
                             </td>
 

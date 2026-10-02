@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { useState } from "react";
 import Link from "next/link";
@@ -12,8 +12,9 @@ import {
     Sparkles,
     CheckCircle2,
     Loader2,
-    Users,
     Printer,
+    Camera,
+    Truck,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 
@@ -24,60 +25,30 @@ interface Props {
     event: UpcomingEvent;
 }
 
-const VOLUNTEER_ROLES = [
+// The ONLY two volunteer teams
+export const VOLUNTEER_TEAMS = [
     {
-        id: "ushering",
-        title: "Ushering & Guest Experience",
-        desc: "Welcome visitors, VIP guests and guide attendees smoothly through exhibition zones and seats.",
+        id: "content-publicity",
+        title: "Content and publicity team",
+        icon: Camera,
+        desc: "Capture photos and videos, handle social media coverage, interview exhibitors, create TikTok/Reels, and broadcast live tradefair moments.",
     },
     {
-        id: "logistics",
-        title: "Vendor Relations & Logistics",
-        desc: "Assist stand owners during setup, deliver exhibitor badges, and coordinate loading dock flow.",
-    },
-    {
-        id: "ticketing",
-        title: "Gate & Accreditation Crew",
-        desc: "Scan QR codes, verify attendee registration passes, and distribute official wristbands.",
-    },
-    {
-        id: "media",
-        title: "Media & Social Content Team",
-        desc: "Capture photos, record TikTok/Reels, interview stand vendors, and share live event highlights.",
-    },
-    {
-        id: "stage",
-        title: "Stage & Sound Coordination",
-        desc: "Manage stage cues, assist speakers and performers, and support live pitch contest sessions.",
-    },
-    {
-        id: "safety",
-        title: "Crowd Safety & Information Desk",
-        desc: "Staff the central help desk, provide directions, manage lost items, and support first-aid crew.",
+        id: "venue-logistics",
+        title: "Venue management and logistics team",
+        icon: Truck,
+        desc: "Coordinate exhibition floor flow, assist stallholders during setup, manage guest accreditation and passes, and ensure smooth on-ground logistics.",
     },
 ];
 
 export const VolunteerApplicationForm = ({ event }: Props) => {
-    // Role selection
-    const [primaryRole, setPrimaryRole] = useState(VOLUNTEER_ROLES[0].title);
-    const [secondaryRole, setSecondaryRole] = useState(VOLUNTEER_ROLES[1].title);
+    // Selected team (the only two teams)
+    const [selectedTeam, setSelectedTeam] = useState(VOLUNTEER_TEAMS[0].title);
 
-    // Form fields
+    // Form fields: name, email, and phone number
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [phone, setPhone] = useState("");
-    const [institution, setInstitution] = useState("");
-    const [tshirtSize, setTshirtSize] = useState("L");
-    const [daysAvailable, setDaysAvailable] = useState<string[]>([
-        "Day 1 (Friday)",
-        "Day 2 (Saturday)",
-        "Day 3 (Sunday)",
-    ]);
-    const [motivation, setMotivation] = useState("");
-    const [emergencyContact, setEmergencyContact] = useState("");
-
-    // Terms
-    const [conductAccepted, setConductAccepted] = useState(false);
 
     // Submission states
     const [loading, setLoading] = useState(false);
@@ -85,56 +56,56 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
         volunteerId: string;
         fullName: string;
         role: string;
+        groupChatUrl: string;
     } | null>(null);
-
-    const toggleDay = (day: string) => {
-        setDaysAvailable((prev) =>
-            prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
-        );
-    };
 
     const isFormValid =
         fullName.trim().length > 1 &&
         /^\S+@\S+\.\S+$/.test(email) &&
-        phone.trim().length >= 10 &&
-        daysAvailable.length > 0 &&
-        conductAccepted;
+        phone.trim().length >= 7;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!isFormValid) return;
+        if (!isFormValid || loading) return;
 
         setLoading(true);
         const volunteerId = `SILO-VOL-${Math.floor(1000 + Math.random() * 9000)}`;
+        const fallbackGroupUrl = event.whatsappUrl || "https://wa.me/2349063508366";
+        let targetGroupUrl = fallbackGroupUrl;
 
         try {
-            await fetch(`/api/events/${event.slug}/volunteer`, {
+            const res = await fetch(`/api/events/${event.slug}/volunteer`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     volunteerId,
                     eventSlug: event.slug,
-                    fullName,
-                    email,
-                    phone,
-                    institution,
-                    primaryRole,
-                    secondaryRole,
-                    daysAvailable,
-                    tshirtSize,
-                    motivation,
-                    emergencyContact,
+                    fullName: fullName.trim(),
+                    email: email.trim().toLowerCase(),
+                    phone: phone.trim(),
+                    primaryRole: selectedTeam,
                 }),
             });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data?.groupChatUrl) {
+                    targetGroupUrl = data.groupChatUrl;
+                }
+            }
         } catch (err) {
             console.error("Volunteer submission error:", err);
         } finally {
             setLoading(false);
             setSuccessData({
                 volunteerId,
-                fullName,
-                role: primaryRole,
+                fullName: fullName.trim(),
+                role: selectedTeam,
+                groupChatUrl: targetGroupUrl,
             });
+
+            // Immediately redirect user to the volunteer group chat
+            window.location.href = targetGroupUrl;
         }
     };
 
@@ -148,7 +119,7 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
                     <h1 className="volunteer-success__title">Application Received!</h1>
                     <p className="volunteer-success__sub">
                         Welcome to the crew, <b>{successData.fullName}</b>! Your volunteer badge for{" "}
-                        <b>{event.title}</b> has been generated.
+                        <b>{event.title}</b> has been generated and you are being added to the official volunteer group chat.
                     </p>
 
                     <div className="volunteer-success__card">
@@ -157,31 +128,42 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
                             <b className="volunteer-success__badge">{successData.volunteerId}</b>
                         </div>
                         <div className="volunteer-success__row">
-                            <span>Assigned Primary Role</span>
+                            <span>Assigned Team</span>
                             <b>{successData.role}</b>
-                        </div>
-                        <div className="volunteer-success__row">
-                            <span>T-Shirt Size</span>
-                            <b>Size {tshirtSize}</b>
                         </div>
                         <div className="volunteer-success__row">
                             <span>Venue</span>
                             <b>{event.venue}</b>
                         </div>
                         <div className="volunteer-success__row">
-                            <span>Mandatory Virtual Briefing</span>
-                            <b>Thursday, Nov 12 @ 7:00 PM (Google Meet)</b>
+                            <span>Dates</span>
+                            <b>
+                                {new Date(event.startDate).toLocaleDateString("en-GB", {
+                                    day: "numeric",
+                                    month: "short",
+                                })}{" "}
+                                –{" "}
+                                {new Date(event.endDate).toLocaleDateString("en-GB", {
+                                    day: "numeric",
+                                    month: "short",
+                                    year: "numeric",
+                                })}
+                            </b>
                         </div>
                     </div>
 
                     <a
-                        href={event.whatsappUrl || "https://wa.me/2349063508366"}
+                        href={successData.groupChatUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="volunteer-success__whatsapp-cta"
+                        id="volunteer-join-group-chat-cta"
                     >
-                        <FaWhatsapp size={20} /> Join Volunteer WhatsApp Group
+                        <FaWhatsapp size={20} /> Join Volunteer WhatsApp Group Chat
                     </a>
+                    <p style={{ fontSize: "12.5px", color: "var(--muted, #5b6485)", margin: "-4px 0 24px" }}>
+                        If WhatsApp did not open automatically, tap the button above to join now.
+                    </p>
 
                     <div className="volunteer-success__actions">
                         <button
@@ -225,9 +207,9 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
                     </span>
                 </div>
                 <p className="volunteer-hero__sub">
-                    Be the heartbeat of the largest campus tradefair. Work alongside leading brands, gain
-                    hands-on event production experience, and help thousands of students and visitors have an
-                    unforgettable weekend.
+                    Be the heartbeat of the tradefair. Work alongside leading brands, gain
+                    hands-on event production experience, and help thousands of attendees and exhibitors have an
+                    unforgettable experience.
                 </p>
             </header>
 
@@ -237,7 +219,7 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
                     <div className="volunteer-perks__icon">
                         <Shirt size={22} />
                     </div>
-                    <h4>Official Crew T-Shirt</h4>
+                    <h4>Official Crew Gear</h4>
                     <p>Branded Silo crew gear and personalized volunteer access badge.</p>
                 </div>
                 <div className="volunteer-perks__item">
@@ -263,211 +245,135 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
                 </div>
             </div>
 
-            <form onSubmit={handleSubmit}>
-                {/* STEP 1: Role Selection */}
-                <section className="volunteer-section">
-                    <div className="volunteer-section__head">
-                        <h2>Step 1: Choose Your Preferred Role</h2>
-                        <p>Select the team where your strengths and interests will shine brightest.</p>
-                    </div>
+            {/* Volunteer Application Form */}
+            <form onSubmit={handleSubmit} className="volunteer-section">
+                <div className="volunteer-section__head">
+                    <h2>Choose Your Volunteer Team</h2>
+                    <p>Select which team matches your skills, then enter your name, email, and phone number to be added immediately to the group chat.</p>
+                </div>
 
-                    <div className="role-grid">
-                        {VOLUNTEER_ROLES.map((role) => {
-                            const isSelected = role.title === primaryRole;
-                            return (
-                                <div
-                                    key={role.id}
-                                    className={`role-card ${isSelected ? "is-selected" : ""}`}
-                                    onClick={() => setPrimaryRole(role.title)}
-                                >
-                                    <div className="role-card__head">
-                                        <h3 className="role-card__title">{role.title}</h3>
-                                        <div className="role-card__radio" />
-                                    </div>
-                                    <p className="role-card__desc">{role.desc}</p>
-                                </div>
-                            );
-                        })}
-                    </div>
-
-                    <div className="volunteer-field" style={{ maxWidth: "420px" }}>
-                        <label htmlFor="sec-role">Secondary Role Choice (Backup)</label>
-                        <select
-                            id="sec-role"
-                            value={secondaryRole}
-                            onChange={(e) => setSecondaryRole(e.target.value)}
-                        >
-                            {VOLUNTEER_ROLES.map((r) => (
-                                <option key={r.id} value={r.title}>
-                                    {r.title}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
-                </section>
-
-                {/* STEP 2: Personal Details */}
-                <section className="volunteer-section">
-                    <div className="volunteer-section__head">
-                        <h2>Step 2: Your Contact &amp; Details</h2>
-                        <p>We need your contact information to coordinate your orientation and shift scheduling.</p>
-                    </div>
-
-                    <div className="volunteer-form-grid">
-                        <div className="volunteer-field">
-                            <label htmlFor="vol-name">Full Name *</label>
-                            <input
-                                id="vol-name"
-                                type="text"
-                                required
-                                placeholder="e.g. Chisom Nwankwo"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="volunteer-field">
-                            <label htmlFor="vol-email">Email Address *</label>
-                            <input
-                                id="vol-email"
-                                type="email"
-                                required
-                                placeholder="e.g. chisom@gmail.com"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="volunteer-field">
-                            <label htmlFor="vol-phone">WhatsApp / Phone Number *</label>
-                            <input
-                                id="vol-phone"
-                                type="tel"
-                                required
-                                placeholder="e.g. 08012345678"
-                                value={phone}
-                                onChange={(e) => setPhone(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="volunteer-field">
-                            <label htmlFor="vol-inst">Campus / University / Occupation *</label>
-                            <input
-                                id="vol-inst"
-                                type="text"
-                                required
-                                placeholder="e.g. FUTO / IMSU / Freelancer"
-                                value={institution}
-                                onChange={(e) => setInstitution(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="volunteer-field">
-                            <label htmlFor="vol-shirt">Crew T-Shirt Size</label>
-                            <select
-                                id="vol-shirt"
-                                value={tshirtSize}
-                                onChange={(e) => setTshirtSize(e.target.value)}
+                {/* The only two teams for volunteers */}
+                <div className="role-grid" style={{ gridTemplateColumns: "repeat(2, 1fr)", marginBottom: 28 }}>
+                    {VOLUNTEER_TEAMS.map((team) => {
+                        const isSelected = team.title === selectedTeam;
+                        const Icon = team.icon;
+                        return (
+                            <div
+                                key={team.id}
+                                className={`role-card ${isSelected ? "is-selected" : ""}`}
+                                onClick={() => setSelectedTeam(team.title)}
+                                role="button"
+                                tabIndex={0}
+                                onKeyDown={(e) => {
+                                    if (e.key === "Enter" || e.key === " ") {
+                                        e.preventDefault();
+                                        setSelectedTeam(team.title);
+                                    }
+                                }}
                             >
-                                <option value="S">Small (S)</option>
-                                <option value="M">Medium (M)</option>
-                                <option value="L">Large (L)</option>
-                                <option value="XL">Extra Large (XL)</option>
-                                <option value="XXL">Double Extra Large (XXL)</option>
-                            </select>
-                        </div>
-
-                        <div className="volunteer-field">
-                            <label htmlFor="vol-emergency">Emergency Contact (Name &amp; Phone)</label>
-                            <input
-                                id="vol-emergency"
-                                type="text"
-                                placeholder="e.g. Emeka (Brother) - 08099887766"
-                                value={emergencyContact}
-                                onChange={(e) => setEmergencyContact(e.target.value)}
-                            />
-                        </div>
-
-                        <div className="volunteer-field volunteer-form-grid__full">
-                            <label>Days Available *</label>
-                            <div className="volunteer-days">
-                                {["Day 1 (Friday)", "Day 2 (Saturday)", "Day 3 (Sunday)"].map((day) => (
-                                    <label key={day}>
-                                        <input
-                                            type="checkbox"
-                                            checked={daysAvailable.includes(day)}
-                                            onChange={() => toggleDay(day)}
-                                        />
-                                        <span>{day}</span>
-                                    </label>
-                                ))}
+                                <div className="role-card__head">
+                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                        <div
+                                            style={{
+                                                width: 32,
+                                                height: 32,
+                                                borderRadius: 8,
+                                                background: isSelected ? "#0015f8" : "#eaf3ff",
+                                                color: isSelected ? "#fff" : "#0015f8",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center",
+                                                transition: "all 0.2s",
+                                            }}
+                                        >
+                                            <Icon size={16} />
+                                        </div>
+                                        <h3 className="role-card__title" style={{ margin: 0 }}>
+                                            {team.title}
+                                        </h3>
+                                    </div>
+                                    <div className="role-card__radio" />
+                                </div>
+                                <p className="role-card__desc" style={{ marginTop: 6 }}>
+                                    {team.desc}
+                                </p>
                             </div>
-                        </div>
+                        );
+                    })}
+                </div>
 
-                        <div className="volunteer-field volunteer-form-grid__full">
-                            <label htmlFor="vol-motivation">Why would you like to volunteer? (Optional)</label>
-                            <textarea
-                                id="vol-motivation"
-                                placeholder="Tell us briefly about any past event experience or what you hope to learn..."
-                                value={motivation}
-                                onChange={(e) => setMotivation(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                </section>
-
-                {/* STEP 3: Volunteer Code of Conduct */}
-                <section className="volunteer-section">
-                    <div className="volunteer-section__head">
-                        <h2>Step 3: Volunteer Code of Conduct</h2>
-                        <p>Our commitment to an organized, respectful, and safe event environment.</p>
-                    </div>
-
-                    <div className="volunteer-conduct">
-                        <h4>Volunteer Agreement:</h4>
-                        <ul>
-                            <li>
-                                <b>Punctuality:</b> Arrive at the venue by 7:30 AM on your assigned shift days for morning briefing.
-                            </li>
-                            <li>
-                                <b>Professionalism:</b> Wear your official crew T-shirt and lanyard at all times. Treat all exhibitors, guests, and fellow volunteers with utmost courtesy.
-                            </li>
-                            <li>
-                                <b>Attendance at Orientation:</b> Attend the 45-minute virtual onboarding session held 24 hours prior to Day 1.
-                            </li>
-                            <li>
-                                <b>Safety &amp; Teamwork:</b> Follow supervisor guidelines and immediately report any emergencies to the safety desk.
-                            </li>
-                        </ul>
-                    </div>
-
-                    <label className="volunteer-agreement">
+                <div className="volunteer-form-grid">
+                    <div className="volunteer-field volunteer-form-grid__full">
+                        <label htmlFor="vol-name">Full Name *</label>
                         <input
-                            type="checkbox"
-                            checked={conductAccepted}
-                            onChange={(e) => setConductAccepted(e.target.checked)}
+                            id="vol-name"
+                            type="text"
+                            required
+                            placeholder="e.g. Chisom Nwankwo"
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
                         />
-                        <span>
-                            I agree to the <strong>Silo Exhibitions Volunteer Code of Conduct</strong> and commit
-                            to fulfilling my assigned responsibilities with enthusiasm, punctuality, and teamwork.
-                        </span>
-                    </label>
+                    </div>
 
+                    <div className="volunteer-field">
+                        <label htmlFor="vol-email">Email Address *</label>
+                        <input
+                            id="vol-email"
+                            type="email"
+                            required
+                            placeholder="e.g. chisom@gmail.com"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="volunteer-field">
+                        <label htmlFor="vol-phone">WhatsApp / Phone Number *</label>
+                        <input
+                            id="vol-phone"
+                            type="tel"
+                            required
+                            placeholder="e.g. 08012345678"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                <div style={{ marginTop: 28 }}>
                     <button
                         type="submit"
                         className="volunteer-submit-btn"
                         disabled={!isFormValid || loading}
+                        id="volunteer-submit-btn"
                     >
                         {loading ? (
                             <>
                                 <Loader2 size={18} className="upcoming-exhibitions__spinner" />
-                                Submitting Application...
+                                Submitting &amp; Joining Group Chat...
                             </>
                         ) : (
-                            "Submit Volunteer Application"
+                            <>
+                                <FaWhatsapp size={19} />
+                                Submit &amp; Join Group Chat
+                            </>
                         )}
                     </button>
-                </section>
+                    <p
+                        style={{
+                            textAlign: "center",
+                            fontSize: "12.5px",
+                            color: "var(--muted, #5b6485)",
+                            marginTop: "12px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            gap: "6px",
+                        }}
+                    >
+                        ⚡ You will be automatically redirected to the volunteer WhatsApp group chat right after submitting.
+                    </p>
+                </div>
             </form>
         </main>
     );

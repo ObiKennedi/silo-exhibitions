@@ -91,7 +91,7 @@ export function mapPrismaToUpcomingEvent(event: any): UpcomingEvent {
             enabled: Boolean(event.volunteerCallEnabled),
             description:
                 event.volunteerCallDescription ||
-                "Join our on-ground crew, ushering, logistics and stage team.",
+                "Join our Content & Publicity team or Venue Management & Logistics team.",
             applyUrl: `/${event.slug}/volunteer`,
         },
 

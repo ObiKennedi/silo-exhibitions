@@ -88,7 +88,7 @@ export function generateNewEventEmailHtml(
           Hello ${recipientName || "there"},
         </p>
         <p style="color: #334155; font-size: 15px; line-height: 1.6;">
-          We are excited to announce our upcoming trade fair and campus exhibition:
+          We are excited to announce our upcoming trade fair and exhibition:
         </p>
 
         <!-- Event Highlight Card -->

@@ -17,9 +17,9 @@ import "@/styles/root/BecomeSponsor.scss";
 const SPONSOR_BENEFITS = [
     {
         icon: Users,
-        title: "Massive Campus Footfall",
+        title: "Massive Event Footfall",
         stat: "10,000+ Turnout",
-        desc: "Unrivaled physical access to tens of thousands of vibrant university students, Gen-Z tastemakers, and campus consumers.",
+        desc: "Unrivaled physical access to tens of thousands of high-intent shoppers, Gen-Z consumers, entrepreneurs, and retail buyers.",
     },
     {
         icon: Sparkles,
@@ -31,7 +31,7 @@ const SPONSOR_BENEFITS = [
         icon: TrendingUp,
         title: "Omnichannel Digital Amplification",
         stat: "50,000+ Reach",
-        desc: "Co-branded announcements across Silo social channels, campus influencer networks, email broadcasts, and official event fliers.",
+        desc: "Co-branded announcements across Silo social channels, creator and influencer networks, email broadcasts, and official event fliers.",
     },
     {
         icon: ShieldCheck,
@@ -63,11 +63,11 @@ export const BecomeSponsor = () => {
                         Brand Partnerships &amp; Sponsorships ~
                     </span>
                     <h2 className="become-sponsor__title">
-                        BECOME A SPONSOR &amp; <mark>AMPLIFY YOUR BRAND</mark> ACROSS CAMPUS
+                        BECOME A SPONSOR &amp; <mark>AMPLIFY YOUR BRAND</mark> AT PREMIER TRADEFAIRS
                     </h2>
                     <p className="become-sponsor__sub">
-                        Position your organization at the beating heart of university commerce. Partner with Silo Exhibitions
-                        to connect directly with ambitious students, vibrant creators, and thriving campus enterprises.
+                        Position your organization at the beating heart of commercial trade. Partner with Silo Exhibitions
+                        to connect directly with ambitious entrepreneurs, thousands of buyers, and thriving business enterprises.
                     </p>
                 </div>
 

@@ -24,7 +24,7 @@ export const UpcomingEvents = async () => {
                         <span>Upcoming Exhibitions</span>
                     </div>
                     <p className="upcoming-events__empty-text">
-                        Next campus tradefair dates dropping soon. Stay tuned!
+                        Next tradefair dates dropping soon. Stay tuned!
                     </p>
                     <Link href="/upcoming-exhibitions" className="upcoming-events__empty-cta">
                         View schedule <ArrowRight size={13} />

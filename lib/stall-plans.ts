@@ -59,12 +59,12 @@ export const DEFAULT_STALL_CONFIGS: StallConfig[] = [
         size: "2m × 2m (4 sqm)",
         price: 35000,
         badge: "Popular",
-        description: "Ideal for student entrepreneurs, solo artisans, apparel & craft vendors.",
+        description: "Ideal for emerging entrepreneurs, solo artisans, apparel & craft vendors.",
         features: [
             "1 Display table + 2 chairs",
             "1 Standard electrical socket (500W)",
             "2 Official Vendor passes",
-            "Basic directory listing in campus program",
+            "Basic directory listing in official event program",
         ],
         enableInstallment: true,
         installmentDepositPercent: 50,
@@ -96,7 +96,7 @@ export const DEFAULT_STALL_CONFIGS: StallConfig[] = [
         size: "5m × 5m (25 sqm)",
         price: 120000,
         badge: "Largest Stall · Anchor Brand",
-        description: "Prime center-arena anchor pavilion designed for flagship campus brands and high-volume sales.",
+        description: "Prime center-arena anchor pavilion designed for flagship commercial brands and high-volume sales.",
         features: [
             "Massive 25 sqm center-court pavilion space",
             "Dedicated high-amp electrical line (3000W)",

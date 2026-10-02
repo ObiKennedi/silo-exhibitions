@@ -13,11 +13,11 @@ import { RedirectButton } from "../essentials/LinkButton";
 
 import "@/styles/root/HeroSection.scss";
 
-// Real campus exhibition photography generated for Silo
+// Real exhibition photography generated for Silo
 const HERO_IMAGES = [
-    { src: "/hero/hero1.jpeg", alt: "Exhibitors setting up a stall at a Silo campus tradefair" },
+    { src: "/hero/hero1.jpeg", alt: "Exhibitors setting up a stall at a Silo tradefair" },
     { src: "/hero/hero2.jpeg", alt: "A visitor browsing vendor stalls at a Silo exhibition" },
-    { src: "/hero/hero3.jpeg", alt: "Crowd walking through a Silo campus tradefair" },
+    { src: "/hero/hero3.jpeg", alt: "Crowd walking through a Silo tradefair" },
 ];
 
 const ROTATE_MS = 6000;
@@ -71,7 +71,7 @@ export const Hero = () => {
 
                 <ul className="hero__stats" data-aos="fade-up" data-aos-delay="400">
                     <li><b>240+</b> exhibitors</li>
-                    <li><b>18</b> campuses reached</li>
+                    <li><b>18+</b> tradefairs hosted</li>
                     <li><b>₦2.4B</b> Revenue generated</li>
                 </ul>
             </div>

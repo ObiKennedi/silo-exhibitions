@@ -18,14 +18,18 @@ export async function POST(
     const volunteerCode = body.volunteerId || `SILO-VOL-${Math.floor(1000 + Math.random() * 9000)}`;
     const cleanEmail = body.email.trim().toLowerCase();
 
+    let eventWhatsappUrl: string | null = null;
     try {
         let eventId: string | null = null;
         try {
             const event = await prisma.event.findFirst({
                 where: { slug, status: "PUBLISHED" },
-                select: { id: true },
+                select: { id: true, whatsappUrl: true },
             });
-            if (event) eventId = event.id;
+            if (event) {
+                eventId = event.id;
+                eventWhatsappUrl = event.whatsappUrl;
+            }
         } catch {
             // Optional lookup
         }
@@ -52,7 +56,7 @@ export async function POST(
                 fullName: body.fullName,
                 email: cleanEmail,
                 phone: body.phone,
-                primaryRole: body.primaryRole || "General Support",
+                primaryRole: body.primaryRole || "Volunteer Crew",
                 institution: body.institution || null,
                 daysAvailable: body.daysAvailable ? String(body.daysAvailable) : null,
                 tshirtSize: body.tshirtSize || null,
@@ -70,16 +74,13 @@ export async function POST(
         fullName: body.fullName,
         email: body.email,
         phone: body.phone,
-        primaryRole: body.primaryRole,
-        institution: body.institution,
-        daysAvailable: body.daysAvailable,
-        tshirtSize: body.tshirtSize,
         guestCheckout: !body.userId,
     });
 
     return NextResponse.json({
         success: true,
         volunteerId: volunteerCode,
+        groupChatUrl: eventWhatsappUrl || "https://wa.me/2349063508366",
         message: "Volunteer application recorded successfully",
     });
 }
