@@ -7,6 +7,8 @@
   grid-template-columns: 1fr 1fr;
   gap: 64px;
   align-items: start;
+  overflow-x: hidden;
+  width: 100%;
 
   @media (max-width: 980px) {
     grid-template-columns: 1fr;

@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import {
     Check,
     CheckCircle2,
@@ -14,121 +15,74 @@ import {
     Lock,
     Printer,
     Download,
+    Layers,
+    FileText,
+    ExternalLink,
+    CreditCard,
 } from "lucide-react";
 
 import { UpcomingEvent, StallConfig, StallPaymentPlan } from "@/types/upcoming-event";
+import { computeStallPlans } from "@/lib/stall-plans";
 import { MonnifyModal, MonnifyPaymentSuccess } from "./MonnifyModal";
 import { EventCountdown } from "./EventCountdown";
 import "@/styles/root/StallApplication.scss";
+
+// Cleanly splits features pasted or typed with newlines or wide space gaps
+export const parseFeatures = (featuresList?: string[]): string[] => {
+    if (!featuresList || !Array.isArray(featuresList)) return [];
+    return featuresList.flatMap((item) => {
+        if (!item || typeof item !== "string") return [];
+        return item
+            .split(/\r?\n|\s{3,}/)
+            .map((s) => s.trim())
+            .filter(Boolean);
+    });
+};
 
 interface Props {
     event: UpcomingEvent;
 }
 
-const DEFAULT_STALL_CONFIGS: StallConfig[] = [
-    {
-        id: "compact",
-        title: "Standard Booth",
-        size: "2m × 2m (4 sqm)",
-        price: 35000,
-        description: "Ideal for student entrepreneurs, solo artisans, apparel & craft vendors.",
-        features: [
-            "1 Display table + 2 chairs",
-            "1 Standard electrical socket (500W)",
-            "2 Official Vendor passes",
-            "Basic directory listing in campus program",
-        ],
-        availablePlans: [
-            {
-                id: "full",
-                name: "Full Upfront Payment",
-                dueNow: 35000,
-                totalAmountText: "₦35,000 one-off",
-                description: "Pay 100% now for instant confirmed allocation.",
-            },
-            {
-                id: "installment",
-                name: "2-Part Installment Plan",
-                dueNow: 20000,
-                totalAmountText: "₦20,000 now + ₦15,000 later",
-                description: "Pay ₦20,000 deposit today to hold your space. Remainder due 7 days prior.",
-            },
-        ],
-    },
-    {
-        id: "corner",
-        title: "Prime Corner Stall",
-        size: "3m × 3m (9 sqm)",
-        badge: "High Foot Traffic",
-        description: "Corner placement at corridor intersections with high attendee flow.",
-        features: [
-            "2 Display tables + 4 chairs",
-            "Dual high-capacity electrical sockets (1500W)",
-            "4 Official Vendor passes",
-            "Highlighted boundary on physical & digital event maps",
-            "1 Live DJ shoutout per day",
-        ],
-        availablePlans: [
-            {
-                id: "full",
-                name: "Full Upfront Payment",
-                dueNow: 65000,
-                totalAmountText: "₦65,000 one-off",
-                description: "Lock corner booth priority and save on installment admin costs.",
-            },
-            {
-                id: "installment",
-                name: "2-Part Installment Plan",
-                dueNow: 35000,
-                totalAmountText: "₦35,000 now + ₦30,000 later",
-                description: "Pay ₦35,000 today to reserve corner stall. Final balance due 7 days before event.",
-            },
-        ],
-    },
-    {
-        id: "mega",
-        title: "Grand Mega Pavilion",
-        size: "5m × 5m (25 sqm)",
-        badge: "Largest Stall · Anchor Brand",
-        description: "Prime center-arena anchor pavilion designed for flagship campus brands and high-volume sales.",
-        features: [
-            "Massive 25 sqm center-court pavilion space",
-            "Dedicated high-amp electrical line (3000W)",
-            "8 VIP Vendor badges with early setup privileges",
-            "Stage spotlight interview & continuous MC mentions",
-            "Priority loading dock & logistics assistance",
-            "Full feature page in official exhibition digital guide",
-        ],
-        availablePlans: [
-            {
-                id: "full",
-                name: "Option 1: Flat Rate (Pay Once)",
-                dueNow: 120000,
-                totalAmountText: "₦120,000 one-off flat rate",
-                description: "Pay once upfront for all 3 days. No daily revenue percentage or daily remittance required — keep 100% of your sales.",
-            },
-            {
-                id: "revenue_percentage",
-                name: "Option 2: Pay Daily (10% Daily Gross Revenue)",
-                dueNow: 25000,
-                totalAmountText: "₦25,000 Setup Deposit + 10% Daily Gross Revenue",
-                description: "Lower initial commitment. Pay a ₦25,000 setup deposit today, then remit 10% of your total daily gross revenue at the end of each day.",
-                isRevenueShare: true,
-                revenuePercentage: 10,
-            },
-        ],
-    },
-];
-
 export const StallApplicationForm = ({ event }: Props) => {
+    const searchParams = useSearchParams();
+    const paramStall = searchParams.get("stall");
+    const paramPlan = searchParams.get("plan");
+
+    // Strictly derive stall list from uploaded exhibition data — NEVER fall back to dummy presets!
     const stallList: StallConfig[] = (event.stallsConfig && event.stallsConfig.length > 0)
-        ? event.stallsConfig
-        : DEFAULT_STALL_CONFIGS;
+        ? event.stallsConfig.map((s) => ({
+            ...s,
+            availablePlans: (Array.isArray(s.availablePlans) && s.availablePlans.length > 0)
+                ? s.availablePlans
+                : computeStallPlans(s),
+          }))
+        : [];
+
+    const initialStall = (paramStall ? stallList.find((s) => s.id === paramStall) : null) || stallList[0] || null;
+    const initialPlan = (paramPlan ? initialStall?.availablePlans?.find((p) => p.id === paramPlan) : null) || initialStall?.availablePlans?.[0] || null;
 
     // Selection state
-    const [selectedStallId, setSelectedStallId] = useState<string>(() => stallList[0]?.id || "compact");
-    const [selectedPlanId, setSelectedPlanId] = useState<string>(() => stallList[0]?.availablePlans?.[0]?.id || "full");
-    const [showForm, setShowForm] = useState(false);
+    const [selectedStallId, setSelectedStallId] = useState<string>(() => initialStall?.id || "");
+    const [selectedPlanId, setSelectedPlanId] = useState<string>(() => initialPlan?.id || "full");
+    const [showForm, setShowForm] = useState<boolean>(() => Boolean(stallList.length > 0 && (paramStall || paramPlan)));
+
+    useEffect(() => {
+        if (paramStall && stallList.length > 0) {
+            const matchedStall = stallList.find((s) => s.id === paramStall);
+            if (matchedStall) {
+                setSelectedStallId(matchedStall.id);
+                if (paramPlan) {
+                    const matchedPlan = matchedStall.availablePlans?.find((p) => p.id === paramPlan);
+                    if (matchedPlan) {
+                        setSelectedPlanId(matchedPlan.id);
+                    }
+                } else if (matchedStall.availablePlans?.length) {
+                    setSelectedPlanId(matchedStall.availablePlans[0].id);
+                }
+                setShowForm(true);
+            }
+        }
+    }, [paramStall, paramPlan, stallList]);
 
     // Form inputs state
     const [businessName, setBusinessName] = useState("");
@@ -356,111 +310,117 @@ export const StallApplicationForm = ({ event }: Props) => {
                         <p>Select the booth dimension that fits your merchandise and brand presence, then click &quot;I want this&quot; to open the application.</p>
                     </div>
 
-                    <div className="stall-grid">
-                        {stallList.map((stall) => {
-                            const isSelected = stall.id === selectedStallId;
-                            const defaultPlan = stall.availablePlans?.[0];
-                            const revPlan = stall.availablePlans?.find((p) => p.isRevenueShare);
-
-                            return (
-                                <div
-                                    key={stall.id}
-                                    className={`stall-card ${isSelected ? "is-selected" : ""}`}
-                                    onClick={() => handleStallSelect(stall.id)}
-                                >
-                                    {stall.badge && <span className="stall-card__badge-top">{stall.badge}</span>}
-
-                                    <div className="stall-card__header">
-                                        <div>
-                                            <h3 className="stall-card__title">{stall.title}</h3>
-                                            <span className="stall-card__size">{stall.size}</span>
-                                        </div>
-                                        <div className="stall-card__radio" />
-                                    </div>
-
-                                    <div className="stall-card__price-wrap">
-                                        <div className="stall-card__price-main">
-                                            {revPlan ? (
-                                                <div style={{ fontSize: "19px", lineHeight: "1.25" }}>
-                                                    <span>₦{(stall.price || defaultPlan?.dueNow || 0).toLocaleString()} <small style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>flat once</small></span>
-                                                    <span style={{ fontSize: "12px", color: "var(--muted)", margin: "0 4px", fontWeight: 400 }}>or</span>
-                                                    <span style={{ color: "#d97706" }}>₦{revPlan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ {revPlan.revenuePercentage || 10}% daily</small></span>
-                                                </div>
-                                            ) : (
-                                                `₦${(stall.price || defaultPlan?.dueNow || 0).toLocaleString()}`
-                                            )}
-                                        </div>
-                                        <div className="stall-card__price-sub">
-                                            {revPlan
-                                                ? "Two payment options: Flat rate once OR Pay daily"
-                                                : defaultPlan?.totalAmountText || `₦${(stall.price || 0).toLocaleString()} one-off`}
-                                        </div>
-                                    </div>
-
-                                    <p style={{ fontSize: "13px", color: "var(--muted)", marginBottom: "14px", lineHeight: "1.5" }}>
-                                        {stall.description}
-                                    </p>
-
-                                    <ul className="stall-card__features">
-                                        {stall.features.map((feat, i) => (
-                                            <li key={i}>
-                                                <Check size={14} />
-                                                <span>{feat}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
-
-                                    <button
-                                        type="button"
-                                        className="stall-card__want-btn"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            if (defaultPlan) {
-                                                handleChoosePlan(stall.id, defaultPlan.id);
-                                            } else {
-                                                handleStallSelect(stall.id);
-                                                setShowForm(true);
-                                            }
-                                        }}
-                                    >
-                                        I want this
-                                    </button>
+                    {/* Official Stall Plan & Floor Layout Document Link */}
+                    {event.exhibitionPlan?.documentUrl && (
+                        <div className="stall-plan-doc-banner">
+                            <div className="stall-plan-doc-banner__info">
+                                <Layers size={22} className="stall-plan-doc-banner__icon" />
+                                <div>
+                                    <h4>Official Stall Plan &amp; Floor Layout Document Available</h4>
+                                    <p>Exhibition hall blueprint, walkways, and numbered booth allocations for {event.title}.</p>
                                 </div>
-                            );
-                        })}
-                    </div>
+                            </div>
+                            <a
+                                href={event.exhibitionPlan.documentUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="stall-plan-doc-banner__btn"
+                            >
+                                <Download size={14} /> View Stall Plan (PDF)
+                            </a>
+                        </div>
+                    )}
 
-                    {/* Payment Plan Options for Selected Stall */}
-                    <div className="stall-plans">
-                        <h3 className="stall-plans__title">
-                            Payment Plans for {activeStall?.title || "Selected Stall"}:
-                        </h3>
-
-                        <div className="stall-plans__options">
-                            {activeStall?.availablePlans?.map((plan) => {
-                                const isPlanSelected = plan.id === selectedPlanId;
+                    {stallList.length === 0 ? (
+                        <div className="stall-empty-state">
+                            <Layers size={38} className="stall-empty-state__icon" />
+                            <h3>Stand Prices &amp; Packages Coming Soon</h3>
+                            <p>
+                                Official exhibitor booth packages and pricing for <strong>{event.title}</strong> will be announced shortly.
+                                To register early vendor interest or request special pavilion requirements, contact our exhibition desk.
+                            </p>
+                            {event.whatsappUrl && (
+                                <a
+                                    href={event.whatsappUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="stall-empty-state__btn"
+                                >
+                                    Inquire on WhatsApp
+                                </a>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="stall-grid">
+                            {stallList.map((stall) => {
+                                const isSelected = stall.id === selectedStallId;
+                                const defaultPlan = stall.availablePlans?.[0];
+                                const revPlan = stall.availablePlans?.find((p) => p.isRevenueShare);
+                                const features = parseFeatures(stall.features);
 
                                 return (
                                     <div
-                                        key={plan.id}
-                                        className={`plan-option ${isPlanSelected ? "is-active" : ""}`}
-                                        onClick={() => setSelectedPlanId(plan.id)}
+                                        key={stall.id}
+                                        className={`stall-card ${isSelected ? "is-selected" : ""}`}
+                                        onClick={() => handleStallSelect(stall.id)}
                                     >
-                                        <div className="plan-option__head">
-                                            <span className="plan-option__name">{plan.name}</span>
-                                            <div className="plan-option__radio" />
+                                        {stall.badge && <span className="stall-card__badge-top">{stall.badge}</span>}
+
+                                        <div className="stall-card__header">
+                                            <div>
+                                                <h3 className="stall-card__title">{stall.title}</h3>
+                                                <span className="stall-card__size">{stall.size}</span>
+                                            </div>
+                                            <div className="stall-card__radio" />
                                         </div>
-                                        <div className="plan-option__due-now">
-                                            ₦{plan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#64748b" }}>due now</small>
+
+                                        <div className="stall-card__price-wrap">
+                                            <div className="stall-card__price-main">
+                                                {revPlan ? (
+                                                    <div style={{ fontSize: "19px", lineHeight: "1.25" }}>
+                                                        <span>₦{(stall.price || defaultPlan?.dueNow || 0).toLocaleString()} <small style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>flat once</small></span>
+                                                        <span style={{ fontSize: "12px", color: "var(--muted)", margin: "0 4px", fontWeight: 400 }}>or</span>
+                                                        <span style={{ color: "#d97706" }}>₦{revPlan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ {revPlan.revenuePercentage || 10}% daily</small></span>
+                                                    </div>
+                                                ) : (
+                                                    `₦${(stall.price || defaultPlan?.dueNow || 0).toLocaleString()}`
+                                                )}
+                                            </div>
+                                            <div className="stall-card__price-sub">
+                                                {revPlan
+                                                    ? "Two payment options: Flat rate once OR Pay daily"
+                                                    : defaultPlan?.totalAmountText || `₦${(stall.price || 0).toLocaleString()} one-off`}
+                                            </div>
                                         </div>
-                                        <p className="plan-option__desc">{plan.description}</p>
+
+                                        {stall.description && (
+                                            <p style={{ fontSize: "13px", color: "var(--muted)", marginBottom: "14px", lineHeight: "1.5" }}>
+                                                {stall.description}
+                                            </p>
+                                        )}
+
+                                        {features.length > 0 && (
+                                            <ul className="stall-card__features">
+                                                {features.map((feat, i) => (
+                                                    <li key={i}>
+                                                        <Check size={14} />
+                                                        <span>{feat}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
 
                                         <button
                                             type="button"
-                                            className="plan-option__want-btn"
+                                            className="stall-card__want-btn"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                handleChoosePlan(activeStall.id, plan.id);
+                                                if (defaultPlan) {
+                                                    handleChoosePlan(stall.id, defaultPlan.id);
+                                                } else {
+                                                    handleStallSelect(stall.id);
+                                                    setShowForm(true);
+                                                }
                                             }}
                                         >
                                             I want this
@@ -469,43 +429,86 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 );
                             })}
                         </div>
+                    )}
 
-                        {/* Flat rate info box for mega */}
-                        {selectedStallId === "mega" && selectedPlanId === "full" && (
-                            <div style={{ marginTop: "16px", padding: "14px 18px", background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "12px", display: "flex", gap: "12px", alignItems: "center" }}>
-                                <CheckCircle2 size={22} color="#16a34a" style={{ flexShrink: 0 }} />
-                                <p style={{ fontSize: "13.5px", color: "#166534", margin: 0, lineHeight: 1.5 }}>
-                                    <b>Option 1 Selected: One-time Flat Rate.</b> Pay ₦120,000 once today. Zero daily audits, no revenue sharing — keep 100% of your sales throughout the 3-day exhibition.
-                                </p>
+                    {/* Payment Plan Options for Selected Stall */}
+                    {stallList.length > 0 && activeStall && (
+                        <div className="stall-plans">
+                            <h3 className="stall-plans__title">
+                                Payment Plans for {activeStall?.title || "Selected Stall"}:
+                            </h3>
+
+                            <div className="stall-plans__options">
+                                {activeStall?.availablePlans?.map((plan) => {
+                                    const isPlanSelected = plan.id === selectedPlanId;
+
+                                    return (
+                                        <div
+                                            key={plan.id}
+                                            className={`plan-option ${isPlanSelected ? "is-active" : ""}`}
+                                            onClick={() => setSelectedPlanId(plan.id)}
+                                        >
+                                            <div className="plan-option__head">
+                                                <span className="plan-option__name">{plan.name}</span>
+                                                <div className="plan-option__radio" />
+                                            </div>
+                                            <div className="plan-option__due-now">
+                                                ₦{plan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#64748b" }}>due now</small>
+                                            </div>
+                                            <p className="plan-option__desc">{plan.description}</p>
+
+                                            <button
+                                                type="button"
+                                                className="plan-option__want-btn"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleChoosePlan(activeStall.id, plan.id);
+                                                }}
+                                            >
+                                                I want this
+                                            </button>
+                                        </div>
+                                    );
+                                })}
                             </div>
-                        )}
 
-                        {/* CRITICAL REVENUE PERCENTAGE WARNING CALLOUT FOR LARGEST STALL */}
-                        {selectedStallId === "mega" && selectedPlanId === "revenue_percentage" && (
-                            <div className="revenue-warning-box">
-                                <AlertTriangle size={24} className="revenue-warning-box__icon" />
-                                <div className="revenue-warning-box__content">
-                                    <h4>Important Policy: 10% of Daily Gross Revenue (Not Profit)</h4>
-                                    <p>
-                                        Under the Grand Mega Pavilion Daily Revenue Share plan, you pay a{" "}
-                                        <b>₦25,000 reservation &amp; setup deposit today via Monnify</b>. At the close
-                                        of each day (8:30 PM), exactly <b>10% of your TOTAL GROSS REVENUE</b> must be
-                                        remitted to the Silo Exhibitions Audit Desk.
-                                        <br />
-                                        <br />
-                                        <strong>PLEASE NOTE:</strong> This 10% is calculated on your{" "}
-                                        <strong>TOTAL DAILY REVENUE</strong> (all incoming sales money across cash, POS,
-                                        and transfers), <strong>NOT ON NET PROFIT</strong>. Operational overhead, stock cost,
-                                        or vendor expenses are NOT deductible from this calculation.
+                            {/* Flat rate info box when active stall has revenue share option but full is chosen */}
+                            {activeStall?.enableRevenueShare && selectedPlanId === "full" && (
+                                <div style={{ marginTop: "16px", padding: "14px 18px", background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "12px", display: "flex", gap: "12px", alignItems: "center" }}>
+                                    <CheckCircle2 size={22} color="#16a34a" style={{ flexShrink: 0 }} />
+                                    <p style={{ fontSize: "13.5px", color: "#166534", margin: 0, lineHeight: 1.5 }}>
+                                        <b>Option 1 Selected: One-time Flat Rate.</b> Pay ₦{(activeStall.price || activePlan.dueNow).toLocaleString()} once today. Zero daily audits, no revenue sharing — keep 100% of your sales throughout the exhibition.
                                     </p>
                                 </div>
-                            </div>
-                        )}
-                    </div>
+                            )}
+
+                            {/* CRITICAL REVENUE PERCENTAGE WARNING CALLOUT FOR REVENUE SHARE PLAN */}
+                            {activePlan?.isRevenueShare && (
+                                <div className="revenue-warning-box">
+                                    <AlertTriangle size={24} className="revenue-warning-box__icon" />
+                                    <div className="revenue-warning-box__content">
+                                        <h4>Important Policy: {activePlan.revenuePercentage || 10}% of Daily Gross Revenue (Not Profit)</h4>
+                                        <p>
+                                            Under the {activeStall?.title || "Selected Stall"} Daily Revenue Share plan, you pay a{" "}
+                                            <b>₦{(activePlan.dueNow).toLocaleString()} reservation &amp; setup deposit today via Monnify</b>. At the close
+                                            of each day (8:30 PM), exactly <b>{activePlan.revenuePercentage || 10}% of your TOTAL GROSS REVENUE</b> must be
+                                            remitted to the Silo Exhibitions Audit Desk.
+                                            <br />
+                                            <br />
+                                            <strong>PLEASE NOTE:</strong> This {activePlan.revenuePercentage || 10}% is calculated on your{" "}
+                                            <strong>TOTAL DAILY REVENUE</strong> (all incoming sales money across cash, POS,
+                                            and transfers), <strong>NOT ON NET PROFIT</strong>. Operational overhead, stock cost,
+                                            or vendor expenses are NOT deductible from this calculation.
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </section>
 
                 {/* PROMPT (when form not yet opened) OR FORM (when 'I want this' is clicked) */}
-                {!showForm ? (
+                {stallList.length > 0 && !showForm ? (
                     <div className="stall-choose-prompt">
                         <Sparkles size={28} className="stall-choose-prompt__icon" />
                         <div className="stall-choose-prompt__content">
@@ -515,7 +518,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                             </p>
                         </div>
                     </div>
-                ) : (
+                ) : stallList.length > 0 ? (
                     <div id="vendor-form-section" className="stall-form-section-wrapper">
                         {/* Selected Plan Callout Banner */}
                         <div className="stall-selected-banner">
@@ -524,11 +527,11 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 <div>
                                     <span className="stall-selected-banner__kicker">Selected Package:</span>
                                     <h3 className="stall-selected-banner__title">
-                                        {activeStall.title} ({activeStall.size}) — {activePlan.name}
+                                        {activeStall?.title} ({activeStall?.size}) — {activePlan?.name}
                                     </h3>
                                     <p className="stall-selected-banner__price">
-                                        <strong>₦{activePlan.dueNow.toLocaleString()}</strong> due now to confirm booking
-                                        {activePlan.isRevenueShare && " (+ 10% daily gross revenue share)"}
+                                        <strong>₦{(activePlan?.dueNow || 0).toLocaleString()}</strong> due now to confirm booking
+                                        {activePlan?.isRevenueShare && " (+ 10% daily gross revenue share)"}
                                     </p>
                                 </div>
                             </div>
@@ -652,7 +655,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                             Medium (Laptops, display monitors, low-power appliances)
                                         </option>
                                         <option value="Heavy (fryers, microwaves, sound speakers)">
-                                            Heavy (Electric fryers, microwaves, sound equipment — requires approval)
+                                            Heavy (Electric fryers, microwaves, audio — requires approval)
                                         </option>
                                     </select>
                                 </div>
@@ -662,54 +665,178 @@ export const StallApplicationForm = ({ event }: Props) => {
                         {/* STEP 3: Terms & Conditions Agreement */}
                         <section className="stall-section">
                             <div className="stall-section__head">
-                                <h2>Step 3: Review Terms &amp; Conditions</h2>
-                                <p>You must review and accept the official exhibitor terms prior to payment.</p>
+                                <h2>Step 3: Review Terms &amp; Conditions &amp; Stall Plans</h2>
+                                <p>You must review and accept the official exhibitor terms and stall plan schedule prior to payment.</p>
                             </div>
 
                             <div className="stall-terms">
-                                <h4 className="stall-terms__title">Silo Exhibitions Vendor Stall Agreement &amp; Rules</h4>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
+                                    <h4 className="stall-terms__title" style={{ margin: 0 }}>Silo Exhibitions Vendor Agreement &amp; Stall Plans</h4>
+                                    <a
+                                        href={`/api/events/${event.slug}/terms-pdf`}
+                                        download
+                                        style={{
+                                            display: "inline-flex",
+                                            alignItems: "center",
+                                            gap: 6,
+                                            background: "var(--blue, #0015f8)",
+                                            color: "#fff",
+                                            fontSize: "12px",
+                                            fontWeight: 600,
+                                            padding: "6px 12px",
+                                            borderRadius: "6px",
+                                            textDecoration: "none",
+                                        }}
+                                        title="Download official Terms & Conditions as PDF"
+                                    >
+                                        <Download size={13} /> Download Terms (PDF)
+                                    </a>
+                                </div>
 
-                                {/* Dynamically Rendered Important Terms Uploaded by Admin */}
-                                {event.importantTerms && (
-                                    <div className="stall-terms__admin-box">
-                                        <div className="stall-terms__admin-badge">
-                                            <ShieldCheck size={14} /> Official Terms for {event.title}
+                                {/* 1. Official Terms Uploaded by Admin */}
+                                {(() => {
+                                    const uploadedTerms = event.importantTerms
+                                        ? event.importantTerms.split("\n").map((t) => t.trim()).filter(Boolean)
+                                        : [];
+
+                                    if (uploadedTerms.length > 0) {
+                                        return (
+                                            <div className="stall-terms__block">
+                                                <span className="stall-terms__header-badge">
+                                                    <ShieldCheck size={13} /> Official Terms for {event.title}
+                                                </span>
+                                                <h5>Exhibition Rules &amp; Official Terms</h5>
+                                                <ul className="stall-terms__rules-list">
+                                                    {uploadedTerms.map((term, i) => (
+                                                        <li key={i}>
+                                                            <span className="rule-num">{i + 1}</span>
+                                                            <span>{term}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        );
+                                    }
+
+                                    return (
+                                        <div className="stall-terms__block">
+                                            <span className="stall-terms__header-badge">
+                                                <ShieldCheck size={13} /> Standard Exhibitor Agreement
+                                            </span>
+                                            <h5>Official Exhibitor Rules &amp; Code of Conduct</h5>
+                                            <ul className="stall-terms__rules-list">
+                                                <li>
+                                                    <span className="rule-num">1</span>
+                                                    <span><b>Stall Setup &amp; Timing:</b> Vendors must complete stall setup between 7:30 AM and 8:30 AM each morning. Stalls must remain active and staffed until the official closing time of 7:30 PM daily.</span>
+                                                </li>
+                                                <li>
+                                                    <span className="rule-num">2</span>
+                                                    <span><b>Stall Plans &amp; Allocation:</b> Reserved booth space is guaranteed upon successful payment of the chosen stall plan. Vendors must operate strictly within assigned dimensions.</span>
+                                                </li>
+                                                <li>
+                                                    <span className="rule-num">3</span>
+                                                    <span><b>Cashless &amp; Digital Payment Policy:</b> {event.cashlessPolicy || "This tradefair operates under a digital cashless policy. All stalls must offer buyers bank transfer or card/POS payment methods to maintain quick lines and safety."}</span>
+                                                </li>
+                                                <li>
+                                                    <span className="rule-num">4</span>
+                                                    <span><b>Booth Cleanliness &amp; Safety:</b> Vendors must maintain their space in a clean, hygienic manner and dispose of waste in designated bins. Open flames without fire clearance are strictly prohibited.</span>
+                                                </li>
+                                                <li>
+                                                    <span className="rule-num">5</span>
+                                                    <span><b>Cancellation &amp; Refunds:</b> Stall reservation fees and deposits are non-refundable within 14 days of the scheduled exhibition opening date.</span>
+                                                </li>
+                                            </ul>
                                         </div>
-                                        <div className="stall-terms__admin-content">
-                                            {event.importantTerms.split("\n").filter(Boolean).map((term, i) => (
-                                                <p key={i}>• {term}</p>
-                                            ))}
-                                        </div>
+                                    );
+                                })()}
+
+                                {/* 2. Cashless Policy (if explicitly set and not in terms) */}
+                                {event.cashlessPolicy && (
+                                    <div className="stall-terms__block" style={{ borderLeft: "3.5px solid var(--blue, #0015f8)" }}>
+                                        <h5>
+                                            <CreditCard size={15} color="var(--blue, #0015f8)" />
+                                            Cashless &amp; Digital Payment Policy
+                                        </h5>
+                                        <p style={{ fontSize: "13px", color: "#334155", margin: 0, lineHeight: 1.55 }}>
+                                            {event.cashlessPolicy}
+                                        </p>
                                     </div>
                                 )}
 
-                                <ol>
-                                    <li>
-                                        <b>Stall Setup &amp; Timing:</b> Vendors must complete stall setup between 7:30 AM
-                                        and 8:30 AM each morning. Stalls must remain active and staffed until the official
-                                        closing time of 7:30 PM daily.
-                                    </li>
-                                    <li>
-                                        <b>Payment Structure for Largest Store (Grand Mega Pavilion):</b> Vendors booking the
-                                        largest store (Grand Mega Pavilion) have two clear options:
-                                        (a) <b>Flat Rate (Pay Once):</b> A single ₦120,000 one-time flat fee with zero daily revenue sharing; OR 
-                                        (b) <b>Pay Daily:</b> A ₦25,000 setup deposit paid today via Monnify, followed by daily remittance of 
-                                        <b>10% of total daily gross sales revenue</b> submitted to the Silo Exhibitions Audit Desk every evening by 8:30 PM. 
-                                        <b>The percentage applies to total gross sales revenue, NOT net profit.</b> Failure to submit daily sales logs or underreporting results in stall cancellation and forfeiture of deposit.
-                                    </li>
-                                    <li>
-                                        <b>Cashless &amp; Digital Payment Policy:</b> {event.cashlessPolicy || "This tradefair operates under a digital cashless policy. All stalls must offer buyers bank transfer or card/POS payment methods to maintain quick lines and safety."}
-                                    </li>
-                                    <li>
-                                        <b>Booth Cleanliness &amp; Safety:</b> Vendors must maintain their space in a clean, hygienic
-                                        manner and dispose of waste in designated bins. Open flames without fire clearance are strictly
-                                        prohibited.
-                                    </li>
-                                    <li>
-                                        <b>Cancellation &amp; Refunds:</b> Stall reservation fees and deposits are non-refundable within
-                                        14 days of the scheduled exhibition opening date.
-                                    </li>
-                                </ol>
+                                {/* 3. Stall Plans & Payment Terms */}
+                                <div className="stall-terms__block">
+                                    <h5>
+                                        <CreditCard size={15} color="var(--blue, #0015f8)" />
+                                        Stall Plans &amp; Payment Options
+                                    </h5>
+                                    <p style={{ fontSize: "13px", color: "#64748b", margin: "0 0 12px", lineHeight: 1.5 }}>
+                                        Official stall configurations and payment schedules for <b>{event.title}</b>:
+                                    </p>
+
+                                    {/* Selected Stall Terms Callout */}
+                                    <div style={{ background: "#eff6ff", border: "1.5px solid #bfdbfe", borderRadius: 10, padding: "12px 16px", marginBottom: 14 }}>
+                                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 6 }}>
+                                            <strong style={{ fontSize: "13.5px", color: "#1e3a8a" }}>
+                                                Selected Allocation: {activeStall?.title} ({activeStall?.size}) — {activePlan?.name}
+                                            </strong>
+                                            <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--blue, #0015f8)", background: "#dbeafe", padding: "2px 8px", borderRadius: 4 }}>
+                                                ₦{(activePlan?.dueNow || 0).toLocaleString()} Due Now
+                                            </span>
+                                        </div>
+                                        <p style={{ fontSize: "12.5px", color: "#334155", margin: 0, lineHeight: 1.55 }}>
+                                            {activePlan?.isRevenueShare ? (
+                                                <>Under this plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} setup deposit today</b> via Monnify. Exactly <b>{activePlan.revenuePercentage || 10}% of total daily gross revenue</b> (all cash, transfers, and POS sales) must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
+                                            ) : activePlan?.id === "installment" ? (
+                                                <>Under this 2-part installment plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} deposit today</b> ({activeStall?.installmentDepositPercent ?? 50}%) to hold your space. The remaining balance of <b>₦{((activeStall?.price || 0) - (activePlan.dueNow || 0)).toLocaleString()}</b> is due 7 days before the exhibition opening.</>
+                                            ) : (
+                                                <>Under the full upfront plan, 100% payment of <b>₦{(activeStall?.price || activePlan?.dueNow || 0).toLocaleString()}</b> is completed today via Monnify for instant confirmed space allocation. Keep 100% of your earnings throughout the exhibition.</>
+                                            )}
+                                        </p>
+                                    </div>
+
+                                    {/* All Stall Plans Overview */}
+                                    <div className="stall-terms__plans-grid">
+                                        {stallList.map((st) => (
+                                            <div
+                                                key={st.id}
+                                                className={`stall-terms__plan-card ${st.id === selectedStallId ? "is-active" : ""}`}
+                                            >
+                                                <div className="plan-card-head">
+                                                    <strong>{st.title}</strong>
+                                                    <span>{st.size}</span>
+                                                </div>
+                                                <div className="plan-card-price">
+                                                    ₦{(st.price || 0).toLocaleString()}
+                                                    <small style={{ fontSize: "11px", color: "#64748b", fontWeight: 400, marginLeft: 4 }}>flat</small>
+                                                </div>
+                                                <p className="plan-card-desc">
+                                                    {st.availablePlans.map((p) => p.name).join(" • ")}
+                                                </p>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Official Stall Plan / Floor Layout Document Link */}
+                                    {event.exhibitionPlan?.documentUrl && (
+                                        <div className="stall-terms__doc-card">
+                                            <div className="doc-info">
+                                                <Layers size={22} color="#16a34a" />
+                                                <div>
+                                                    <strong>Official Exhibition Floor Plan &amp; Stall Map (PDF)</strong>
+                                                    <span>Review hall blueprint, booth numbers, entrance walkways, and stage location</span>
+                                                </div>
+                                            </div>
+                                            <a
+                                                href={event.exhibitionPlan.documentUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="doc-btn"
+                                            >
+                                                <Download size={13} /> Open Stall Plan
+                                            </a>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
 
                             <label className="stall-agreement">
@@ -719,9 +846,9 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     onChange={(e) => setTermsAccepted(e.target.checked)}
                                 />
                                 <span>
-                                    I have read, understood, and accept the <strong>Silo Exhibitions Vendor Stall Terms &amp; Conditions</strong>.
-                                    {selectedStallId === "mega" && selectedPlanId === "revenue_percentage" && (
-                                        <> I explicitly acknowledge and agree that the 10% daily share is calculated strictly on <strong>TOTAL GROSS REVENUE and NOT on profit</strong>.</>
+                                    I have read, understood, and accept the official <strong>Vendor Terms &amp; Conditions</strong> and the <strong>Stall Plans</strong> for <strong>{event.title}</strong>.
+                                    {activePlan?.isRevenueShare && (
+                                        <> I explicitly acknowledge and agree that the {activePlan.revenuePercentage || 10}% daily share is calculated strictly on <strong>TOTAL GROSS REVENUE and NOT on profit</strong>.</>
                                     )}
                                 </span>
                             </label>
@@ -730,10 +857,10 @@ export const StallApplicationForm = ({ event }: Props) => {
                             <div className="stall-summary-bar">
                                 <div className="stall-summary-bar__info">
                                     <div>Selected Booking Summary</div>
-                                    <h3>₦{activePlan.dueNow.toLocaleString()}</h3>
+                                    <h3>₦{(activePlan?.dueNow || 0).toLocaleString()}</h3>
                                     <p>
-                                        {activeStall.title} · {activePlan.name}
-                                        {activePlan.isRevenueShare && " (+ 10% Daily Gross Revenue)"}
+                                        {activeStall?.title} · {activePlan?.name}
+                                        {activePlan?.isRevenueShare && " (+ 10% Daily Gross Revenue)"}
                                     </p>
                                 </div>
 
@@ -742,22 +869,22 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     className="stall-summary-bar__btn"
                                     disabled={!isFormValid}
                                 >
-                                    <Lock size={16} /> Pay ₦{activePlan.dueNow.toLocaleString()} via Monnify
+                                    <Lock size={16} /> Pay ₦{(activePlan?.dueNow || 0).toLocaleString()} via Monnify
                                 </button>
                             </div>
                         </section>
                     </div>
-                )}
+                ) : null}
             </form>
 
             {/* Monnify Checkout Modal */}
             <MonnifyModal
                 isOpen={isMonnifyOpen}
-                amount={activePlan.dueNow}
+                amount={activePlan?.dueNow || 0}
                 customerName={contactName || businessName}
                 customerEmail={email}
                 customerPhone={phone}
-                paymentDescription={`${activeStall.title} Stall Deposit - ${event.title}`}
+                paymentDescription={`${activeStall?.title || "Stall"} Deposit - ${event.title}`}
                 reference={`SILO-STALL-${Date.now().toString().slice(-6)}`}
                 onClose={() => setIsMonnifyOpen(false)}
                 onSuccess={handlePaymentSuccess}

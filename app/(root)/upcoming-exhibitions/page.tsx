@@ -9,6 +9,9 @@ export const metadata: Metadata = {
         "Discover upcoming tradefairs, exhibitions, vendor calls and dates from Silo Exhibitions.",
 };
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function UpcomingExhibitionsPage() {
     const { events } = await getUpcomingEventsPage(1, 12);
 

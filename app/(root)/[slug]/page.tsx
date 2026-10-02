@@ -10,6 +10,7 @@ import {
     Wallet,
     FileText,
     Download,
+    Layers,
 } from "lucide-react";
 
 import { getUpcomingEventBySlug } from "@/lib/upcoming-events";
@@ -18,6 +19,9 @@ import { WhatsAppButton } from "@/components/root/WhatsAppButton";
 import { EventCountdown } from "@/components/root/EventCountdown";
 
 import "@/styles/root/EventMicroPage.scss";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -157,7 +161,7 @@ export default async function EventMicroPage({ params }: Props) {
                             <h3>Call for vendors</h3>
                             <p>{event.vendorCall.description}</p>
                             <a className="event-page__link-btn" href={event.vendorCall.applyUrl}>
-                                Apply for a stall
+                                Become a vendor
                             </a>
                         </div>
                     )}
@@ -170,7 +174,7 @@ export default async function EventMicroPage({ params }: Props) {
                             <h3>Call for volunteers</h3>
                             <p>{event.volunteerCall.description}</p>
                             <a className="event-page__link-btn" href={event.volunteerCall.applyUrl}>
-                                Sign up to volunteer
+                                Become a volunteer
                             </a>
                         </div>
                     )}
@@ -200,18 +204,57 @@ export default async function EventMicroPage({ params }: Props) {
                 </section>
             )}
 
-            {/* ---------- Exhibition plan / terms ---------- */}
+            {/* ---------- Exhibition plan & Stall Plans ---------- */}
             <section className="event-page__section">
-                <h2>Exhibition plan</h2>
+                <h2>Exhibition &amp; Stall Plans</h2>
                 <div className="event-page__plan">
                     <FileText size={18} />
-                    <p>{event.exhibitionPlan.summary}</p>
+                    <p>{event.exhibitionPlan.summary || "Official vendor booth allocations, stall packages, and payment schedules."}</p>
                 </div>
-                {event.exhibitionPlan.documentUrl && (
-                    <a className="event-page__doc-link" href={event.exhibitionPlan.documentUrl} target="_blank" rel="noopener noreferrer">
-                        <Download size={15} /> Full terms &amp; conditions (PDF)
-                    </a>
+
+                {event.stallsConfig && event.stallsConfig.length > 0 && (
+                    <div className="event-page__stalls-grid">
+                        {event.stallsConfig.map((stall) => (
+                            <div key={stall.id} className="event-page__stall-card">
+                                <div className="event-page__stall-card-head">
+                                    <strong>{stall.title}</strong>
+                                    <span>{stall.size}</span>
+                                </div>
+                                <div className="event-page__stall-card-price">
+                                    ₦{(stall.price || 0).toLocaleString()}
+                                </div>
+                                <p className="event-page__stall-card-desc">
+                                    {stall.description}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
                 )}
+
+                <div className="event-page__downloads">
+                    <a
+                        href={`/api/events/${event.slug}/terms-pdf`}
+                        download
+                        className="event-page__pdf-download-btn"
+                        title="Download official exhibitor terms & conditions document as PDF"
+                    >
+                        <Download size={16} />
+                        <span>Download Terms &amp; Conditions (PDF)</span>
+                    </a>
+
+                    {event.exhibitionPlan.documentUrl && (
+                        <a
+                            href={event.exhibitionPlan.documentUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="event-page__pdf-download-btn event-page__pdf-download-btn--secondary"
+                            title="Open official stall plan and floor layout document"
+                        >
+                            <Layers size={16} />
+                            <span>Official Stall Plan &amp; Floor Layout (PDF)</span>
+                        </a>
+                    )}
+                </div>
             </section>
 
             {/* ---------- Sponsors ---------- */}

@@ -73,6 +73,7 @@ interface AdminEvent {
   flierUrl?: string | null;
   cashlessPolicy?: string | null;
   importantTerms?: string | null;
+  exhibitionPlanDocUrl?: string | null;
   exhibitionPlanSummary?: string | null;
   stallsConfig?: string | null;
   vendorCallDescription?: string | null;
@@ -348,6 +349,7 @@ export default function AdminDashboardPage() {
     "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
   );
   const [newWhatsappUrl, setNewWhatsappUrl] = useState("https://wa.me/2349063508366");
+  const [newExhibitionPlanDocUrl, setNewExhibitionPlanDocUrl] = useState("");
   const [notifyUsersWithResend, setNotifyUsersWithResend] = useState(true);
 
   // Payment Plans Configuration
@@ -525,6 +527,7 @@ export default function AdminDashboardPage() {
     setNewWriteUp("");
     setNewCoverUrl("");
     setNewFlierUrl("");
+    setNewExhibitionPlanDocUrl("");
     setNewCashlessPolicy(
       "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
     );
@@ -593,6 +596,7 @@ export default function AdminDashboardPage() {
     setNewWriteUp(ev.writeUp || "");
     setNewCoverUrl(ev.coverImageUrl || "");
     setNewFlierUrl(ev.flierUrl || "");
+    setNewExhibitionPlanDocUrl(ev.exhibitionPlanDocUrl || "");
     setNewCashlessPolicy(
       ev.cashlessPolicy ||
         "All stalls are equipped with designated QR cashless paypoints for seamless campus sales."
@@ -702,9 +706,9 @@ export default function AdminDashboardPage() {
         ? `${newEndDate}T${newEndTime || "18:00"}:00`
         : undefined;
 
-      const importantTermsString = termsList
-        .filter((t) => t.isImportant && t.text.trim())
+      const allTermsString = termsList
         .map((t) => t.text.trim())
+        .filter(Boolean)
         .join("\n");
 
       const paymentPlansSummary = JSON.stringify({
@@ -739,7 +743,8 @@ export default function AdminDashboardPage() {
         coverImageUrl: newCoverUrl || undefined,
         flierUrl: newFlierUrl || undefined,
         cashlessPolicy: newCashlessPolicy,
-        importantTerms: importantTermsString,
+        importantTerms: allTermsString,
+        exhibitionPlanDocUrl: newExhibitionPlanDocUrl || null,
         exhibitionPlanSummary: paymentPlansSummary,
         vendorCallDescription: vendorCallDesc,
         whatsappUrl: newWhatsappUrl || undefined,
@@ -2757,16 +2762,47 @@ export default function AdminDashboardPage() {
                         );
                       })}
                     </div>
+
+                    {/* Official Stall Plan / Floor Layout Document Upload */}
+                    <div
+                      style={{
+                        marginTop: 20,
+                        padding: "16px 18px",
+                        background: "#f8fafc",
+                        border: "1.5px solid #e2e8f0",
+                        borderRadius: 12,
+                      }}
+                    >
+                      <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                        <Layers size={16} color="#0015f8" />
+                        <strong style={{ fontSize: 13, color: "#0a0f2e" }}>
+                          Official Stall Plan &amp; Floor Layout Document (PDF or High-Res Image)
+                        </strong>
+                      </div>
+                      <p style={{ fontSize: 12, color: "#64748b", margin: "0 0 12px", lineHeight: 1.5 }}>
+                        Upload your official exhibition hall floor plan, booth numbers map, or architectural stall layout.
+                        Vendors will see and be able to download/view this stall plan directly when applying for a stall.
+                      </p>
+                      <CloudinaryImageUpload
+                        label="Stall Plan / Floor Layout Document"
+                        folder="silo-exhibitions/events/floorplans"
+                        value={newExhibitionPlanDocUrl}
+                        onChange={(url) => setNewExhibitionPlanDocUrl(url)}
+                        placeholder="Upload stall layout PDF or JPG/PNG floor plan"
+                        aspectRatioHint="PDF or Image"
+                        accept="application/pdf,image/*"
+                      />
+                    </div>
                   </div>
 
                   {/* 4. Terms & Conditions & Important Disclaimer Notice */}
                   <div className="event-form-section">
                     <h4 className="event-form-section__title">
                       <AlertTriangle size={15} color="#f59e0b" />
-                      <span>4. Terms &amp; Conditions &amp; Important Disclaimer Notice</span>
+                      <span>4. Terms &amp; Conditions &amp; Stall Agreement Rules</span>
                     </h4>
                     <p className="event-form-section__desc">
-                      Add event rules. Check <strong>&quot;Mark as Important&quot;</strong> on any term to render it prominently on the micro-page disclaimer box.
+                      Add your official exhibition terms &amp; conditions below. <strong>All terms saved here are directly displayed to vendors</strong> during stall registration and checkout. Check <strong>&quot;Mark as Important&quot;</strong> on any term to also prominently highlight it in the micro-page disclaimer box.
                     </p>
 
                     {/* Interactive Terms List */}

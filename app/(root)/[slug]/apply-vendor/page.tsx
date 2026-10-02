@@ -1,8 +1,12 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
+import { Suspense } from "react";
 
 import { getUpcomingEventBySlug } from "@/lib/upcoming-events";
 import { StallApplicationForm } from "@/components/root/StallApplicationForm";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 interface Props {
     params: Promise<{ slug: string }>;
@@ -25,5 +29,10 @@ export default async function ApplyVendorPage({ params }: Props) {
 
     if (!event) notFound();
 
-    return <StallApplicationForm event={event} />;
+    return (
+        <Suspense fallback={<div style={{ padding: "120px 20px", textAlign: "center" }}>Loading stall options...</div>}>
+            <StallApplicationForm event={event} />
+        </Suspense>
+    );
 }
+

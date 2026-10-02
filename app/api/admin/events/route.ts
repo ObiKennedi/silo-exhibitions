@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { sendNewEventBroadcastToAllUsers } from "@/lib/email";
 
@@ -45,6 +46,7 @@ export async function POST(req: Request) {
                 flierUrl,
                 cashlessPolicy,
                 importantTerms,
+                exhibitionPlanDocUrl,
                 exhibitionPlanSummary,
                 vendorCallDescription,
                 whatsappUrl,
@@ -86,6 +88,7 @@ export async function POST(req: Request) {
                     flierUrl: flierUrl || null,
                     cashlessPolicy: cashlessPolicy || null,
                     importantTerms: importantTerms || null,
+                    exhibitionPlanDocUrl: exhibitionPlanDocUrl || null,
                     exhibitionPlanSummary: exhibitionPlanSummary || null,
                     vendorCallDescription: vendorCallDescription || null,
                     whatsappUrl: whatsappUrl || null,
@@ -107,6 +110,15 @@ export async function POST(req: Request) {
                     endDate: created.endDate,
                     writeUp: created.writeUp,
                 });
+            }
+
+            try {
+                revalidatePath("/");
+                revalidatePath("/upcoming-exhibitions");
+                revalidatePath(`/${cleanSlug}`);
+                revalidatePath(`/${cleanSlug}/apply-vendor`);
+            } catch (revErr) {
+                console.warn("[API] revalidatePath error:", revErr);
             }
 
             return NextResponse.json({
@@ -135,6 +147,7 @@ export async function POST(req: Request) {
                 flierUrl,
                 cashlessPolicy,
                 importantTerms,
+                exhibitionPlanDocUrl,
                 exhibitionPlanSummary,
                 vendorCallDescription,
                 whatsappUrl,
@@ -161,6 +174,7 @@ export async function POST(req: Request) {
                     flierUrl: flierUrl !== undefined ? flierUrl : undefined,
                     cashlessPolicy: cashlessPolicy !== undefined ? cashlessPolicy : undefined,
                     importantTerms: importantTerms !== undefined ? importantTerms : undefined,
+                    exhibitionPlanDocUrl: exhibitionPlanDocUrl !== undefined ? (exhibitionPlanDocUrl || null) : undefined,
                     exhibitionPlanSummary: exhibitionPlanSummary !== undefined ? exhibitionPlanSummary : undefined,
                     vendorCallDescription: vendorCallDescription !== undefined ? vendorCallDescription : undefined,
                     whatsappUrl: whatsappUrl !== undefined ? whatsappUrl : undefined,
@@ -169,6 +183,17 @@ export async function POST(req: Request) {
                         : undefined,
                 },
             });
+
+            try {
+                revalidatePath("/");
+                revalidatePath("/upcoming-exhibitions");
+                if (updated.slug) {
+                    revalidatePath(`/${updated.slug}`);
+                    revalidatePath(`/${updated.slug}/apply-vendor`);
+                }
+            } catch (revErr) {
+                console.warn("[API] revalidatePath error:", revErr);
+            }
 
             return NextResponse.json({
                 success: true,
@@ -184,7 +209,20 @@ export async function POST(req: Request) {
                 return NextResponse.json({ error: "Event ID is required." }, { status: 400 });
             }
 
+            const existing = await prisma.event.findUnique({ where: { id } });
             await prisma.event.delete({ where: { id } });
+
+            try {
+                revalidatePath("/");
+                revalidatePath("/upcoming-exhibitions");
+                if (existing?.slug) {
+                    revalidatePath(`/${existing.slug}`);
+                    revalidatePath(`/${existing.slug}/apply-vendor`);
+                }
+            } catch (revErr) {
+                console.warn("[API] revalidatePath error:", revErr);
+            }
+
             return NextResponse.json({ success: true, message: "Exhibition deleted successfully." });
         }
 

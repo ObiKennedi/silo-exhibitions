@@ -1,11 +1,14 @@
 import { prisma } from "@/lib/prisma";
-import { UpcomingEvent, UpcomingEventStatus } from "@/types/upcoming-event";
+import { UpcomingEvent, UpcomingEventStatus, StallConfig, StallPaymentPlan } from "@/types/upcoming-event";
 
 export interface UpcomingEventsPage {
     events: UpcomingEvent[];
     hasMore: boolean;
     total: number;
 }
+
+import { computeStallPlans, DEFAULT_STALL_CONFIGS } from "@/lib/stall-plans";
+export { computeStallPlans, DEFAULT_STALL_CONFIGS };
 
 /**
  * Maps a Prisma Event record (with relations) to the UpcomingEvent frontend interface.
@@ -30,6 +33,37 @@ export function mapPrismaToUpcomingEvent(event: any): UpcomingEvent {
             : event.endDate
             ? String(event.endDate)
             : startDateStr;
+
+    // Parse exhibitionPlanSummary for structured payment options
+    let planSummary = event.exhibitionPlanSummary || "";
+    let paymentOptions: {
+        oneTime?: boolean;
+        payAsYouGo?: boolean;
+        depositPercentage?: number;
+        payAsYouGoNote?: string;
+    } | undefined = undefined;
+
+    if (event.exhibitionPlanSummary) {
+        try {
+            const parsed = JSON.parse(event.exhibitionPlanSummary);
+            if (parsed && typeof parsed === "object") {
+                paymentOptions = parsed;
+                const parts: string[] = [];
+                if (parsed.oneTime) parts.push("Full Upfront Payment");
+                if (parsed.payAsYouGo) {
+                    parts.push(
+                        `Pay-As-You-Go Installments (${parsed.depositPercentage || 50}% initial deposit)`
+                    );
+                }
+                const note = parsed.payAsYouGoNote ? ` • Note: ${parsed.payAsYouGoNote}` : "";
+                if (parts.length > 0) {
+                    planSummary = `Supported Payment Plans: ${parts.join(" | ")}${note}`;
+                }
+            }
+        } catch {
+            // Keep raw text if not JSON
+        }
+    }
 
     return {
         id: event.id,
@@ -81,8 +115,9 @@ export function mapPrismaToUpcomingEvent(event: any): UpcomingEvent {
         importantTerms: event.importantTerms || undefined,
 
         exhibitionPlan: {
-            summary: event.exhibitionPlanSummary || "",
+            summary: planSummary,
             documentUrl: event.exhibitionPlanDocUrl || undefined,
+            paymentOptions,
         },
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,14 +130,32 @@ export function mapPrismaToUpcomingEvent(event: any): UpcomingEvent {
         })),
 
         stallsConfig: (() => {
-            if (!event.stallsConfig) return undefined;
+            if (!event.stallsConfig) return [];
             try {
-                return typeof event.stallsConfig === "string"
+                const parsed = typeof event.stallsConfig === "string"
                     ? JSON.parse(event.stallsConfig)
                     : event.stallsConfig;
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    return parsed.map((s: any) => {
+                        const price = Math.max(0, Number(s.price) || 0);
+                        const stallWithNormalizedPrice = { ...s, price };
+                        const availablePlans = (Array.isArray(s.availablePlans) && s.availablePlans.length > 0)
+                            ? s.availablePlans.map((p: any) => ({
+                                  ...p,
+                                  dueNow: Math.max(0, Number(p.dueNow) || 0),
+                              }))
+                            : computeStallPlans(stallWithNormalizedPrice);
+
+                        return {
+                            ...stallWithNormalizedPrice,
+                            availablePlans,
+                        };
+                    });
+                }
+                return [];
             } catch (err) {
                 console.warn("[mapPrismaToUpcomingEvent] Failed to parse stallsConfig JSON:", err);
-                return undefined;
+                return [];
             }
         })(),
     };
@@ -110,11 +163,12 @@ export function mapPrismaToUpcomingEvent(event: any): UpcomingEvent {
 
 /**
  * Pulls a paginated list of upcoming exhibitions directly from the database.
- * If the database has no records or is unreachable, safely returns empty array.
+ * Returns only real published exhibitions uploaded by administrators.
  */
 export async function getUpcomingEventsPage(page = 1, limit = 12): Promise<UpcomingEventsPage> {
+    const skip = Math.max(0, (page - 1) * limit);
+
     try {
-        const skip = Math.max(0, (page - 1) * limit);
         const now = new Date();
 
         const upcomingWhere = {
@@ -137,7 +191,7 @@ export async function getUpcomingEventsPage(page = 1, limit = 12): Promise<Upcom
             ],
         };
 
-        const [events, total] = await Promise.all([
+        const [records, count] = await Promise.all([
             prisma.event.findMany({
                 where: upcomingWhere,
                 include: {
@@ -160,12 +214,12 @@ export async function getUpcomingEventsPage(page = 1, limit = 12): Promise<Upcom
         ]);
 
         return {
-            events: events.map(mapPrismaToUpcomingEvent),
-            hasMore: skip + events.length < total,
-            total,
+            events: records.map(mapPrismaToUpcomingEvent),
+            hasMore: skip + records.length < count,
+            total: count,
         };
     } catch (err) {
-        console.warn("[getUpcomingEventsPage] Database query returned empty / offline:", err);
+        console.warn("[getUpcomingEventsPage] Database query error:", err);
         return {
             events: [],
             hasMore: false,
@@ -184,16 +238,16 @@ export async function getUpcomingEvents(limit = 3): Promise<UpcomingEvent[]> {
 
 /**
  * Looks up a single upcoming exhibition by its URL slug or location directly from the database.
- * Supports exact slugs as well as friendly location shortcuts (e.g. /futo, /owerri, /unilag, /unn).
+ * Supports exact slugs as well as friendly location shortcuts (e.g. /owerri).
  * Only returns PUBLISHED events unless includeDrafts is true (e.g. for staff preview).
  */
 export async function getUpcomingEventBySlug(
     slug: string,
     options?: { includeDrafts?: boolean }
 ): Promise<UpcomingEvent | null> {
-    try {
-        const cleanSlug = decodeURIComponent(slug).trim().toLowerCase();
+    const cleanSlug = decodeURIComponent(slug).trim().toLowerCase();
 
+    try {
         // 1. Direct match by exact slug
         let event = await prisma.event.findFirst({
             where: {
@@ -237,10 +291,12 @@ export async function getUpcomingEventBySlug(
             });
         }
 
-        if (!event) return null;
-        return mapPrismaToUpcomingEvent(event);
+        if (event) {
+            return mapPrismaToUpcomingEvent(event);
+        }
+        return null;
     } catch (err) {
-        console.warn(`[getUpcomingEventBySlug] Unable to load event "${slug}" from database:`, err);
+        console.warn(`[getUpcomingEventBySlug] Database lookup error for "${slug}":`, err);
         return null;
     }
 }

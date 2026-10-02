@@ -16,11 +16,18 @@ export const UpcomingEventCard = ({ event }: { event: UpcomingEvent }) => {
         month: "short",
     });
 
+    const imageSrc =
+        event.flier && event.flier.trim().length > 0
+            ? event.flier
+            : event.coverImageUrl && event.coverImageUrl.trim().length > 0
+            ? event.coverImageUrl
+            : "/events/silo-campus-tradefair-2026/flier.jpg";
+
     return (
         <Link href={`/${event.slug}`} className="upcoming-event-card">
             <div className="upcoming-event-card__media">
                 <Image
-                    src={event.flier}
+                    src={imageSrc}
                     alt={event.title}
                     fill
                     sizes="(max-width: 700px) 100vw, 33vw"

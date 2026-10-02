@@ -35,9 +35,6 @@ export const UpcomingEvents = async () => {
                     <div className="upcoming-events__head">
                         <div>
                             <p className="upcoming-events__kicker">Upcoming Exhibitions.</p>
-                            <h2 className="upcoming-events__title">
-                                Don&apos;t miss <mark>what&apos;s next.</mark>
-                            </h2>
                         </div>
                         <RedirectButton className="upcoming-events__see-more" href="/upcoming-exhibitions">
                             See all exhibitions

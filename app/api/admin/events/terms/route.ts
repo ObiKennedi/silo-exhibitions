@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
             });
         }
 
-        const { eventId, cashlessPolicy, importantTerms } = body;
+        const { eventId, cashlessPolicy, importantTerms, exhibitionPlanDocUrl } = body;
 
         if (!eventId) {
             return NextResponse.json(
@@ -89,6 +90,7 @@ export async function POST(req: Request) {
             data: {
                 cashlessPolicy: cashlessPolicy !== undefined ? cashlessPolicy : undefined,
                 importantTerms: importantTerms !== undefined ? importantTerms : undefined,
+                exhibitionPlanDocUrl: exhibitionPlanDocUrl !== undefined ? (exhibitionPlanDocUrl || null) : undefined,
             },
             select: {
                 id: true,
@@ -97,8 +99,20 @@ export async function POST(req: Request) {
                 venue: true,
                 cashlessPolicy: true,
                 importantTerms: true,
+                exhibitionPlanDocUrl: true,
             },
         });
+
+        try {
+            revalidatePath("/");
+            revalidatePath("/upcoming-exhibitions");
+            if (updated.slug) {
+                revalidatePath(`/${updated.slug}`);
+                revalidatePath(`/${updated.slug}/apply-vendor`);
+            }
+        } catch (revErr) {
+            console.warn("[API] revalidatePath error in terms:", revErr);
+        }
 
         return NextResponse.json({
             success: true,

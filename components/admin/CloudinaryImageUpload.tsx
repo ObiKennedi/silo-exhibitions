@@ -2,7 +2,7 @@
 
 import { useState, useRef, ChangeEvent, DragEvent } from "react";
 import Image from "next/image";
-import { UploadCloud, CheckCircle2, AlertCircle, Trash2, RefreshCw, Loader2, Link as LinkIcon } from "lucide-react";
+import { UploadCloud, CheckCircle2, AlertCircle, Trash2, RefreshCw, Loader2, Link as LinkIcon, FileText } from "lucide-react";
 import "@/styles/admin/CloudinaryUpload.scss";
 
 interface CloudinaryImageUploadProps {
@@ -13,6 +13,7 @@ interface CloudinaryImageUploadProps {
   placeholder?: string;
   aspectRatioHint?: string;
   required?: boolean;
+  accept?: string;
 }
 
 export function CloudinaryImageUpload({
@@ -23,6 +24,7 @@ export function CloudinaryImageUpload({
   placeholder = "Upload high-res JPG, PNG, or WebP (max 25MB)",
   aspectRatioHint,
   required = false,
+  accept = "image/*,application/pdf",
 }: CloudinaryImageUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -120,28 +122,36 @@ export function CloudinaryImageUpload({
       <input
         ref={fileInputRef}
         type="file"
-        accept="image/*"
+        accept={accept}
         style={{ display: "none" }}
         onChange={onFileInputChange}
       />
 
       {value ? (
-        // Preview Card when image is uploaded or entered
+        // Preview Card when image or document is uploaded or entered
         <div className="cloudinary-upload__preview-card">
-          <div className="cloudinary-upload__preview-thumb">
-            <Image
-              src={value}
-              alt={label}
-              fill
-              unoptimized={!value.includes("res.cloudinary.com")}
-              sizes="72px"
-            />
+          <div className="cloudinary-upload__preview-thumb" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "#f1f5f9" }}>
+            {value.toLowerCase().includes(".pdf") || value.includes("/raw/") ? (
+              <FileText size={32} color="#0015f8" />
+            ) : (
+              <Image
+                src={value}
+                alt={label}
+                fill
+                unoptimized={!value.includes("res.cloudinary.com")}
+                sizes="72px"
+              />
+            )}
           </div>
 
           <div className="cloudinary-upload__preview-meta">
             <span className="cloudinary-upload__preview-status">
               <CheckCircle2 size={13} />
-              {value.includes("res.cloudinary.com") ? "Hosted on Cloudinary" : "Custom Image URL"}
+              {value.toLowerCase().includes(".pdf")
+                ? "PDF Document Uploaded"
+                : value.includes("res.cloudinary.com")
+                ? "Hosted on Cloudinary"
+                : "Custom URL"}
             </span>
             <span className="cloudinary-upload__preview-url" title={value}>
               {value}

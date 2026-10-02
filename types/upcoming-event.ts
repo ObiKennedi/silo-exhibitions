@@ -84,6 +84,12 @@ export interface UpcomingEvent {
     exhibitionPlan: {
         summary: string;
         documentUrl?: string;
+        paymentOptions?: {
+            oneTime?: boolean;
+            payAsYouGo?: boolean;
+            depositPercentage?: number;
+            payAsYouGoNote?: string;
+        };
     };
 
     sponsors: Sponsor[];
