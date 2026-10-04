@@ -211,12 +211,12 @@
 // ---------- card ----------
 
 .upcoming-event-card {
-  display: block;
+  display: flex;
+  flex-direction: column;
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 22px;
   overflow: hidden;
-  text-decoration: none;
   color: inherit;
   box-shadow: var(--shadow);
   transition: transform 0.2s ease, box-shadow 0.2s ease;
@@ -229,6 +229,13 @@
   &:hover .upcoming-event-card__media img {
     transform: scale(1.05);
   }
+}
+
+.upcoming-event-card__media-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  position: relative;
 }
 
 .upcoming-event-card__media {
@@ -270,12 +277,17 @@
 
 .upcoming-event-card__body {
   padding: 16px 18px 18px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 
   h3 {
     font-family: var(--font-body);
     font-size: 16px;
     font-weight: 700;
     color: var(--ink);
+    margin: 0;
+    transition: color 0.2s ease;
   }
 
   p {
@@ -295,8 +307,60 @@
   }
 }
 
+.upcoming-event-card__title-link {
+  text-decoration: none;
+  color: inherit;
+
+  &:hover h3 {
+    color: var(--blue, #0015f8);
+  }
+}
+
 .upcoming-event-card__dot {
   margin: 0 2px;
+}
+
+.upcoming-event-card__footer {
+  margin-top: auto;
+  padding-top: 14px;
+}
+
+.upcoming-event-card__vendor-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  background: var(--blue, #0015f8);
+  color: #ffffff !important;
+  border-radius: 999px;
+  font-family: var(--font-body, sans-serif);
+  font-size: 13px;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.01em;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 21, 248, 0.2);
+
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover {
+    background: #0010c7;
+    color: #ffffff !important;
+    box-shadow: 0 6px 18px rgba(0, 21, 248, 0.32);
+    transform: translateY(-1px);
+
+    svg {
+      transform: translateX(3px);
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 .upcoming-exhibitions {

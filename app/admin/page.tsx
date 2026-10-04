@@ -102,6 +102,8 @@ interface UserTradefairApplication {
   paidAmount: number;
   paymentStatus: string;
   paymentReference?: string | null;
+  transactionId?: string | null;
+  channel?: string | null;
   createdAt: string;
   event?: {
     id: string;
@@ -189,7 +191,7 @@ export function computeStallPlans(stall: {
   // 1. Full Upfront Payment
   plans.push({
     id: "full",
-    name: "Full Upfront Payment",
+    name: "Option 1",
     dueNow: price,
     totalAmountText: `₦${price.toLocaleString()} one-off`,
     description: "Pay 100% now for instant confirmed allocation.",
@@ -202,23 +204,23 @@ export function computeStallPlans(stall: {
     const balance = price - dueNow;
     plans.push({
       id: "installment",
-      name: `2-Part Installment Plan (${depositPct}% Deposit)`,
+      name: "Option 2",
       dueNow,
       totalAmountText: `₦${dueNow.toLocaleString()} now + ₦${balance.toLocaleString()} later`,
       description: `Pay ₦${dueNow.toLocaleString()} deposit today to hold your space. Remainder due 7 days prior.`,
     });
   }
 
-  // 3. Revenue Share / Pay Daily
+  // 3. Pay As You Go (Admin-Selected Fixed Deposit + % Daily Revenue Share)
   if (stall.enableRevenueShare) {
-    const deposit = stall.revenueDepositAmount ?? 25000;
+    const deposit = stall.revenueDepositAmount ?? 50000;
     const revPct = stall.revenuePercentage ?? 10;
     plans.push({
       id: "revenue_percentage",
-      name: `Option 2: Pay Daily (${revPct}% Daily Total Sales)`,
+      name: "Option 3",
       dueNow: deposit,
-      totalAmountText: `₦${deposit.toLocaleString()} Setup Deposit + ${revPct}% Daily Total Sales`,
-      description: `Lower initial commitment. Pay a ₦${deposit.toLocaleString()} setup deposit today, then remit ${revPct}% of total sales at the end of each day.`,
+      totalAmountText: `₦${deposit.toLocaleString()} Fixed Deposit + ${revPct}% Daily Revenue`,
+      description: `Pay a fixed deposit of ₦${deposit.toLocaleString()} today, then remit ${revPct}% of daily total sales at the close of each exhibition day.`,
       isRevenueShare: true,
       revenuePercentage: revPct,
     });
@@ -267,7 +269,7 @@ const DEFAULT_ADMIN_STALLS: StallConfig[] = [
     enableInstallment: true,
     installmentDepositPercent: 50,
     enableRevenueShare: false,
-    revenueDepositAmount: 30000,
+    revenueDepositAmount: 50000,
     revenuePercentage: 10,
   };
   return {
@@ -339,9 +341,10 @@ export default function AdminDashboardPage() {
   // Payment Plans Configuration
   const [enableOneTime, setEnableOneTime] = useState(true);
   const [enablePayAsYouGo, setEnablePayAsYouGo] = useState(true);
-  const [payAsYouGoDeposit, setPayAsYouGoDeposit] = useState(50);
+  const [payAsYouGoDepositAmount, setPayAsYouGoDepositAmount] = useState(50000);
+  const [payAsYouGoRevPercent, setPayAsYouGoRevPercent] = useState(10);
   const [payAsYouGoNote, setPayAsYouGoNote] = useState(
-    "Pay 50% deposit now to reserve your stand. Balance due 48 hours before exhibition setup."
+    "Pay a fixed upfront deposit now. Remit the agreed percentage of daily sales to the audit desk at the end of each day."
   );
 
   // Stand Types & Dynamic Payment Plans Builder State
@@ -377,7 +380,7 @@ export default function AdminDashboardPage() {
       enableInstallment: true,
       installmentDepositPercent: 50,
       enableRevenueShare: false,
-      revenueDepositAmount: 20000,
+      revenueDepositAmount: 50000,
       revenuePercentage: 10,
       availablePlans: [],
     };
@@ -517,7 +520,8 @@ export default function AdminDashboardPage() {
     );
     setEnableOneTime(true);
     setEnablePayAsYouGo(true);
-    setPayAsYouGoDeposit(50);
+    setPayAsYouGoDepositAmount(50000);
+    setPayAsYouGoRevPercent(10);
     setPayAsYouGoNote(
       "Pay 50% deposit now to reserve your stall. Balance due 48 hours before exhibition setup."
     );
@@ -612,7 +616,9 @@ export default function AdminDashboardPage() {
         const parsed = JSON.parse(ev.exhibitionPlanSummary);
         if (parsed.oneTime !== undefined) setEnableOneTime(parsed.oneTime);
         if (parsed.payAsYouGo !== undefined) setEnablePayAsYouGo(parsed.payAsYouGo);
-        if (parsed.depositPercentage !== undefined) setPayAsYouGoDeposit(parsed.depositPercentage);
+        if (parsed.depositAmount !== undefined) setPayAsYouGoDepositAmount(parsed.depositAmount);
+        else if (parsed.depositPercentage !== undefined) setPayAsYouGoDepositAmount(parsed.depositPercentage * 1000);
+        if (parsed.revenuePercentage !== undefined) setPayAsYouGoRevPercent(parsed.revenuePercentage);
         if (parsed.payAsYouGoNote !== undefined) setPayAsYouGoNote(parsed.payAsYouGoNote);
       } catch {
         // Not JSON, keep defaults
@@ -698,7 +704,8 @@ export default function AdminDashboardPage() {
       const paymentPlansSummary = JSON.stringify({
         oneTime: enableOneTime,
         payAsYouGo: enablePayAsYouGo,
-        depositPercentage: enablePayAsYouGo ? payAsYouGoDeposit : 0,
+        depositAmount: enablePayAsYouGo ? payAsYouGoDepositAmount : 0,
+        revenuePercentage: enablePayAsYouGo ? payAsYouGoRevPercent : 0,
         payAsYouGoNote,
       });
 
@@ -706,7 +713,7 @@ export default function AdminDashboardPage() {
         enableOneTime && enablePayAsYouGo ? " | " : ""
       }${
         enablePayAsYouGo
-          ? `Pay As You Go (${payAsYouGoDeposit}% initial deposit. ${payAsYouGoNote})`
+          ? `Pay As You Go (₦${payAsYouGoDepositAmount.toLocaleString()} fixed deposit + ${payAsYouGoRevPercent}% daily revenue share)`
           : ""
       }`;
 
@@ -2070,7 +2077,7 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
                     <p className="event-form-section__desc" style={{ marginBottom: 16 }}>
-                      Configure the stand options for this exhibition. When you set or adjust a stand&apos;s base price (₦), its payment plans (full upfront, 2-part installment, and optional daily revenue share) will dynamically calculate in real time.
+                      Configure the stand options for this exhibition. When you set or adjust a stand&apos;s base price (₦), its payment plans (full upfront, 2-part installment, and optional Pay As You Go with admin-selected fixed deposit + daily revenue share) will dynamically calculate in real time.
                     </p>
 
                     {/* Stalls List */}
@@ -2080,7 +2087,7 @@ export default function AdminDashboardPage() {
                         const depositPct = stall.installmentDepositPercent ?? 50;
                         const installmentDueNow = Math.round(basePrice * (depositPct / 100));
                         const installmentBalance = basePrice - installmentDueNow;
-                        const revDeposit = stall.revenueDepositAmount ?? 25000;
+                        const revDeposit = stall.revenueDepositAmount ?? 50000;
                         const revPct = stall.revenuePercentage ?? 10;
 
                         return (
@@ -2439,7 +2446,7 @@ export default function AdminDashboardPage() {
                                           textTransform: "uppercase",
                                         }}
                                       >
-                                        Plan A • Full Upfront
+                                        Option 1 • Full Upfront
                                       </span>
                                       <span
                                         style={{
@@ -2525,7 +2532,7 @@ export default function AdminDashboardPage() {
                                           }
                                           style={{ width: 14, height: 14, accentColor: "#0015f8" }}
                                         />
-                                        <span>Plan B • Installments</span>
+                                        <span>Option 2 • Installments</span>
                                       </label>
                                       {stall.enableInstallment !== false && (
                                         <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
@@ -2637,7 +2644,7 @@ export default function AdminDashboardPage() {
                                           }
                                           style={{ width: 14, height: 14, accentColor: "#d97706" }}
                                         />
-                                        <span>Plan C • Pay Daily (Rev Share)</span>
+                                        <span>Option 3 • Pay As You Go (Deposit + Rev Share)</span>
                                       </label>
                                     </div>
                                     {stall.enableRevenueShare ? (
@@ -2646,7 +2653,7 @@ export default function AdminDashboardPage() {
                                           style={{
                                             display: "flex",
                                             alignItems: "center",
-                                            gap: 6,
+                                            gap: 8,
                                             flexWrap: "wrap",
                                           }}
                                         >
@@ -2657,13 +2664,13 @@ export default function AdminDashboardPage() {
                                               gap: 4,
                                             }}
                                           >
-                                            <span style={{ fontSize: 11, color: "#78350f" }}>
-                                              Dep: ₦
+                                            <span style={{ fontSize: 11, color: "#78350f", fontWeight: 700 }}>
+                                              Deposit: ₦
                                             </span>
                                             <input
                                               type="number"
                                               min={0}
-                                              step={1000}
+                                              step={5000}
                                               value={revDeposit}
                                               onChange={(e) =>
                                                 handleUpdateStall(stall.id, {
@@ -2671,8 +2678,8 @@ export default function AdminDashboardPage() {
                                                 })
                                               }
                                               style={{
-                                                width: 65,
-                                                padding: "2px 4px",
+                                                width: 75,
+                                                padding: "2px 6px",
                                                 fontSize: 11,
                                                 fontWeight: 700,
                                                 borderRadius: 4,
@@ -2687,8 +2694,8 @@ export default function AdminDashboardPage() {
                                               gap: 4,
                                             }}
                                           >
-                                            <span style={{ fontSize: 11, color: "#78350f" }}>
-                                              Share:
+                                            <span style={{ fontSize: 11, color: "#78350f", fontWeight: 700 }}>
+                                              Revenue:
                                             </span>
                                             <input
                                               type="number"
@@ -2709,21 +2716,22 @@ export default function AdminDashboardPage() {
                                                 border: "1px solid #fcd34d",
                                               }}
                                             />
-                                            <span style={{ fontSize: 11, color: "#78350f" }}>%</span>
+                                            <span style={{ fontSize: 11, color: "#78350f", fontWeight: 700 }}>%</span>
                                           </div>
                                         </div>
                                         <div
                                           style={{
-                                            fontSize: 14,
+                                            fontSize: 13,
                                             fontWeight: 800,
                                             color: "#b45309",
+                                            lineHeight: 1.3,
                                           }}
                                         >
                                           ₦{revDeposit.toLocaleString()}{" "}
-                                          <small style={{ fontSize: 11, color: "#92400e" }}>
-                                            dep
+                                          <small style={{ fontSize: 10.5, color: "#92400e", fontWeight: 700 }}>
+                                            fixed deposit (not % of stand)
                                           </small>{" "}
-                                          + {revPct}% daily
+                                          + {revPct}% daily revenue
                                         </div>
                                       </>
                                     ) : (
@@ -2734,8 +2742,7 @@ export default function AdminDashboardPage() {
                                           color: "#94a3b8",
                                         }}
                                       >
-                                        Optional revenue percentage plan (ideal for mega anchor
-                                        booths).
+                                        Optional Pay As You Go plan (Admin-selected fixed deposit + % of daily revenue).
                                       </p>
                                     )}
                                   </div>
@@ -3841,6 +3848,12 @@ export default function AdminDashboardPage() {
                                 {app.paymentReference || "N/A"}
                               </strong>
                             </div>
+                            {app.transactionId && (
+                              <div style={{ background: "#f0fdf4", padding: "6px 10px", borderRadius: 8, border: "1px solid #bbf7d0", gridColumn: "1 / -1" }}>
+                                <span style={{ color: "#166534", fontWeight: 700, fontSize: 12 }}>💳 Sender Account Name:</span>{" "}
+                                <strong style={{ color: "#14532d", fontSize: 13 }}>{app.transactionId}</strong>
+                              </div>
+                            )}
                           </div>
 
                           <div className="tradefair-reg-card__footer">

@@ -6,10 +6,6 @@ import {
     ArrowLeft,
     Calendar,
     MapPin,
-    Shirt,
-    Utensils,
-    Award,
-    Sparkles,
     CheckCircle2,
     Loader2,
     Printer,
@@ -212,38 +208,6 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
                     unforgettable experience.
                 </p>
             </header>
-
-            {/* Volunteer Perks */}
-            <div className="volunteer-perks">
-                <div className="volunteer-perks__item">
-                    <div className="volunteer-perks__icon">
-                        <Shirt size={22} />
-                    </div>
-                    <h4>Official Crew Gear</h4>
-                    <p>Branded Silo crew gear and personalized volunteer access badge.</p>
-                </div>
-                <div className="volunteer-perks__item">
-                    <div className="volunteer-perks__icon">
-                        <Utensils size={22} />
-                    </div>
-                    <h4>Daily Meals &amp; Drinks</h4>
-                    <p>Complimentary lunch packs and drinks provided for every shift.</p>
-                </div>
-                <div className="volunteer-perks__item">
-                    <div className="volunteer-perks__icon">
-                        <Award size={22} />
-                    </div>
-                    <h4>Official Certificate</h4>
-                    <p>Certificate of Leadership &amp; Service for your CV and LinkedIn.</p>
-                </div>
-                <div className="volunteer-perks__item">
-                    <div className="volunteer-perks__icon">
-                        <Sparkles size={22} />
-                    </div>
-                    <h4>VIP Networking</h4>
-                    <p>Direct exposure to over 100+ business founders and sponsors.</p>
-                </div>
-            </div>
 
             {/* Volunteer Application Form */}
             <form onSubmit={handleSubmit} className="volunteer-section">

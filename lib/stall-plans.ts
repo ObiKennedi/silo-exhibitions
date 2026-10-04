@@ -14,7 +14,7 @@ export function computeStallPlans(stall: {
     // 1. Full Upfront Payment
     plans.push({
         id: "full",
-        name: "Full Upfront Payment",
+        name: "Option 1",
         dueNow: price,
         totalAmountText: `₦${price.toLocaleString()} one-off`,
         description: "Pay 100% now for instant confirmed allocation.",
@@ -27,23 +27,23 @@ export function computeStallPlans(stall: {
         const balance = price - dueNow;
         plans.push({
             id: "installment",
-            name: `2-Part Installment Plan (${depositPct}% Deposit)`,
+            name: "Option 2",
             dueNow,
             totalAmountText: `₦${dueNow.toLocaleString()} now + ₦${balance.toLocaleString()} later`,
             description: `Pay ₦${dueNow.toLocaleString()} deposit today to hold your space. Remainder due 7 days prior.`,
         });
     }
 
-    // 3. Revenue Share / Pay Daily
+    // 3. Pay As You Go (Admin-Selected Fixed Deposit + % Daily Revenue Share)
     if (stall.enableRevenueShare) {
-        const deposit = stall.revenueDepositAmount ?? 25000;
-        const revPct = stall.revenuePercentage ?? 10;
+        const deposit = Math.max(0, Number(stall.revenueDepositAmount) || 50000);
+        const revPct = Math.max(1, Number(stall.revenuePercentage) || 10);
         plans.push({
             id: "revenue_percentage",
-            name: `Option 2: Pay Daily (${revPct}% Daily Total Sales)`,
+            name: "Option 3",
             dueNow: deposit,
-            totalAmountText: `₦${deposit.toLocaleString()} Setup Deposit + ${revPct}% Daily Total Sales`,
-            description: `Lower initial commitment. Pay a ₦${deposit.toLocaleString()} setup deposit today, then remit ${revPct}% of total sales at the end of each day.`,
+            totalAmountText: `₦${deposit.toLocaleString()} Fixed Deposit + ${revPct}% Daily Revenue`,
+            description: `Pay a fixed deposit of ₦${deposit.toLocaleString()} today (not a % of stand price), then remit ${revPct}% of daily total sales at the close of each exhibition day.`,
             isRevenueShare: true,
             revenuePercentage: revPct,
         });
@@ -108,7 +108,7 @@ export const DEFAULT_STALL_CONFIGS: StallConfig[] = [
         enableInstallment: true,
         installmentDepositPercent: 50,
         enableRevenueShare: true,
-        revenueDepositAmount: 25000,
+        revenueDepositAmount: 50000,
         revenuePercentage: 10,
         availablePlans: [],
     },

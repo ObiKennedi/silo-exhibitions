@@ -17,13 +17,17 @@ import {
     Download,
     Layers,
     FileText,
-    ExternalLink,
+    Building2,
+    Clock,
     CreditCard,
+    Search,
+    X,
 } from "lucide-react";
 
 import { UpcomingEvent, StallConfig, StallPaymentPlan } from "@/types/upcoming-event";
 import { computeStallPlans } from "@/lib/stall-plans";
-import { MonnifyModal, MonnifyPaymentSuccess } from "./MonnifyModal";
+import { BankTransferModal } from "./BankTransferModal";
+import { PaymentConditionModal } from "./PaymentConditionModal";
 import { EventCountdown } from "./EventCountdown";
 import "@/styles/root/StallApplication.scss";
 
@@ -38,6 +42,46 @@ export const parseFeatures = (featuresList?: string[]): string[] => {
             .filter(Boolean);
     });
 };
+
+// 35 Official Trade Fair Categories
+export const VENDOR_CATEGORIES = [
+    "Female Adult Ready to wear",
+    "Female Adult Boutique wear",
+    "Male Adult Boutique Wears",
+    "Male Adult Ready to Wear",
+    "Casual Wears (T-shirts, jean wears)",
+    "Lounge Wears/Underwears (Lingerie, night wears, gym wears)",
+    "Children Boutique Wears",
+    "Children Ready to Wear",
+    "Bags and Shoes",
+    "Hair and Hair Services",
+    "Mothercare Essentials",
+    "Jewelry and Fashion Accessories",
+    "Household Essentials",
+    "Native/Local Dishes (Abacha, Agbugbu na ji, Nkwobi, Ugba, palm wine)",
+    "Grills",
+    "Pastries",
+    "Conventional Dishes",
+    "Drinks (Water, Juices, Parfait etc)",
+    "Educational Materials",
+    "Fabrics",
+    "Adult Thrift Wears",
+    "Children's Thrift Wears",
+    "Toys and Gadgets",
+    "Perfumes and Deodorants",
+    "Cosmetics and Skincare",
+    "Interior and Beddings",
+    "Foodstuff",
+    "Packaging",
+    "Electronics and Home Appliances",
+    "Telecommunications",
+    "Financial Institutions",
+    "Broadcasting",
+    "Travel and Tours",
+    "Logistics",
+    "Sex and Adult Products",
+    "Other",
+] as const;
 
 interface Props {
     event: UpcomingEvent;
@@ -85,26 +129,40 @@ export const StallApplicationForm = ({ event }: Props) => {
     }, [paramStall, paramPlan, stallList]);
 
     // Form inputs state
-    const [businessName, setBusinessName] = useState("");
-    const [category, setCategory] = useState("Fashion & Apparel");
-    const [contactName, setContactName] = useState("");
-    const [email, setEmail] = useState("");
+    const [ownerName, setOwnerName] = useState("");
     const [phone, setPhone] = useState("");
-    const [instagram, setInstagram] = useState("");
-    const [description, setDescription] = useState("");
+    const [brandName, setBrandName] = useState("");
+    const [email, setEmail] = useState("");
+    const [businessAddress, setBusinessAddress] = useState("");
+    const [socialHandle, setSocialHandle] = useState("");
+    const [category, setCategory] = useState<string>(VENDOR_CATEGORIES[0]);
+    const [productsSelling, setProductsSelling] = useState("");
+    const [estimatedGoodsWorth, setEstimatedGoodsWorth] = useState("");
+    const [majorProductPrice, setMajorProductPrice] = useState("");
+    const [discountPercentage, setDiscountPercentage] = useState("");
     const [powerNeeds, setPowerNeeds] = useState("Standard (phone/POS charging)");
 
     // Terms agreement
     const [termsAccepted, setTermsAccepted] = useState(false);
 
-    // Monnify checkout modal state
-    const [isMonnifyOpen, setIsMonnifyOpen] = useState(false);
-    const [bookingSuccess, setBookingSuccess] = useState<{
+    // Payment Condition popup modal state
+    const [isConditionModalOpen, setIsConditionModalOpen] = useState(false);
+    const [pendingPlan, setPendingPlan] = useState<StallPaymentPlan | null>(null);
+
+    // Bank Transfer checkout modal state
+    const [isBankTransferOpen, setIsBankTransferOpen] = useState(false);
+    const [isSubmittingTransfer, setIsSubmittingTransfer] = useState(false);
+    const [applicationReviewState, setApplicationReviewState] = useState<{
         bookingCode: string;
-        payment: MonnifyPaymentSuccess;
+        senderAccountName: string;
         stallTitle: string;
         planName: string;
+        dueNow: number;
     } | null>(null);
+
+    // Categories Available browsing modal state
+    const [isCategoriesModalOpen, setIsCategoriesModalOpen] = useState(false);
+    const [categoryFilterQuery, setCategoryFilterQuery] = useState("");
 
     const activeStall = stallList.find((s) => s.id === selectedStallId) ?? stallList[0];
     const activePlan =
@@ -117,6 +175,15 @@ export const StallApplicationForm = ({ event }: Props) => {
             description: "Pay 100% now for instant confirmed allocation.",
         };
 
+    const scrollToSection = (id: string, delay = 80) => {
+        setTimeout(() => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+        }, delay);
+    };
+
     const handleStallSelect = (stallId: string, autoScroll = true) => {
         setSelectedStallId(stallId);
         const stall = stallList.find((s) => s.id === stallId) || stallList[0];
@@ -124,40 +191,57 @@ export const StallApplicationForm = ({ event }: Props) => {
             setSelectedPlanId(stall.availablePlans[0].id);
         }
         if (autoScroll) {
-            setTimeout(() => {
-                document.getElementById("payment-plans-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-            }, 60);
+            scrollToSection("payment-plans-section", 80);
         }
+    };
+
+    const handleOpenPlanConditions = (stallId: string, plan: StallPaymentPlan) => {
+        setSelectedStallId(stallId);
+        setSelectedPlanId(plan.id);
+        setPendingPlan(plan);
+        setIsConditionModalOpen(true);
+    };
+
+    const handleAcceptPlanConditions = (stallId: string, planId: string) => {
+        setSelectedStallId(stallId);
+        setSelectedPlanId(planId);
+        setIsConditionModalOpen(false);
+        setShowForm(true);
+        scrollToSection("vendor-form-section", 120);
     };
 
     const handleChoosePlan = (stallId: string, planId: string) => {
         setSelectedStallId(stallId);
         setSelectedPlanId(planId);
-        setShowForm(true);
-        setTimeout(() => {
-            document.getElementById("vendor-form-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
-        }, 80);
+        const targetPlan = activeStall?.availablePlans?.find((p) => p.id === planId) || activePlan;
+        setPendingPlan(targetPlan);
+        setIsConditionModalOpen(true);
     };
 
     const isFormValid =
-        businessName.trim().length > 1 &&
-        contactName.trim().length > 1 &&
+        ownerName.trim().length > 1 &&
+        phone.trim().length >= 8 &&
+        brandName.trim().length > 1 &&
         /^\S+@\S+\.\S+$/.test(email) &&
-        phone.trim().length >= 10 &&
+        businessAddress.trim().length > 2 &&
+        socialHandle.trim().length > 1 &&
+        category.trim().length > 0 &&
+        productsSelling.trim().length > 1 &&
+        estimatedGoodsWorth.trim().length > 0 &&
+        majorProductPrice.trim().length > 0 &&
+        discountPercentage.trim().length > 0 &&
         termsAccepted;
 
-    const handleOpenMonnify = (e: React.FormEvent) => {
+    const handleOpenBankTransfer = (e: React.FormEvent) => {
         e.preventDefault();
         if (!isFormValid) return;
-        setIsMonnifyOpen(true);
+        setIsBankTransferOpen(true);
     };
 
-    const handlePaymentSuccess = async (payment: MonnifyPaymentSuccess) => {
-        setIsMonnifyOpen(false);
-
+    const handleSubmitBankTransfer = async (senderAccountName: string) => {
+        setIsSubmittingTransfer(true);
         const bookingCode = `SILO-VND-${Math.floor(1000 + Math.random() * 9000)}`;
 
-        // Post record to backend
         try {
             await fetch(`/api/events/${event.slug}/apply-vendor`, {
                 method: "POST",
@@ -165,6 +249,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                 body: JSON.stringify({
                     bookingCode,
                     eventSlug: event.slug,
+                    eventTitle: event.title,
                     stallId: selectedStallId,
                     stallTitle: activeStall.title,
                     planId: selectedPlanId,
@@ -172,62 +257,88 @@ export const StallApplicationForm = ({ event }: Props) => {
                     dueNow: activePlan.dueNow,
                     isRevenueShare: activePlan.isRevenueShare ?? false,
                     revenuePercentage: activePlan.revenuePercentage ?? null,
-                    businessName,
-                    category,
-                    contactName,
-                    email,
+                    ownerName,
+                    contactName: ownerName,
                     phone,
-                    instagram,
-                    description,
+                    brandName,
+                    businessName: brandName,
+                    email,
+                    businessAddress,
+                    socialHandle,
+                    instagram: socialHandle,
+                    category,
+                    productsSelling,
+                    description: productsSelling,
+                    estimatedGoodsWorth,
+                    majorProductPrice,
+                    discountPercentage,
                     powerNeeds,
-                    paymentReference: payment.reference,
-                    transactionId: payment.transactionId,
-                    paidAmount: payment.paidAmount,
-                    channel: payment.channel,
-                    paymentDate: payment.paymentDate,
+                    senderAccountName,
+                    channel: "OPay Bank Transfer",
+                    paymentReference: `OPAY-${Date.now().toString().slice(-6)}`,
                 }),
             });
         } catch (err) {
             console.error("Failed to post vendor booking:", err);
+        } finally {
+            setIsSubmittingTransfer(false);
+            setIsBankTransferOpen(false);
         }
 
-        setBookingSuccess({
+        setApplicationReviewState({
             bookingCode,
-            payment,
+            senderAccountName,
             stallTitle: activeStall.title,
             planName: activePlan.name,
+            dueNow: activePlan.dueNow,
         });
     };
 
-    // If successfully booked and paid
-    if (bookingSuccess) {
+    // If successfully submitted payment notice
+    if (applicationReviewState) {
         return (
             <main className="stall-page">
                 <div className="stall-success">
-                    <div className="stall-success__icon">
-                        <CheckCircle2 size={40} />
+                    <div className="stall-success__icon" style={{ background: "#fef3c7", color: "#d97706" }}>
+                        <Clock size={40} />
                     </div>
-                    <h1 className="stall-success__title">Stand Reserved!</h1>
+                    <div style={{ display: "inline-block", background: "#fef3c7", color: "#92400e", fontWeight: 700, fontSize: "12px", padding: "4px 14px", borderRadius: 999, marginBottom: 12 }}>
+                        🟡 PAYMENT &amp; APPLICATION UNDER REVIEW
+                    </div>
+                    <h1 className="stall-success__title">Registration Submitted!</h1>
                     <p className="stall-success__sub">
-                        Your vendor application and deposit for <b>{event.title}</b> have been confirmed via Monnify.
+                        Thank you <b>{brandName}</b>! We have received your stand application and bank transfer payment notice for <b>{event.title}</b>.
                     </p>
+
+                    <div style={{ background: "#eff6ff", border: "1.5px solid #bfdbfe", borderRadius: 12, padding: "16px 20px", margin: "16px auto 24px", maxWidth: 520, textAlign: "left" }}>
+                        <p style={{ margin: "0 0 8px 0", fontSize: "13.5px", color: "#1e3a8a", fontWeight: 700 }}>
+                            What happens next?
+                        </p>
+                        <p style={{ margin: 0, fontSize: "12.5px", color: "#334155", lineHeight: 1.55 }}>
+                            We sent a confirmation email to <b>{email}</b>. Our finance team is currently reconciling your transfer of <b>₦{applicationReviewState.dueNow.toLocaleString()}</b> from <b>{applicationReviewState.senderAccountName}</b> with our OPay account records. Once verified, your stand will be formally approved and your official Exhibitor Stall Pass will be issued.
+                        </p>
+                    </div>
 
                     <div className="stall-success__ticket">
                         <div className="stall-success__ticket-row">
-                            <span>Vendor Pass Code</span>
-                            <b className="stall-success__ticket-badge">{bookingSuccess.bookingCode}</b>
+                            <span>Booking Reference</span>
+                            <b className="stall-success__ticket-badge">{applicationReviewState.bookingCode}</b>
                         </div>
                         <div className="stall-success__ticket-row">
                             <span>Business Name</span>
-                            <b>{businessName}</b>
+                            <b>{brandName}</b>
+                        </div>
+                        <div className="stall-success__ticket-row">
+                            <span>Owner / Contact</span>
+                            <b>{ownerName} ({phone})</b>
                         </div>
                         <div className="stall-success__ticket-row">
                             <span>Stand Allocated</span>
-                            <b>{bookingSuccess.stallTitle} ({activeStall.size})</b>
+                            <b>{applicationReviewState.stallTitle} ({activeStall.size})</b>
                         </div>
                         <div className="stall-success__ticket-row">
-                            <span>Selected Plan</span>
-                            <b>{bookingSuccess.planName}</b>
+                            <span>Selected Structure</span>
+                            <b>{applicationReviewState.planName}</b>
                         </div>
                         {activePlan.isRevenueShare && (
                             <div className="stall-success__ticket-row">
@@ -236,20 +347,24 @@ export const StallApplicationForm = ({ event }: Props) => {
                             </div>
                         )}
                         <div className="stall-success__ticket-row">
-                            <span>Monnify Ref</span>
-                            <b>{bookingSuccess.payment.reference}</b>
+                            <span>Amount Transferred</span>
+                            <b style={{ color: "#16a34a", fontSize: 16 }}>₦{applicationReviewState.dueNow.toLocaleString()}</b>
                         </div>
                         <div className="stall-success__ticket-row">
-                            <span>Amount Paid Today</span>
-                            <b>₦{bookingSuccess.payment.paidAmount.toLocaleString()}</b>
+                            <span>Transfer Sender Name</span>
+                            <b style={{ color: "#0f172a" }}>{applicationReviewState.senderAccountName}</b>
+                        </div>
+                        <div className="stall-success__ticket-row">
+                            <span>Bank Paid To</span>
+                            <b>OPay (6105607790 - Silo campus tradefair)</b>
+                        </div>
+                        <div className="stall-success__ticket-row">
+                            <span>Verification Status</span>
+                            <b style={{ color: "#b45309" }}>Pending Bank Reconciliation</b>
                         </div>
                         <div className="stall-success__ticket-row">
                             <span>Event Venue</span>
                             <b>{event.venue}</b>
-                        </div>
-                        <div className="stall-success__ticket-row">
-                            <span>Event Dates</span>
-                            <b>{new Date(event.startDate).toLocaleDateString("en-GB")} – {new Date(event.endDate).toLocaleDateString("en-GB")}</b>
                         </div>
                     </div>
 
@@ -259,7 +374,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                             className="event-page__link-btn"
                             onClick={() => window.print()}
                         >
-                            <Printer size={16} /> Print Receipt
+                            <Printer size={16} /> Print Confirmation Slip
                         </button>
                         <Link
                             href={`/${event.slug}`}
@@ -297,7 +412,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                 </div>
                 <p className="stall-hero__sub">
                     Reserve your booth at Silo Exhibitions. Select your stand size, choose your preferred payment
-                    schedule, accept the vendor terms, and complete your reservation instantly via Monnify.
+                    schedule, accept the vendor terms, and complete your reservation via direct bank transfer.
                 </p>
 
                 <EventCountdown
@@ -307,12 +422,12 @@ export const StallApplicationForm = ({ event }: Props) => {
                 />
             </header>
 
-            <form onSubmit={handleOpenMonnify}>
-                {/* STEP 1: Select Stand Size */}
+            <form onSubmit={handleOpenBankTransfer}>
+                {/* STEP 1: Choose Your Stand */}
                 <section id="stall-packages-section" className="stall-section">
                     <div className="stall-section__head">
-                        <h2>Step 1: Choose Your Stand Size &amp; Plan</h2>
-                        <p>Select the booth dimension that fits your merchandise and brand presence, then click &quot;I want this&quot; to open the application.</p>
+                        <h2>Step 1: Choose Your Stand</h2>
+                        <p>Select the booth dimension that fits your merchandise and brand presence, then click &quot;I want this&quot; to choose your payment structure.</p>
                     </div>
 
                     {/* Official Stand Plan & Floor Layout Document Link */}
@@ -437,12 +552,12 @@ export const StallApplicationForm = ({ event }: Props) => {
                         </div>
                     )}
 
-                    {/* Payment Plan Options for Selected Stand */}
+                    {/* STEP 2: Select a Payment Structure */}
                     {stallList.length > 0 && activeStall && (
                         <div id="payment-plans-section" className="stall-plans">
                             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
                                 <h3 className="stall-plans__title" style={{ margin: 0 }}>
-                                    Step 2: Choose Payment Plan for {activeStall?.title || "Selected Stand"}:
+                                    Step 2: Select a Payment Structure for {activeStall?.title || "Selected Stand"}:
                                 </h3>
                                 <span style={{ fontSize: "12px", color: "var(--blue, #0015f8)", background: "#eff6ff", padding: "4px 10px", borderRadius: 999, fontWeight: 600 }}>
                                     {activeStall?.availablePlans?.length || 1} Option{(activeStall?.availablePlans?.length || 1) > 1 ? "s" : ""} Available
@@ -450,17 +565,25 @@ export const StallApplicationForm = ({ event }: Props) => {
                             </div>
 
                             <div className="stall-plans__options">
-                                {activeStall?.availablePlans?.map((plan) => {
+                                {activeStall?.availablePlans?.map((plan, index) => {
                                     const isPlanSelected = plan.id === selectedPlanId;
+                                    const optionLabel =
+                                        plan.id === "full"
+                                            ? "Option 1"
+                                            : plan.id === "installment"
+                                            ? "Option 2"
+                                            : plan.id === "revenue_percentage"
+                                            ? "Option 3"
+                                            : (plan.name?.startsWith("Option") ? plan.name : `Option ${index + 1}`);
 
                                     return (
                                         <div
                                             key={plan.id}
                                             className={`plan-option ${isPlanSelected ? "is-active" : ""}`}
-                                            onClick={() => setSelectedPlanId(plan.id)}
+                                            onClick={() => handleOpenPlanConditions(activeStall.id, plan)}
                                         >
                                             <div className="plan-option__head">
-                                                <span className="plan-option__name">{plan.name}</span>
+                                                <span className="plan-option__name">{optionLabel}</span>
                                                 <div className="plan-option__radio" />
                                             </div>
                                             <div className="plan-option__due-now">
@@ -473,10 +596,10 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                 className="plan-option__want-btn"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleChoosePlan(activeStall.id, plan.id);
+                                                    handleOpenPlanConditions(activeStall.id, plan);
                                                 }}
                                             >
-                                                Select Plan &amp; Continue to Form &rarr;
+                                                Choose Payment Structure &rarr;
                                             </button>
                                         </div>
                                     );
@@ -493,15 +616,15 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 </div>
                             )}
 
-                            {/* CRITICAL REVENUE PERCENTAGE WARNING CALLOUT FOR REVENUE SHARE PLAN */}
+                            {/* CRITICAL REVENUE PERCENTAGE WARNING CALLOUT FOR PAY AS YOU GO PLAN */}
                             {activePlan?.isRevenueShare && (
                                 <div className="revenue-warning-box">
                                     <AlertTriangle size={24} className="revenue-warning-box__icon" />
                                     <div className="revenue-warning-box__content">
-                                        <h4>Important Policy: {activePlan.revenuePercentage || 10}% of Daily Total Sales (Not Profit)</h4>
+                                        <h4>Important Policy: Pay As You Go ({activePlan.revenuePercentage || 10}% of Daily Total Sales)</h4>
                                         <p>
-                                            Under the {activeStall?.title || "Selected Stand"} Daily Revenue Share plan, you pay a{" "}
-                                            <b>₦{(activePlan.dueNow).toLocaleString()} reservation &amp; setup deposit today via Monnify</b>. At the close
+                                            Under the {activeStall?.title || "Selected Stand"} Pay As You Go structure, you pay an admin-selected fixed deposit of{" "}
+                                            <b>₦{(activePlan.dueNow).toLocaleString()} today via direct bank transfer (not a % of stand price)</b>. At the close
                                             of each day (8:30 PM), exactly <b>{activePlan.revenuePercentage || 10}% of your TOTAL SALES</b> must be
                                             remitted to the Silo Exhibitions Audit Desk.
                                             <br />
@@ -535,7 +658,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                             <div className="stall-selected-banner__info">
                                 <CheckCircle2 size={26} className="stall-selected-banner__check" />
                                 <div>
-                                    <span className="stall-selected-banner__kicker">Selected Package:</span>
+                                    <span className="stall-selected-banner__kicker">Selected Stand &amp; Payment Structure:</span>
                                     <h3 className="stall-selected-banner__title">
                                         {activeStall?.title} ({activeStall?.size}) — {activePlan?.name}
                                     </h3>
@@ -549,11 +672,22 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 <button
                                     type="button"
                                     className="stall-selected-banner__change-btn"
+                                    style={{ background: "#ffffff", color: "#0015f8", border: "1.5px solid #bfdbfe" }}
+                                    onClick={() => {
+                                        setPendingPlan(activePlan);
+                                        setIsConditionModalOpen(true);
+                                    }}
+                                >
+                                    View Payment Conditions
+                                </button>
+                                <button
+                                    type="button"
+                                    className="stall-selected-banner__change-btn"
                                     onClick={() => {
                                         document.getElementById("payment-plans-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
                                     }}
                                 >
-                                    Change Plan
+                                    Change Structure
                                 </button>
                                 <button
                                     type="button"
@@ -568,102 +702,196 @@ export const StallApplicationForm = ({ event }: Props) => {
                             </div>
                         </div>
 
-                        {/* STEP 3: Vendor Business Information */}
+                        {/* STEP 3: Fill the Form */}
                         <section className="stall-section">
                             <div className="stall-section__head">
-                                <h2>Step 3: Business &amp; Contact Details</h2>
-                                <p>Tell us about your brand and products so we can prepare your exhibitor materials.</p>
+                                <h2>Step 3: Fill the Form</h2>
+                                <p>Provide your brand and product details, accept the vendor agreement, and secure your stand allocation.</p>
                             </div>
 
                             <div className="stall-form-grid">
+                                {/* 1. Business Owner's Name (Full Name) */}
                                 <div className="stall-field">
-                                    <label htmlFor="biz-name">Brand / Business Name *</label>
+                                    <label htmlFor="owner-name">Business Owner&apos;s Name (Full Name) *</label>
                                     <input
-                                        id="biz-name"
+                                        id="owner-name"
                                         type="text"
                                         required
-                                        placeholder="e.g. Apex Kicks / Shiloh Grills"
-                                        value={businessName}
-                                        onChange={(e) => setBusinessName(e.target.value)}
+                                        placeholder="e.g. Chukwuma Obi"
+                                        value={ownerName}
+                                        onChange={(e) => setOwnerName(e.target.value)}
                                     />
                                 </div>
 
-                                <div className="stall-field">
-                                    <label htmlFor="category">Business Category *</label>
-                                    <select
-                                        id="category"
-                                        value={category}
-                                        onChange={(e) => setCategory(e.target.value)}
-                                    >
-                                        <option value="Fashion & Apparel">Fashion &amp; Apparel (Shoes, Clothes, Bags)</option>
-                                        <option value="Food & Drinks">Food, Confectionery &amp; Drinks</option>
-                                        <option value="Tech & Gadgets">Tech, Phones &amp; Accessories</option>
-                                        <option value="Beauty & Skincare">Beauty, Perfumes &amp; Skincare</option>
-                                        <option value="Art & Crafts">Art, Books &amp; Handmade Crafts</option>
-                                        <option value="Services & Agency">Digital Services, Media &amp; Printing</option>
-                                        <option value="Other">Other Retail Goods</option>
-                                    </select>
-                                </div>
-
-                                <div className="stall-field">
-                                    <label htmlFor="contact-name">Contact Person (Full Name) *</label>
-                                    <input
-                                        id="contact-name"
-                                        type="text"
-                                        required
-                                        placeholder="e.g. Obi Kennedy"
-                                        value={contactName}
-                                        onChange={(e) => setContactName(e.target.value)}
-                                    />
-                                </div>
-
+                                {/* 2. WhatsApp / Phone Number */}
                                 <div className="stall-field">
                                     <label htmlFor="contact-phone">WhatsApp / Phone Number *</label>
                                     <input
                                         id="contact-phone"
                                         type="tel"
                                         required
-                                        placeholder="e.g. 08012345678"
+                                        placeholder="e.g. 08012345678 or +234 801 234 5678"
                                         value={phone}
                                         onChange={(e) => setPhone(e.target.value)}
                                     />
                                 </div>
 
+                                {/* 3. Brand Name */}
                                 <div className="stall-field">
-                                    <label htmlFor="contact-email">Email Address *</label>
+                                    <label htmlFor="brand-name">Brand Name *</label>
+                                    <input
+                                        id="brand-name"
+                                        type="text"
+                                        required
+                                        placeholder="e.g. Apex Kicks / Shiloh Grills"
+                                        value={brandName}
+                                        onChange={(e) => setBrandName(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* 4. Email Address */}
+                                <div className="stall-field">
+                                    <label htmlFor="contact-email">Email Address (Must be functional) *</label>
                                     <input
                                         id="contact-email"
                                         type="email"
                                         required
-                                        placeholder="e.g. business@gmail.com"
+                                        placeholder="e.g. yourbusiness@gmail.com"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                     />
                                 </div>
 
-                                <div className="stall-field">
-                                    <label htmlFor="instagram">Instagram / Website Handle</label>
+                                {/* 5. Business Address (State Included) */}
+                                <div className="stall-field stall-form-grid__full">
+                                    <label htmlFor="business-address">Business Address (State Included) *</label>
                                     <input
-                                        id="instagram"
+                                        id="business-address"
                                         type="text"
-                                        placeholder="@yourbrandname or www.yourbrand.com"
-                                        value={instagram}
-                                        onChange={(e) => setInstagram(e.target.value)}
-                                    />
-                                </div>
-
-                                <div className="stall-field stall-form-grid__full">
-                                    <label htmlFor="description">Products or Services You Will Be Selling *</label>
-                                    <textarea
-                                        id="description"
                                         required
-                                        placeholder="Briefly describe what items or services you will showcase at your stand..."
-                                        value={description}
-                                        onChange={(e) => setDescription(e.target.value)}
+                                        placeholder="e.g. Shop 14, Commercial Avenue, Ikeja, Lagos State"
+                                        value={businessAddress}
+                                        onChange={(e) => setBusinessAddress(e.target.value)}
                                     />
                                 </div>
 
+                                {/* 6. Facebook / TikTok / Instagram Handle or Link */}
+                                <div className="stall-field">
+                                    <label htmlFor="social-handle">
+                                        Facebook / TikTok / Instagram Handle *
+                                    </label>
+                                    <input
+                                        id="social-handle"
+                                        type="text"
+                                        required
+                                        placeholder="e.g. instagram.com/yourbrand or @yourbrand"
+                                        value={socialHandle}
+                                        onChange={(e) => setSocialHandle(e.target.value)}
+                                    />
+                                    <span style={{ fontSize: "11.5px", color: "#64748b", marginTop: "-2px" }}>
+                                        Put the link your business is most active on
+                                    </span>
+                                </div>
+
+                                {/* 7. Business Category / Niche */}
+                                <div className="stall-field">
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                                        <label htmlFor="category" style={{ margin: 0 }}>Business Category / Niche *</label>
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsCategoriesModalOpen(true)}
+                                            style={{
+                                                background: "none",
+                                                border: "none",
+                                                color: "var(--blue, #0015f8)",
+                                                fontSize: "12px",
+                                                fontWeight: 600,
+                                                cursor: "pointer",
+                                                padding: 0,
+                                                textDecoration: "underline",
+                                            }}
+                                        >
+                                            View all 35 categories ↗
+                                        </button>
+                                    </div>
+                                    <select
+                                        id="category"
+                                        value={category}
+                                        onChange={(e) => setCategory(e.target.value)}
+                                    >
+                                        {VENDOR_CATEGORIES.map((cat, idx) => (
+                                            <option key={cat} value={cat}>
+                                                {idx + 1}. {cat}
+                                            </option>
+                                        ))}
+                                    </select>
+                                    <span style={{ fontSize: "11.5px", color: "#64748b", marginTop: "-2px" }}>
+                                        Official trade fair category strictly assigned per booth
+                                    </span>
+                                </div>
+
+                                {/* 8. Product / Service You Will Be Selling */}
                                 <div className="stall-field stall-form-grid__full">
+                                    <label htmlFor="products-selling" style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+                                        <span>Product / Service You Will Be Selling *</span>
+                                        <span style={{ fontSize: "12px", color: "#b45309", fontWeight: 600 }}>
+                                            ⚠️ (Don&apos;t sell outside the category above)
+                                        </span>
+                                    </label>
+                                    <textarea
+                                        id="products-selling"
+                                        required
+                                        rows={3}
+                                        placeholder="Detail the specific items or services you will be showcasing and selling at your stand..."
+                                        value={productsSelling}
+                                        onChange={(e) => setProductsSelling(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* 9. Estimated Worth of Your Goods */}
+                                <div className="stall-field">
+                                    <label htmlFor="estimated-worth">Estimated Worth of Your Goods? *</label>
+                                    <input
+                                        id="estimated-worth"
+                                        type="text"
+                                        required
+                                        placeholder="e.g. ₦1,500,000"
+                                        value={estimatedGoodsWorth}
+                                        onChange={(e) => setEstimatedGoodsWorth(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* 10. Major Product Price */}
+                                <div className="stall-field">
+                                    <label htmlFor="major-product-price">What is the price of your major product? *</label>
+                                    <input
+                                        id="major-product-price"
+                                        type="text"
+                                        required
+                                        placeholder="e.g. Hair as low as 50k or phone as low as 500k"
+                                        value={majorProductPrice}
+                                        onChange={(e) => setMajorProductPrice(e.target.value)}
+                                    />
+                                    <span style={{ fontSize: "11.5px", color: "#64748b", marginTop: "-2px" }}>
+                                        E.g., Hair as low as 50k or phone as low as 500k
+                                    </span>
+                                </div>
+
+                                {/* 11. Discount Percentage */}
+                                <div className="stall-field">
+                                    <label htmlFor="discount-percentage">How many percent discount are you giving? *</label>
+                                    <input
+                                        id="discount-percentage"
+                                        type="text"
+                                        required
+                                        placeholder="e.g. 10%, 15% discount, or up to 30% off"
+                                        value={discountPercentage}
+                                        onChange={(e) => setDiscountPercentage(e.target.value)}
+                                    />
+                                </div>
+
+                                {/* Power Requirements */}
+                                <div className="stall-field">
                                     <label htmlFor="power">Power &amp; Electrical Requirements</label>
                                     <select
                                         id="power"
@@ -684,10 +912,10 @@ export const StallApplicationForm = ({ event }: Props) => {
                             </div>
                         </section>
 
-                        {/* STEP 4: Terms & Conditions Agreement */}
+                        {/* Terms & Conditions Agreement */}
                         <section className="stall-section">
                             <div className="stall-section__head">
-                                <h2>Step 4: Review Terms &amp; Conditions &amp; Stand Plans</h2>
+                                <h2>Review Terms &amp; Conditions &amp; Stand Plans</h2>
                                 <p>You must review and accept the official exhibitor terms and stand plan schedule prior to payment.</p>
                             </div>
 
@@ -807,11 +1035,11 @@ export const StallApplicationForm = ({ event }: Props) => {
                                         </div>
                                         <p style={{ fontSize: "12.5px", color: "#334155", margin: 0, lineHeight: 1.55 }}>
                                             {activePlan?.isRevenueShare ? (
-                                                <>Under this plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} setup deposit today</b> via Monnify. Exactly <b>{activePlan.revenuePercentage || 10}% of daily total sales</b> must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
+                                                <>Under the Pay As You Go structure, you pay an admin-selected fixed deposit of <b>₦{(activePlan.dueNow).toLocaleString()} today</b> via direct bank transfer (not a percentage of total stand price). Exactly <b>{activePlan.revenuePercentage || 10}% of daily total sales</b> must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
                                             ) : activePlan?.id === "installment" ? (
                                                 <>Under this 2-part installment plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} deposit today</b> ({activeStall?.installmentDepositPercent ?? 50}%) to hold your space. The remaining balance of <b>₦{((activeStall?.price || 0) - (activePlan.dueNow || 0)).toLocaleString()}</b> is due 7 days before the exhibition opening.</>
                                             ) : (
-                                                <>Under the full upfront plan, 100% payment of <b>₦{(activeStall?.price || activePlan?.dueNow || 0).toLocaleString()}</b> is completed today via Monnify for instant confirmed space allocation. Keep 100% of your earnings throughout the exhibition.</>
+                                                <>Under the full upfront plan, 100% payment of <b>₦{(activeStall?.price || activePlan?.dueNow || 0).toLocaleString()}</b> is completed today via direct bank transfer for instant confirmed space allocation. Keep 100% of your earnings throughout the exhibition.</>
                                             )}
                                         </p>
                                     </div>
@@ -870,7 +1098,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 <span>
                                     I have read, understood, and accept the official <strong>Vendor Terms &amp; Conditions</strong> and the <strong>Stand Plans</strong> for <strong>{event.title}</strong>.
                                     {activePlan?.isRevenueShare && (
-                                        <> I explicitly acknowledge and agree that the {activePlan.revenuePercentage || 10}% daily share is calculated strictly on <strong>TOTAL SALES and NOT on profit</strong>.</>
+                                        <> I explicitly acknowledge and agree that under the Pay As You Go plan, the {activePlan.revenuePercentage || 10}% daily share is calculated strictly on <strong>TOTAL SALES and NOT on profit</strong>.</>
                                     )}
                                 </span>
                             </label>
@@ -891,7 +1119,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     className="stall-summary-bar__btn"
                                     disabled={!isFormValid}
                                 >
-                                    <Lock size={16} /> Pay ₦{(activePlan?.dueNow || 0).toLocaleString()} via Monnify
+                                    <Building2 size={16} /> Pay ₦{(activePlan?.dueNow || 0).toLocaleString()} via Bank Transfer
                                 </button>
                             </div>
                         </section>
@@ -899,18 +1127,197 @@ export const StallApplicationForm = ({ event }: Props) => {
                 ) : null}
             </form>
 
-            {/* Monnify Checkout Modal */}
-            <MonnifyModal
-                isOpen={isMonnifyOpen}
-                amount={activePlan?.dueNow || 0}
-                customerName={contactName || businessName}
-                customerEmail={email}
-                customerPhone={phone}
-                paymentDescription={`${activeStall?.title || "Stand"} Deposit - ${event.title}`}
-                reference={`SILO-STAND-${Date.now().toString().slice(-6)}`}
-                onClose={() => setIsMonnifyOpen(false)}
-                onSuccess={handlePaymentSuccess}
+            {/* Payment Condition Modal */}
+            <PaymentConditionModal
+                isOpen={isConditionModalOpen}
+                stall={activeStall}
+                plan={pendingPlan || activePlan}
+                event={event}
+                onClose={() => setIsConditionModalOpen(false)}
+                onAccept={handleAcceptPlanConditions}
             />
+
+            {/* Bank Transfer Checkout Modal */}
+            <BankTransferModal
+                isOpen={isBankTransferOpen}
+                amount={activePlan?.dueNow || 0}
+                stallTitle={activeStall?.title || "Stand"}
+                planName={activePlan?.name || "Selected Plan"}
+                onClose={() => setIsBankTransferOpen(false)}
+                onSubmitPayment={handleSubmitBankTransfer}
+                isSubmitting={isSubmittingTransfer}
+            />
+
+            {/* Categories Available Modal */}
+            {isCategoriesModalOpen && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        backgroundColor: "rgba(15, 23, 42, 0.65)",
+                        backdropFilter: "blur(4px)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 9999,
+                        padding: "16px",
+                    }}
+                    onClick={() => setIsCategoriesModalOpen(false)}
+                >
+                    <div
+                        style={{
+                            background: "#ffffff",
+                            borderRadius: "16px",
+                            maxWidth: "600px",
+                            width: "100%",
+                            maxHeight: "85vh",
+                            display: "flex",
+                            flexDirection: "column",
+                            overflow: "hidden",
+                            boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div
+                            style={{
+                                padding: "20px 24px",
+                                borderBottom: "1px solid #e2e8f0",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                                background: "#f8fafc",
+                            }}
+                        >
+                            <div>
+                                <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 800, letterSpacing: "0.03em", color: "#0f172a", textTransform: "uppercase" }}>
+                                    Categories Available
+                                </h3>
+                                <p style={{ margin: "4px 0 0 0", fontSize: "12.5px", color: "#64748b" }}>
+                                    Select your business category from the 35 official trade fair niches:
+                                </p>
+                            </div>
+                            <button
+                                type="button"
+                                onClick={() => setIsCategoriesModalOpen(false)}
+                                style={{
+                                    background: "#f1f5f9",
+                                    border: "none",
+                                    borderRadius: "8px",
+                                    padding: "6px",
+                                    cursor: "pointer",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    color: "#64748b",
+                                }}
+                            >
+                                <X size={20} />
+                            </button>
+                        </div>
+
+                        {/* Search Input */}
+                        <div style={{ padding: "12px 24px", borderBottom: "1px solid #f1f5f9", background: "#ffffff" }}>
+                            <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+                                <Search size={16} style={{ position: "absolute", left: 12, color: "#94a3b8" }} />
+                                <input
+                                    type="text"
+                                    placeholder="Search categories (e.g. food, wears, hair, cosmetics)..."
+                                    value={categoryFilterQuery}
+                                    onChange={(e) => setCategoryFilterQuery(e.target.value)}
+                                    style={{
+                                        width: "100%",
+                                        padding: "10px 12px 10px 38px",
+                                        borderRadius: "8px",
+                                        border: "1.5px solid #cbd5e1",
+                                        fontSize: "13.5px",
+                                        outline: "none",
+                                    }}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Category List */}
+                        <div style={{ padding: "16px 24px", overflowY: "auto", flex: 1 }}>
+                            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                                {VENDOR_CATEGORIES.map((cat, idx) => {
+                                    if (
+                                        categoryFilterQuery.trim() &&
+                                        !cat.toLowerCase().includes(categoryFilterQuery.toLowerCase().trim())
+                                    ) {
+                                        return null;
+                                    }
+                                    const isSelected = category === cat;
+                                    return (
+                                        <div
+                                            key={cat}
+                                            onClick={() => {
+                                                setCategory(cat);
+                                                setIsCategoriesModalOpen(false);
+                                            }}
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                                padding: "10px 14px",
+                                                borderRadius: "10px",
+                                                border: isSelected ? "1.5px solid #2563eb" : "1px solid #e2e8f0",
+                                                background: isSelected ? "#eff6ff" : "#ffffff",
+                                                cursor: "pointer",
+                                                transition: "all 0.15s ease",
+                                            }}
+                                        >
+                                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                                <span
+                                                    style={{
+                                                        display: "inline-flex",
+                                                        alignItems: "center",
+                                                        justifyContent: "center",
+                                                        width: 26,
+                                                        height: 26,
+                                                        borderRadius: "6px",
+                                                        background: isSelected ? "#2563eb" : "#f1f5f9",
+                                                        color: isSelected ? "#ffffff" : "#475569",
+                                                        fontSize: "12px",
+                                                        fontWeight: 700,
+                                                        flexShrink: 0,
+                                                    }}
+                                                >
+                                                    {idx + 1}
+                                                </span>
+                                                <span style={{ fontSize: "14px", fontWeight: isSelected ? 700 : 500, color: isSelected ? "#1e40af" : "#1e293b" }}>
+                                                    {cat}
+                                                </span>
+                                            </div>
+                                            {isSelected && <Check size={18} color="#2563eb" />}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Footer Rules Note */}
+                        <div
+                            style={{
+                                padding: "14px 24px",
+                                background: "#fffbeb",
+                                borderTop: "1px solid #fef3c7",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 10,
+                            }}
+                        >
+                            <AlertTriangle size={18} color="#d97706" style={{ flexShrink: 0 }} />
+                            <p style={{ margin: 0, fontSize: "12px", color: "#92400e", lineHeight: 1.4 }}>
+                                <strong>Updated Rules:</strong> Stalls are designated strictly per verified product category. Please ensure products you exhibit fall strictly within your registered category.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            )}
         </main>
     );
 };

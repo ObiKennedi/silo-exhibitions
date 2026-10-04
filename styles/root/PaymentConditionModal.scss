@@ -1,0 +1,450 @@
+// Payment Structure Condition Modal Styles
+.payment-condition-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 15, 46, 0.72);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 1050;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: pcm-fade-in 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @media (max-width: 600px) {
+    padding: 12px;
+    align-items: flex-end;
+  }
+}
+
+@keyframes pcm-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.payment-condition-modal {
+  background: #ffffff;
+  width: 100%;
+  max-width: 640px;
+  max-height: 90vh;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(0, 21, 248, 0.22), 0 0 0 1px rgba(0, 21, 248, 0.08);
+  display: flex;
+  flex-direction: column;
+  animation: pcm-slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-family: var(--font-body, system-ui, -apple-system, sans-serif);
+
+  @media (max-width: 600px) {
+    max-height: 94vh;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+@keyframes pcm-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+// Header styles by structure theme
+.payment-condition-header {
+  padding: 22px 26px;
+  color: #ffffff;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  &.theme-full {
+    background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  }
+
+  &.theme-inst {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #1d4ed8 100%);
+  }
+
+  &.theme-rev {
+    background: linear-gradient(135deg, #451a03 0%, #78350f 50%, #9a3412 100%);
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    padding: 4px 10px;
+    border-radius: 999px;
+    width: fit-content;
+  }
+
+  &__info {
+    h2 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+      margin: 0 0 4px;
+      line-height: 1.25;
+    }
+
+    p {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.88);
+      margin: 0;
+      line-height: 1.4;
+
+      strong {
+        color: #ffffff;
+      }
+    }
+  }
+
+  &__close-btn {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.18s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.26);
+      transform: scale(1.05);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
+
+// Body styles
+.payment-condition-body {
+  padding: 22px 26px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+
+  @media (max-width: 600px) {
+    padding: 18px 16px;
+    gap: 16px;
+  }
+}
+
+// Financial Summary Box
+.payment-condition-summary {
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  @media (max-width: 540px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+
+    .label {
+      font-size: 11.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      font-weight: 700;
+      color: #64748b;
+    }
+
+    .value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0f172a;
+
+      &--highlight {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--blue, #0015f8);
+      }
+    }
+
+    .sub {
+      font-size: 12px;
+      color: #64748b;
+    }
+  }
+
+  &__divider {
+    width: 1px;
+    height: 44px;
+    background: #e2e8f0;
+
+    @media (max-width: 540px) {
+      width: 100%;
+      height: 1px;
+    }
+  }
+}
+
+// Condition list
+.payment-condition-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  &__title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0;
+  }
+}
+
+.payment-condition-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.condition-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #ffffff;
+  border: 1.5px solid #edf2f7;
+  border-radius: 12px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #cbd5e1;
+    background: #fafbfc;
+  }
+
+  &--warning {
+    background: #fffbeb;
+    border-color: #fde68a;
+
+    &:hover {
+      border-color: #f59e0b;
+      background: #fef3c7;
+    }
+  }
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+
+    &.icon--green {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    &.icon--blue {
+      background: #eff6ff;
+      color: var(--blue, #0015f8);
+    }
+
+    &.icon--amber {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    &.icon--red {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+  }
+
+  &__content {
+    flex: 1;
+
+    h5 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0 0 3px;
+      line-height: 1.35;
+    }
+
+    p {
+      font-size: 12.5px;
+      color: #475569;
+      margin: 0;
+      line-height: 1.5;
+
+      strong {
+        color: #0f172a;
+      }
+    }
+  }
+}
+
+// Policy note
+.payment-condition-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  background: #f0f9ff;
+  border: 1px solid #bae6fd;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #0369a1;
+  line-height: 1.5;
+
+  .note-icon {
+    color: #0284c7;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  strong {
+    color: #0c4a6e;
+  }
+}
+
+// Footer
+.payment-condition-footer {
+  border-top: 1.5px solid #edf2f7;
+  padding: 18px 26px;
+  background: #fbfcfe;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+
+  @media (max-width: 600px) {
+    padding: 16px;
+  }
+
+  &__agree {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 12.5px;
+    color: #334155;
+    cursor: pointer;
+    user-select: none;
+    line-height: 1.45;
+
+    input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+      accent-color: var(--blue, #0015f8);
+      margin-top: 1px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    strong {
+      color: #0f172a;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: wrap;
+
+    @media (max-width: 520px) {
+      flex-direction: column;
+      width: 100%;
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+
+  .btn-cancel {
+    padding: 11px 18px;
+    background: #ffffff;
+    border: 1.5px solid #dce6f5;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #475569;
+    cursor: pointer;
+    transition: all 0.18s ease;
+
+    &:hover {
+      background: #f1f5f9;
+      color: #0f172a;
+      border-color: #cbd5e1;
+    }
+  }
+
+  .btn-accept {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 22px;
+    background: var(--blue, #0015f8);
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 21, 248, 0.28);
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+      background: #0011c7;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(0, 21, 248, 0.35);
+    }
+
+    &:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+  }
+}

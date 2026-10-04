@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { sendVendorReviewEmail } from "@/lib/email";
+import { sendTelegramVendorAlert } from "@/lib/telegram";
 
 export async function POST(
     req: Request,
@@ -8,9 +10,23 @@ export async function POST(
     const { slug } = await params;
     const body = await req.json();
 
-    if (!body.businessName || !body.email || !body.phone) {
+    const effectiveBrandName = body.brandName || body.businessName;
+    const effectiveOwnerName = body.ownerName || body.contactName || effectiveBrandName;
+    const effectiveSocialHandle = body.socialHandle || body.instagram || null;
+    const senderAccountName = (body.senderAccountName || "").trim();
+
+    const structuredDescription = [
+        body.productsSelling || body.description,
+        senderAccountName ? `Bank Transfer Sender Name: ${senderAccountName}` : null,
+        body.businessAddress ? `Business Address: ${body.businessAddress}` : null,
+        body.estimatedGoodsWorth ? `Estimated Goods Worth: ${body.estimatedGoodsWorth}` : null,
+        body.majorProductPrice ? `Major Product Price: ${body.majorProductPrice}` : null,
+        body.discountPercentage ? `Discount Offered: ${body.discountPercentage}` : null,
+    ].filter(Boolean).join("\n\n") || null;
+
+    if (!effectiveBrandName || !body.email || !body.phone) {
         return NextResponse.json(
-            { error: "Business name, email, and phone are required" },
+            { error: "Brand name, email, and phone number are required" },
             { status: 400 }
         );
     }
@@ -18,19 +34,23 @@ export async function POST(
     const bookingCode = body.bookingCode || `SILO-VND-${Math.floor(1000 + Math.random() * 9000)}`;
     const cleanEmail = body.email.trim().toLowerCase();
 
-    try {
-        // Attempt to find the event by slug to attach relation if available
-        let eventId: string | null = null;
-        try {
-            const event = await prisma.event.findFirst({
-                where: { slug, status: "PUBLISHED" },
-                select: { id: true },
-            });
-            if (event) eventId = event.id;
-        } catch {
-            // Event lookup optional if schema not yet migrated
-        }
+    let eventTitle = body.eventTitle || "Silo Campus Trade Fair";
+    let eventId: string | null = null;
 
+    try {
+        const event = await prisma.event.findFirst({
+            where: { slug },
+            select: { id: true, title: true },
+        });
+        if (event) {
+            eventId = event.id;
+            if (event.title) eventTitle = event.title;
+        }
+    } catch {
+        // Event lookup optional if schema not yet migrated
+    }
+
+    try {
         // Check if an account already exists for this email
         let linkedUserId: string | null = body.userId || null;
         if (!linkedUserId) {
@@ -52,27 +72,27 @@ export async function POST(
                 eventSlug: slug,
                 eventId,
                 userId: linkedUserId,
-                businessName: body.businessName,
-                category: body.category || "General",
-                contactName: body.contactName || body.businessName,
+                businessName: effectiveBrandName,
+                category: body.category || "General Merchandise",
+                contactName: effectiveOwnerName,
                 email: cleanEmail,
                 phone: body.phone,
-                instagram: body.instagram || null,
-                description: body.description || null,
+                instagram: effectiveSocialHandle,
+                description: structuredDescription,
                 powerNeeds: body.powerNeeds || null,
                 stallId: body.stallId || "standard",
                 stallTitle: body.stallTitle || "Standard Stall",
                 planId: body.planId || "full",
-                planName: body.planName || "Full Payment",
+                planName: body.planName || "Option 1",
                 dueNow: String(body.dueNow ?? body.paidAmount ?? 0),
                 isRevenueShare: Boolean(body.isRevenueShare),
                 revenuePercentage: body.revenuePercentage != null ? String(body.revenuePercentage) : null,
-                paymentStatus: body.paymentReference ? "SUCCESS" : "PENDING",
-                paymentReference: body.paymentReference || null,
-                transactionId: body.transactionId || null,
-                paidAmount: body.paidAmount != null ? String(body.paidAmount) : null,
-                channel: body.channel || null,
-                paidAt: body.paymentReference ? new Date() : null,
+                paymentStatus: "PENDING",
+                paymentReference: body.paymentReference || `OPAY-${Date.now()}`,
+                transactionId: senderAccountName || body.transactionId || null,
+                paidAmount: body.paidAmount != null ? String(body.paidAmount) : String(body.dueNow ?? 0),
+                channel: "OPay Bank Transfer",
+                paidAt: null, // set to null until verified by admin
             },
         });
     } catch (err) {
@@ -81,19 +101,54 @@ export async function POST(
 
     console.log(`[Vendor Application] Stored for "${slug}":`, {
         bookingCode,
-        businessName: body.businessName,
+        businessName: effectiveBrandName,
+        senderAccountName,
         stallTitle: body.stallTitle,
         planName: body.planName,
-        paidAmount: body.paidAmount,
-        paymentReference: body.paymentReference,
-        isRevenueShare: body.isRevenueShare,
-        guestCheckout: !body.userId,
+        dueNow: body.dueNow,
+    });
+
+    // 1. Dispatch confirmation email to the applicant that registration is under review
+    sendVendorReviewEmail({
+        recipientEmail: cleanEmail,
+        contactName: effectiveOwnerName,
+        businessName: effectiveBrandName,
+        eventTitle,
+        stallTitle: body.stallTitle || "Exhibition Stand",
+        planName: body.planName || "Stand Option",
+        dueNow: body.dueNow ?? body.paidAmount ?? 0,
+        senderAccountName: senderAccountName || effectiveOwnerName,
+        bookingCode,
+        category: body.category || "General Merchandise",
+    }).catch((err) => {
+        console.error("[Vendor Review Email] Error sending review notification:", err);
+    });
+
+    // 2. Dispatch Telegram alert to the Admin
+    sendTelegramVendorAlert({
+        bookingCode,
+        eventTitle,
+        businessName: effectiveBrandName,
+        contactName: effectiveOwnerName,
+        email: cleanEmail,
+        phone: body.phone,
+        category: body.category || "General Merchandise",
+        stallTitle: body.stallTitle || "Exhibition Stand",
+        planName: body.planName || "Stand Option",
+        dueNow: body.dueNow ?? body.paidAmount ?? 0,
+        senderAccountName: senderAccountName || effectiveOwnerName,
+        productsSelling: body.productsSelling,
+        businessAddress: body.businessAddress,
+        socialHandle: effectiveSocialHandle,
+    }).catch((err) => {
+        console.error("[Telegram Alert] Error sending admin telegram notification:", err);
     });
 
     return NextResponse.json({
         success: true,
         bookingCode,
-        message: "Vendor stall application recorded successfully",
+        senderAccountName: senderAccountName || effectiveOwnerName,
+        status: "UNDER_REVIEW",
+        message: "Vendor stall application recorded successfully. Verification email and admin telegram alert dispatched.",
     });
 }
-

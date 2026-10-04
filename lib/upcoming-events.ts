@@ -51,8 +51,10 @@ export function mapPrismaToUpcomingEvent(event: any): UpcomingEvent {
                 const parts: string[] = [];
                 if (parsed.oneTime) parts.push("Full Upfront Payment");
                 if (parsed.payAsYouGo) {
+                    const dep = parsed.depositAmount ? `₦${Number(parsed.depositAmount).toLocaleString()} fixed deposit` : parsed.depositPercentage ? `${parsed.depositPercentage}% deposit` : "₦50,000 fixed deposit";
+                    const rev = parsed.revenuePercentage ? ` + ${parsed.revenuePercentage}% Daily Revenue` : "";
                     parts.push(
-                        `Pay-As-You-Go Installments (${parsed.depositPercentage || 50}% initial deposit)`
+                        `Pay As You Go (${dep}${rev})`
                     );
                 }
                 const note = parsed.payAsYouGoNote ? ` • Note: ${parsed.payAsYouGoNote}` : "";

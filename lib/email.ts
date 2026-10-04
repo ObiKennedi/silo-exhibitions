@@ -191,3 +191,138 @@ export async function sendNewEventBroadcastToAllUsers(event: NewEventEmailPayloa
         return { totalUsers: 0, sentCount: 0, error: err };
     }
 }
+
+export interface VendorReviewEmailPayload {
+    recipientEmail: string;
+    contactName: string;
+    businessName: string;
+    eventTitle: string;
+    stallTitle: string;
+    planName: string;
+    dueNow: number | string;
+    senderAccountName: string;
+    bookingCode: string;
+    category: string;
+}
+
+export function generateVendorReviewEmailHtml(data: VendorReviewEmailPayload): string {
+    const formattedAmount = Number(data.dueNow || 0).toLocaleString();
+    return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vendor Application Under Review</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f8fafc; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f8fafc; padding: 40px 16px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width: 580px; background-color: #ffffff; border-radius: 16px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);">
+                    <!-- Brand Top Banner -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #0015f8 0%, #1e3a8a 100%); padding: 32px 28px; text-align: center;">
+                            <h1 style="margin: 0; color: #ffffff; font-size: 22px; font-weight: 800; letter-spacing: -0.02em;">Silo Campus Trade Fair</h1>
+                            <p style="margin: 6px 0 0 0; color: #bfdbfe; font-size: 13px; font-weight: 500;">Exhibition Stand Registration</p>
+                        </td>
+                    </tr>
+
+                    <!-- Main Body -->
+                    <tr>
+                        <td style="padding: 32px 28px;">
+                            <div style="display: inline-block; background-color: #fef3c7; color: #92400e; font-size: 12px; font-weight: 700; padding: 4px 12px; border-radius: 999px; margin-bottom: 16px;">
+                                ⏳ APPLICATION UNDER REVIEW
+                            </div>
+
+                            <h2 style="margin: 0 0 14px 0; color: #0f172a; font-size: 20px; font-weight: 700;">
+                                Registration &amp; Payment Received
+                            </h2>
+
+                            <p style="margin: 0 0 18px 0; font-size: 15px; line-height: 1.6; color: #334155;">
+                                Dear <strong>${data.contactName}</strong>,
+                            </p>
+
+                            <p style="margin: 0 0 20px 0; font-size: 14.5px; line-height: 1.6; color: #334155;">
+                                Thank you for applying for a vendor stand at <strong>${data.eventTitle}</strong> for your brand, <strong>${data.businessName}</strong>. We have received your application and bank transfer payment notification.
+                            </p>
+
+                            <!-- Review Status Callout -->
+                            <div style="background-color: #f8fafc; border: 1.5px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 24px;">
+                                <table width="100%" cellspacing="0" cellpadding="0">
+                                    <tr>
+                                        <td style="padding-bottom: 10px; font-size: 13px; color: #64748b;">Booking Reference:</td>
+                                        <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #0015f8; text-align: right;">${data.bookingCode}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-bottom: 10px; font-size: 13px; color: #64748b;">Brand Name:</td>
+                                        <td style="padding-bottom: 10px; font-size: 14px; font-weight: 600; color: #0f172a; text-align: right;">${data.businessName}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-bottom: 10px; font-size: 13px; color: #64748b;">Category:</td>
+                                        <td style="padding-bottom: 10px; font-size: 13.5px; font-weight: 600; color: #0f172a; text-align: right;">${data.category}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-bottom: 10px; font-size: 13px; color: #64748b;">Stand &amp; Plan:</td>
+                                        <td style="padding-bottom: 10px; font-size: 13.5px; font-weight: 600; color: #0f172a; text-align: right;">${data.stallTitle} (${data.planName})</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-bottom: 10px; font-size: 13px; color: #64748b;">Amount Due / Paid:</td>
+                                        <td style="padding-bottom: 10px; font-size: 15px; font-weight: 800; color: #16a34a; text-align: right;">₦${formattedAmount}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-bottom: 10px; font-size: 13px; color: #64748b;">Transfer Sender Name:</td>
+                                        <td style="padding-bottom: 10px; font-size: 14px; font-weight: 700; color: #0f172a; text-align: right;">${data.senderAccountName}</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size: 13px; color: #64748b;">Transferred To:</td>
+                                        <td style="font-size: 13px; font-weight: 600; color: #475569; text-align: right;">OPay (6105607790 - Silo campus tradefair)</td>
+                                    </tr>
+                                </table>
+                            </div>
+
+                            <!-- What Happens Next -->
+                            <h3 style="margin: 0 0 10px 0; font-size: 15px; color: #0f172a;">What happens next?</h3>
+                            <ul style="margin: 0 0 24px 0; padding-left: 20px; font-size: 13.5px; line-height: 1.6; color: #475569;">
+                                <li>Our finance team is currently reconciling your transfer from <strong>${data.senderAccountName}</strong> against our OPay account statement.</li>
+                                <li>Once verified, your stand status will be changed to <strong>APPROVED</strong>.</li>
+                                <li>You will receive your official <strong>Exhibitor Stall Pass</strong> and booth credentials via email.</li>
+                            </ul>
+
+                            <p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.5;">
+                                If you have any questions or made this transfer with a different account name, please reach out to our support team immediately.
+                            </p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f1f5f9; padding: 20px 28px; text-align: center; border-top: 1px solid #e2e8f0;">
+                            <p style="margin: 0; font-size: 12px; color: #64748b;">
+                                &copy; ${new Date().getFullYear()} Silo Exhibitions. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+    `.trim();
+}
+
+export async function sendVendorReviewEmail(payload: VendorReviewEmailPayload) {
+    try {
+        const html = generateVendorReviewEmailHtml(payload);
+        const res = await sendEmail({
+            to: payload.recipientEmail,
+            subject: `⏳ Registration & Payment Received — ${payload.businessName} (${payload.eventTitle})`,
+            html,
+        });
+        return res;
+    } catch (err) {
+        console.error("[Email] Failed to send vendor review email:", err);
+        return { success: false, error: err };
+    }
+}

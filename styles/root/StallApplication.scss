@@ -385,7 +385,16 @@
   margin-top: 28px;
   padding-top: 24px;
   border-top: 1.5px dashed var(--line, #dce6f5);
-  scroll-margin-top: 36px;
+  scroll-margin-top: 90px;
+}
+
+#payment-plans-section,
+#vendor-form-section,
+#stall-packages-section {
+  scroll-margin-top: 90px;
+}
+
+.stall-plans {
 
   &__title {
     font-size: 15px;

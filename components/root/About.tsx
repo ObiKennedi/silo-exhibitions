@@ -27,7 +27,7 @@ export const About = () => {
                     </div>
                     <span className="about__photo-badge">
                         <Sparkles size={14} />
-                        Shiloh D&apos;Mighty &bull; Founder &amp; CEO
+                         Founder &amp; CEO
                     </span>
                 </div>
 
