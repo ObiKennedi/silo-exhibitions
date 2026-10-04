@@ -167,13 +167,21 @@ interface RecentApp {
   contactName: string;
   email: string;
   phone: string;
+  category?: string;
   stallTitle: string;
+  planName?: string;
+  dueNow?: number;
   paidAmount: number;
   paymentStatus: string;
+  transactionId?: string | null;
+  channel?: string | null;
   createdAt: string;
+  paidAt?: string | null;
   event: {
+    id?: string;
     title: string;
     slug: string;
+    venue?: string;
   };
 }
 
@@ -300,6 +308,8 @@ export default function AdminDashboardPage() {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [gallery, setGallery] = useState<AdminMedia[]>([]);
   const [recentApplications, setRecentApplications] = useState<RecentApp[]>([]);
+  const [confirmingAppId, setConfirmingAppId] = useState<string | null>(null);
+  const [recentAppFilter, setRecentAppFilter] = useState<"ALL" | "PENDING" | "SUCCESS">("ALL");
 
   // Feedback Notification Banner
   const [notification, setNotification] = useState<{
@@ -462,6 +472,106 @@ export default function AdminDashboardPage() {
     navigator.clipboard.writeText(code);
     setCopiedBookingCode(code);
     setTimeout(() => setCopiedBookingCode(null), 2000);
+  };
+
+  const handleConfirmPayment = async (applicationId: string, bookingCode: string) => {
+    if (!applicationId || confirmingAppId) return;
+    setConfirmingAppId(applicationId);
+    try {
+      const res = await fetch("/api/admin/applications/confirm", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ applicationId }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to confirm payment.");
+      }
+
+      // 1. Update recentApplications state
+      setRecentApplications((prev) =>
+        prev.map((app) => {
+          if (app.id === applicationId) {
+            const confirmedAmount = Number(app.dueNow || app.paidAmount || 0);
+            return {
+              ...app,
+              paymentStatus: "SUCCESS",
+              paidAmount: confirmedAmount,
+              paidAt: new Date().toISOString(),
+            };
+          }
+          return app;
+        })
+      );
+
+      // 2. Update users list in state
+      setUsers((prevUsers) =>
+        prevUsers.map((u) => {
+          if (!u.vendorApplications) return u;
+          const updatedApps = u.vendorApplications.map((vApp) => {
+            if (vApp.id === applicationId) {
+              const confirmedAmount = Number(vApp.dueNow || vApp.paidAmount || 0);
+              return {
+                ...vApp,
+                paymentStatus: "SUCCESS",
+                paidAmount: confirmedAmount,
+              };
+            }
+            return vApp;
+          });
+          const totalSpent = updatedApps.reduce(
+            (sum, a) => sum + (a.paymentStatus === "SUCCESS" ? (a.paidAmount || 0) : 0),
+            0
+          );
+          return {
+            ...u,
+            vendorApplications: updatedApps,
+            totalSpent,
+          };
+        })
+      );
+
+      // 3. Update selectedUser if open in modal
+      setSelectedUser((prevSelected) => {
+        if (!prevSelected || !prevSelected.vendorApplications) return prevSelected;
+        const updatedApps = prevSelected.vendorApplications.map((vApp) => {
+          if (vApp.id === applicationId) {
+            const confirmedAmount = Number(vApp.dueNow || vApp.paidAmount || 0);
+            return {
+              ...vApp,
+              paymentStatus: "SUCCESS",
+              paidAmount: confirmedAmount,
+            };
+          }
+          return vApp;
+        });
+        return {
+          ...prevSelected,
+          vendorApplications: updatedApps,
+        };
+      });
+
+      // 4. Update stats revenue
+      const updatedApp = recentApplications.find((a) => a.id === applicationId);
+      const addedRevenue = Number(updatedApp?.dueNow || updatedApp?.paidAmount || 0);
+      setStats((prevStats) => ({
+        ...prevStats,
+        totalRevenue: prevStats.totalRevenue + addedRevenue,
+      }));
+
+      setNotification({
+        type: "success",
+        message: data.message || `Payment confirmed for ${bookingCode}. Approval email sent!`,
+      });
+    } catch (err: any) {
+      console.error("Failed to confirm payment:", err);
+      setNotification({
+        type: "error",
+        message: err?.message || "Failed to confirm payment.",
+      });
+    } finally {
+      setConfirmingAppId(null);
+    }
   };
 
   // Fetch all dashboard data
@@ -1501,20 +1611,54 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Quick Actions & Recent Applications Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1.4fr 1fr", gap: 24 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 24 }}>
               {/* Recent Applications Card */}
               <div className="admin-card">
                 <div className="admin-card__head">
                   <div>
-                    <h3>Recent Vendor Registrations</h3>
-                    <p>Latest vendor applications submitted via Monnify</p>
+                    <h3>Vendor Stand Registrations &amp; Transactions</h3>
+                    <p>Review bank transfers, verify sender accounts, and approve pending stands</p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setActiveTab("events")}
+                    onClick={() => setActiveTab("users")}
                     className="btn-secondary"
                   >
-                    View Events &rarr;
+                    View All Users &rarr;
+                  </button>
+                </div>
+
+                {/* Filter Pills */}
+                <div className="reg-filter-nav">
+                  <button
+                    type="button"
+                    className={`reg-filter-btn ${recentAppFilter === "ALL" ? "is-active" : ""}`}
+                    onClick={() => setRecentAppFilter("ALL")}
+                  >
+                    All ({recentApplications.length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`reg-filter-btn ${recentAppFilter === "PENDING" ? "is-active" : ""}`}
+                    onClick={() => setRecentAppFilter("PENDING")}
+                    style={
+                      recentApplications.some((a) => a.paymentStatus === "PENDING")
+                        ? {
+                            borderColor: "#f59e0b",
+                            color: recentAppFilter === "PENDING" ? "#ffffff" : "#b45309",
+                            background: recentAppFilter === "PENDING" ? "#d97706" : "#fef3c7",
+                          }
+                        : {}
+                    }
+                  >
+                    Pending Confirmation ({recentApplications.filter((a) => a.paymentStatus === "PENDING").length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`reg-filter-btn ${recentAppFilter === "SUCCESS" ? "is-active" : ""}`}
+                    onClick={() => setRecentAppFilter("SUCCESS")}
+                  >
+                    Approved ({recentApplications.filter((a) => a.paymentStatus === "SUCCESS").length})
                   </button>
                 </div>
 
@@ -1527,33 +1671,153 @@ export default function AdminDashboardPage() {
                     <table className="admin-table">
                       <thead>
                         <tr>
-                          <th>Business</th>
-                          <th>Stall</th>
-                          <th>Paid</th>
+                          <th>Vendor / Business</th>
+                          <th>Stand &amp; Plan</th>
+                          <th>Transfer Details</th>
                           <th>Status</th>
-                          <th>Date</th>
+                          <th style={{ textAlign: "right" }}>Action</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {recentApplications.map((app) => (
-                          <tr key={app.id}>
-                            <td>
-                              <strong>{app.businessName}</strong>
-                              <br />
-                              <small style={{ color: "#64748b" }}>{app.contactName}</small>
-                            </td>
-                            <td>{app.stallTitle}</td>
-                            <td>
-                              <strong>₦{(app.paidAmount || 0).toLocaleString()}</strong>
-                            </td>
-                            <td>
-                              <span className="status-badge is-published">{app.paymentStatus}</span>
-                            </td>
-                            <td style={{ color: "#64748b", fontSize: 12 }}>
-                              {new Date(app.createdAt).toLocaleDateString("en-GB")}
-                            </td>
-                          </tr>
-                        ))}
+                        {recentApplications
+                          .filter((app) => {
+                            if (recentAppFilter === "PENDING") return app.paymentStatus === "PENDING";
+                            if (recentAppFilter === "SUCCESS") return app.paymentStatus === "SUCCESS";
+                            return true;
+                          })
+                          .map((app) => {
+                            const isPending = app.paymentStatus === "PENDING";
+                            const amount = app.dueNow || app.paidAmount || 0;
+                            const isConfirming = confirmingAppId === app.id;
+
+                            return (
+                              <tr key={app.id}>
+                                <td>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                      <strong style={{ color: "#0a0f2e", fontSize: 13.5 }}>
+                                        {app.businessName}
+                                      </strong>
+                                      <button
+                                        type="button"
+                                        onClick={() => handleCopyCode(app.bookingCode)}
+                                        className="copy-badge-btn"
+                                        title="Click to copy booking code"
+                                      >
+                                        {copiedBookingCode === app.bookingCode ? (
+                                          <Check size={11} />
+                                        ) : (
+                                          <Copy size={11} />
+                                        )}
+                                        <span>{app.bookingCode}</span>
+                                      </button>
+                                    </div>
+                                    <small style={{ color: "#64748b", fontSize: 12 }}>
+                                      {app.contactName} &bull; {app.phone}
+                                    </small>
+                                    {app.event?.title && (
+                                      <small style={{ color: "#0015f8", fontSize: 11, fontWeight: 600 }}>
+                                        {app.event.title}
+                                      </small>
+                                    )}
+                                  </div>
+                                </td>
+
+                                <td>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                    <strong style={{ fontSize: 13, color: "#1e293b" }}>{app.stallTitle}</strong>
+                                    <small style={{ color: "#64748b", fontSize: 11.5 }}>
+                                      {app.planName || "Full Payment"}
+                                    </small>
+                                    {app.category && (
+                                      <span
+                                        style={{
+                                          fontSize: 10.5,
+                                          color: "#475569",
+                                          background: "#f1f5f9",
+                                          padding: "1px 6px",
+                                          borderRadius: 4,
+                                          width: "fit-content",
+                                        }}
+                                      >
+                                        {app.category}
+                                      </span>
+                                    )}
+                                  </div>
+                                </td>
+
+                                <td>
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                    <strong style={{ color: isPending ? "#d97706" : "#15803d", fontSize: 13.5 }}>
+                                      ₦{amount.toLocaleString()}
+                                    </strong>
+                                    {app.transactionId ? (
+                                      <span
+                                        className="vendor-sender-tag"
+                                        title="Account name supplied by vendor during transfer"
+                                      >
+                                        💳 Sender: <strong>{app.transactionId}</strong>
+                                      </span>
+                                    ) : (
+                                      <small style={{ color: "#94a3b8", fontSize: 11 }}>
+                                        {app.channel || "Direct Transfer"}
+                                      </small>
+                                    )}
+                                    <small style={{ color: "#94a3b8", fontSize: 10.5 }}>
+                                      {new Date(app.createdAt).toLocaleDateString("en-GB")}
+                                    </small>
+                                  </div>
+                                </td>
+
+                                <td>
+                                  {isPending ? (
+                                    <span className="badge-pending-review">
+                                      <Clock size={11} />
+                                      <span>Pending Verification</span>
+                                    </span>
+                                  ) : (
+                                    <span className="badge-confirmed">
+                                      <Check size={11} />
+                                      <span>Confirmed</span>
+                                    </span>
+                                  )}
+                                </td>
+
+                                <td style={{ textAlign: "right" }}>
+                                  {isPending ? (
+                                    <button
+                                      type="button"
+                                      className="btn-approve"
+                                      onClick={() => handleConfirmPayment(app.id, app.bookingCode)}
+                                      disabled={isConfirming}
+                                      title="Confirm received payment and send approval email"
+                                    >
+                                      {isConfirming ? (
+                                        <Loader size={12} />
+                                      ) : (
+                                        <CheckCircle2 size={13} />
+                                      )}
+                                      <span>Confirm Payment</span>
+                                    </button>
+                                  ) : (
+                                    <div
+                                      style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: 4,
+                                        color: "#16a34a",
+                                        fontSize: 12,
+                                        fontWeight: 700,
+                                      }}
+                                    >
+                                      <CheckCircle2 size={14} />
+                                      <span>Approved</span>
+                                    </div>
+                                  )}
+                                </td>
+                              </tr>
+                            );
+                          })}
                       </tbody>
                     </table>
                   </div>
@@ -1924,7 +2188,7 @@ export default function AdminDashboardPage() {
                               fontFamily: "monospace",
                             }}
                           >
-                            silo.events/
+                            siloexhibitions.com.ng/
                           </span>
                           <input
                             type="text"
@@ -3879,6 +4143,22 @@ export default function AdminDashboardPage() {
                             </div>
 
                             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                              {app.paymentStatus === "PENDING" && (
+                                <button
+                                  type="button"
+                                  className="btn-approve"
+                                  onClick={() => handleConfirmPayment(app.id, app.bookingCode)}
+                                  disabled={confirmingAppId === app.id}
+                                  title="Confirm payment and send approval email"
+                                >
+                                  {confirmingAppId === app.id ? (
+                                    <Loader size={12} />
+                                  ) : (
+                                    <CheckCircle2 size={13} />
+                                  )}
+                                  <span>Confirm Payment</span>
+                                </button>
+                              )}
                               <small style={{ color: "#94a3b8", fontSize: 11.5 }}>
                                 Registered: {new Date(app.createdAt).toLocaleDateString("en-GB")}
                               </small>

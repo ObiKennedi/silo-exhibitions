@@ -225,7 +225,7 @@ ${leftMargin} ${currentY - 50} ${contentWidth} 50 re b
 BT /F2 9 Tf ${leftMargin + 12} ${currentY - 14} Td (ORGANIZER AUTHORIZATION & VENDOR ACCEPTANCE) ET
 0.35 0.4 0.48 rg
 BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 28} Td (By booking a stand at ${escapePdfText(options.eventTitle)}, the vendor agrees to abide by all rules above.) ET
-BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 40} Td (Issued electronically by Silo Exhibitions Secretariat  |  https://siloexhibitions.com/${escapePdfText(options.slug)}) ET
+BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 40} Td (Issued electronically by Silo Exhibitions Secretariat  |  https://siloexhibitions.com.ng/${escapePdfText(options.slug)}) ET
 `;
     currentY -= 65;
 

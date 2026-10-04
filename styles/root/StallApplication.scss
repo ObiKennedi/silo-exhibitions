@@ -1303,8 +1303,124 @@
 
   &__actions {
     display: flex;
-    gap: 14px;
+    gap: 16px;
     justify-content: center;
+    align-items: center;
     flex-wrap: wrap;
+    margin-top: 32px;
+
+    @media (max-width: 580px) {
+      flex-direction: column;
+      width: 100%;
+      gap: 12px;
+    }
+  }
+
+  &__btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 14px 28px;
+    border-radius: 999px;
+    font-size: 14.5px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    white-space: nowrap;
+
+    @media (max-width: 580px) {
+      width: 100%;
+      padding: 14px 20px;
+    }
+
+    svg {
+      transition: transform 0.2s ease;
+      flex-shrink: 0;
+    }
+
+    &--print {
+      background: linear-gradient(135deg, #0015f8 0%, #1e40af 100%);
+      color: #ffffff;
+      border: 1.5px solid transparent;
+      box-shadow: 0 4px 16px rgba(0, 21, 248, 0.28);
+
+      &:hover {
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e3a8a 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 22px rgba(0, 21, 248, 0.38);
+
+        svg {
+          transform: scale(1.1);
+        }
+      }
+
+      &:active {
+        transform: translateY(0);
+        box-shadow: 0 2px 8px rgba(0, 21, 248, 0.2);
+      }
+    }
+
+    &--back {
+      background: #ffffff;
+      color: #1e293b;
+      border: 1.5px solid #cbd5e1;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
+
+      &:hover {
+        border-color: #0015f8;
+        color: #0015f8;
+        background: #f8fbff;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(0, 21, 248, 0.1);
+
+        svg {
+          transform: translateX(-3px);
+        }
+      }
+
+      &:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+      }
+    }
   }
 }
+
+// Print styles for Confirmation Slip
+@media print {
+  nav,
+  header,
+  footer,
+  .stall-hero,
+  .stall-hero__back,
+  .stall-success__actions,
+  .event-whatsapp-floating-wrap,
+  .monnify-overlay,
+  .bank-transfer-overlay {
+    display: none !important;
+  }
+
+  body,
+  .stall-page {
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .stall-success {
+    box-shadow: none !important;
+    border: 1.5px solid #000000 !important;
+    max-width: 100% !important;
+    padding: 24px !important;
+    margin: 0 !important;
+    border-radius: 8px !important;
+  }
+
+  .stall-success__ticket {
+    background: #ffffff !important;
+    border: 1.5px dashed #000000 !important;
+  }
+}
+

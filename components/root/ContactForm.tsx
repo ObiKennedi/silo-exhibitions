@@ -4,7 +4,7 @@
 import { useState, FormEvent } from "react";
 import { FaSpinner, FaCircleCheck } from "react-icons/fa6";
 
-const ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY ?? "";
+const ACCESS_KEY = process.env.NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY || "3f5f95d5-838b-4f0b-984d-537e999c4070";
 
 type Status = "idle" | "loading" | "done" | "error";
 
@@ -53,7 +53,7 @@ export const ContactForm = () => {
             {/* Honeypot field — Web3Forms silently drops submissions where this is filled. */}
             <input type="checkbox" name="botcheck" className="contact-form__honeypot" tabIndex={-1} autoComplete="off" />
 
-            <input type="hidden" name="subject" value="New message from silo.events" />
+            <input type="hidden" name="subject" value="New message from siloexhibitions.com.ng" />
 
             <div className="contact-form__row">
                 <label className="contact-form__field">

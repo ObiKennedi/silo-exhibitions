@@ -119,7 +119,7 @@ export async function GET() {
 
         const recentApplicationsRaw = await prisma.vendorApplication.findMany({
             orderBy: { createdAt: "desc" },
-            take: 8,
+            take: 30,
             select: {
                 id: true,
                 bookingCode: true,
@@ -127,14 +127,22 @@ export async function GET() {
                 contactName: true,
                 email: true,
                 phone: true,
+                category: true,
                 stallTitle: true,
+                planName: true,
+                dueNow: true,
                 paidAmount: true,
                 paymentStatus: true,
+                transactionId: true,
+                channel: true,
                 createdAt: true,
+                paidAt: true,
                 event: {
                     select: {
+                        id: true,
                         title: true,
                         slug: true,
+                        venue: true,
                     },
                 },
             },
@@ -143,6 +151,7 @@ export async function GET() {
         const recentApplications = recentApplicationsRaw.map((app) => ({
             ...app,
             paidAmount: Number(app.paidAmount) || 0,
+            dueNow: Number(app.dueNow) || 0,
         }));
 
         return NextResponse.json({

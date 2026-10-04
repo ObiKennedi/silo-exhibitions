@@ -9,7 +9,9 @@ export const SOCIALS = [
 export const WHATSAPP_URL = "https://wa.me/2349063508366";
 export const SPONSOR_WHATSAPP_URL = "https://wa.me/2349063508366?text=Hello%20Silo%20Exhibitions,%20I%20am%20interested%20in%20becoming%20an%20official%20sponsor%20for%20your%20upcoming%20trade%20fairs.";
 export const PHONE = "+234 906 350 8366";
-export const EMAIL = "hello@silo.events";
+export const EMAIL = "hello@siloexhibitions.com.ng";
+export const DOMAIN = "siloexhibitions.com.ng";
+export const SITE_URL = "https://siloexhibitions.com.ng";
 export const ADDRESS = "12 Tetlow Road, Owerri, Imo State, Nigeria";
 
 export const FOOTER_SPONSORS = [

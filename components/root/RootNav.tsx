@@ -199,8 +199,8 @@ export const RootNav = () => {
 
                 <div className="drawer-footer">
                     <p className="drawer-footer-tagline">Building Businesses That Last</p>
-                    <a href="mailto:hello@siloexhibitions.com" className="drawer-footer-email">
-                        hello@siloexhibitions.com
+                    <a href="mailto:hello@siloexhibitions.com.ng" className="drawer-footer-email">
+                        hello@siloexhibitions.com.ng
                     </a>
                 </div>
             </aside>

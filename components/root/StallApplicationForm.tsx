@@ -371,16 +371,18 @@ export const StallApplicationForm = ({ event }: Props) => {
                     <div className="stall-success__actions">
                         <button
                             type="button"
-                            className="event-page__link-btn"
+                            className="stall-success__btn stall-success__btn--print"
                             onClick={() => window.print()}
                         >
-                            <Printer size={16} /> Print Confirmation Slip
+                            <Printer size={16} />
+                            <span>Print Confirmation Slip</span>
                         </button>
                         <Link
                             href={`/${event.slug}`}
-                            className="upcoming-events__see-more"
+                            className="stall-success__btn stall-success__btn--back"
                         >
-                            Back to Exhibition Page
+                            <ArrowLeft size={16} />
+                            <span>Back to Exhibition Page</span>
                         </Link>
                     </div>
                 </div>

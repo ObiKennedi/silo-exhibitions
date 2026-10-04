@@ -47,6 +47,8 @@ const baseURL =
 
 const trustedOrigins = [
   baseURL,
+  "https://siloexhibitions.com.ng",
+  "https://www.siloexhibitions.com.ng",
   process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`,
   process.env.VERCEL_BRANCH_URL && `https://${process.env.VERCEL_BRANCH_URL}`,
 ].filter(Boolean) as string[];

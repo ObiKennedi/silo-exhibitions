@@ -23,8 +23,6 @@ export const UpcomingEventCard = ({ event }: { event: UpcomingEvent }) => {
             ? event.coverImageUrl
             : "/events/silo-campus-tradefair-2026/flier.jpg";
 
-    const vendorApplyUrl = event.vendorCall?.applyUrl || `/${event.slug}/apply-vendor`;
-
     return (
         <div className="upcoming-event-card">
             <Link href={`/${event.slug}`} className="upcoming-event-card__media-link">
@@ -52,7 +50,7 @@ export const UpcomingEventCard = ({ event }: { event: UpcomingEvent }) => {
 
                 <div className="upcoming-event-card__footer">
                     <Link
-                        href={vendorApplyUrl}
+                        href={`/${event.slug}`}
                         className="upcoming-event-card__vendor-btn"
                     >
                         <span>Become a vendor</span>
