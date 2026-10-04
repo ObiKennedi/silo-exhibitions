@@ -17,13 +17,24 @@ export async function sendEmail({ to, subject, html, from }: SendEmailOptions) {
     }
 
     try {
-        const defaultFrom = process.env.EMAIL_FROM || "Silo Exhibitions <hello@siloexhibitions.com.ng>";
+        let sender = (from || process.env.EMAIL_FROM || "Silo Exhibitions <hello@siloexhibitions.com.ng>").trim();
+        // Guard against any lingering siloexhibitions.com without .ng
+        if (sender.includes("@siloexhibitions.com") && !sender.includes("@siloexhibitions.com.ng")) {
+            sender = sender.replace("@siloexhibitions.com", "@siloexhibitions.com.ng");
+        }
+
         const result = await resend.emails.send({
-            from: from || defaultFrom,
+            from: sender,
             to,
             subject,
             html,
         });
+
+        if (result.error) {
+            console.error("[Email] Resend API error:", result.error);
+            return { success: false, error: result.error };
+        }
+
         return { success: true, result };
     } catch (err) {
         console.error("[Email] Failed to send email via Resend:", err);

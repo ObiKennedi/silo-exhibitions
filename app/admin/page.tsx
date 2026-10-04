@@ -15,6 +15,7 @@ import {
   ExternalLink,
   Plus,
   RefreshCw,
+  Loader2,
   CheckCircle2,
   AlertCircle,
   Trash2,
@@ -1793,7 +1794,7 @@ export default function AdminDashboardPage() {
                                       title="Confirm received payment and send approval email"
                                     >
                                       {isConfirming ? (
-                                        <Loader size={12} />
+                                        <Loader2 size={13} className="spin-icon" />
                                       ) : (
                                         <CheckCircle2 size={13} />
                                       )}
@@ -4152,7 +4153,7 @@ export default function AdminDashboardPage() {
                                   title="Confirm payment and send approval email"
                                 >
                                   {confirmingAppId === app.id ? (
-                                    <Loader size={12} />
+                                    <Loader2 size={13} className="spin-icon" />
                                   ) : (
                                     <CheckCircle2 size={13} />
                                   )}
