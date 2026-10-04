@@ -103,14 +103,26 @@ export default async function EventMicroPage({ params }: Props) {
                         </li>
                     </ul>
 
-                    <EventCountdown
-                        targetDate={event.startDate}
-                        title="Countdown to Exhibition"
-                    />
-
                     <div className="event-page__cta">
+                        {event.vendorCall.enabled && (
+                            <a className="event-page__link-btn" href={event.vendorCall.applyUrl}>
+                                Become a vendor
+                            </a>
+                        )}
+                        {event.volunteerCall.enabled && (
+                            <a
+                                className="event-page__link-btn"
+                                href={event.volunteerCall.applyUrl}
+                                style={{
+                                    background: "#ffffff",
+                                    color: "var(--blue, #0015f8)",
+                                    border: "1.5px solid var(--blue, #0015f8)",
+                                }}
+                            >
+                                Become a volunteer
+                            </a>
+                        )}
                         {event.waitlistEnabled && <WaitlistForm slug={event.slug} />}
-                        <WhatsAppButton url={event.whatsappUrl} />
                     </div>
                 </div>
             </section>
@@ -271,6 +283,24 @@ export default async function EventMicroPage({ params }: Props) {
                     </ul>
                 </section>
             )}
+
+            {/* ---------- Countdown to Exhibition & WhatsApp Chat Action ---------- */}
+            <section className="event-page__section event-page__bottom-cta">
+                <EventCountdown
+                    targetDate={event.startDate}
+                    title="Countdown to Exhibition"
+                    subtitle="Days, hours, and minutes until the gates open"
+                />
+
+                {event.whatsappUrl && (
+                    <div className="event-page__bottom-whatsapp">
+                        <WhatsAppButton
+                            url={event.whatsappUrl}
+                            label="Chat with us on WhatsApp"
+                        />
+                    </div>
+                )}
+            </section>
 
             <WhatsAppButton url={event.whatsappUrl} variant="floating" />
         </main>
