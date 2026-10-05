@@ -85,7 +85,7 @@ export function mapPrismaToUpcomingEvent(event: any): UpcomingEvent {
             enabled: Boolean(event.vendorCallEnabled),
             description:
                 event.vendorCallDescription ||
-                "Apply for a stall at this exhibition. Select your booth size and payment plan.",
+                "Select a stand, choose a payment structure and become a vendor",
             applyUrl: `/${event.slug}/apply-vendor`,
         },
 

@@ -828,13 +828,7 @@ export default function AdminDashboardPage() {
         payAsYouGoNote,
       });
 
-      const vendorCallDesc = `Payment Options: ${enableOneTime ? "Full 100% Payment" : ""}${
-        enableOneTime && enablePayAsYouGo ? " | " : ""
-      }${
-        enablePayAsYouGo
-          ? `Pay As You Go (₦${payAsYouGoDepositAmount.toLocaleString()} fixed deposit + ${payAsYouGoRevPercent}% daily revenue share)`
-          : ""
-      }`;
+      const vendorCallDesc = "Select a stand, choose a payment structure and become a vendor";
 
       const action = editingEvent ? "update" : "create";
       const payload: any = {

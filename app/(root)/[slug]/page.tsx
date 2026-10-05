@@ -182,10 +182,19 @@ export default async function EventMicroPage({ params }: Props) {
                     {event.vendorCall.enabled && (
                         <div className="event-page__card">
                             <span className="event-page__card-icon">
-                                <Megaphone size={20} />
+                                <Image
+                                    src="/favicon.png"
+                                    alt="Silo Exhibitions"
+                                    width={24}
+                                    height={24}
+                                />
                             </span>
                             <h3>Call for vendors</h3>
-                            <p>{event.vendorCall.description}</p>
+                            <p>
+                                {event.vendorCall.description && !event.vendorCall.description.startsWith("Payment Options:")
+                                    ? event.vendorCall.description
+                                    : "Select a stand, choose a payment structure and become a vendor"}
+                            </p>
                             <a className="event-page__link-btn" href={event.vendorCall.applyUrl}>
                                 Become a vendor
                             </a>
