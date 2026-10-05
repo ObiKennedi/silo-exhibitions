@@ -37,7 +37,7 @@ export function computeStallPlans(stall: {
     // 3. Pay As You Go (Admin-Selected Fixed Deposit + % Daily Revenue Share)
     if (stall.enableRevenueShare) {
         const deposit = Math.max(0, Number(stall.revenueDepositAmount) || 50000);
-        const revPct = Math.max(1, Number(stall.revenuePercentage) || 20);
+        const revPct = Math.max(1, Number(stall.revenuePercentage) || 18);
         plans.push({
             id: "revenue_percentage",
             name: "Option 3 • Pay As You Go",
@@ -109,7 +109,7 @@ export const DEFAULT_STALL_CONFIGS: StallConfig[] = [
         installmentDepositPercent: 50,
         enableRevenueShare: true,
         revenueDepositAmount: 50000,
-        revenuePercentage: 20,
+        revenuePercentage: 18,
         availablePlans: [],
     },
 ].map((s) => ({

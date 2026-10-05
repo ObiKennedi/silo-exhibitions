@@ -69,7 +69,7 @@ export const PaymentConditionModal = ({
     const isFull = plan.id === "full";
     const depositPct = stall.installmentDepositPercent ?? 50;
     const remainingBalance = Math.max(0, basePrice - plan.dueNow);
-    const revPct = plan.revenuePercentage || stall.revenuePercentage || 20;
+    const revPct = plan.revenuePercentage || stall.revenuePercentage || 18;
 
     const handleAccept = () => {
         if (!acknowledged) return;

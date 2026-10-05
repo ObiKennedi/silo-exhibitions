@@ -225,7 +225,7 @@ export function computeStallPlans(stall: {
   // 3. Pay As You Go (Admin-Selected Fixed Deposit + % Daily Revenue Share)
   if (stall.enableRevenueShare) {
     const deposit = stall.revenueDepositAmount ?? 50000;
-    const revPct = stall.revenuePercentage ?? 20;
+    const revPct = stall.revenuePercentage ?? 18;
     plans.push({
       id: "revenue_percentage",
       name: "Option 3 • Pay As You Go",
@@ -281,7 +281,7 @@ const DEFAULT_ADMIN_STALLS: StallConfig[] = [
     installmentDepositPercent: 50,
     enableRevenueShare: false,
     revenueDepositAmount: 50000,
-    revenuePercentage: 20,
+    revenuePercentage: 18,
   };
   return {
     ...withToggles,
@@ -356,7 +356,7 @@ export default function AdminDashboardPage() {
   const [enableOneTime, setEnableOneTime] = useState(true);
   const [enablePayAsYouGo, setEnablePayAsYouGo] = useState(true);
   const [payAsYouGoDepositAmount, setPayAsYouGoDepositAmount] = useState(50000);
-  const [payAsYouGoRevPercent, setPayAsYouGoRevPercent] = useState(20);
+  const [payAsYouGoRevPercent, setPayAsYouGoRevPercent] = useState(18);
   const [payAsYouGoNote, setPayAsYouGoNote] = useState(
     "Pay a fixed upfront deposit now. Remit the agreed percentage of daily sales to the audit desk at the end of each day."
   );
@@ -395,7 +395,7 @@ export default function AdminDashboardPage() {
       installmentDepositPercent: 50,
       enableRevenueShare: false,
       revenueDepositAmount: 50000,
-      revenuePercentage: 20,
+      revenuePercentage: 18,
       availablePlans: [],
     };
     newStall.availablePlans = computeStallPlans(newStall);
@@ -640,9 +640,9 @@ export default function AdminDashboardPage() {
     setEnableOneTime(true);
     setEnablePayAsYouGo(true);
     setPayAsYouGoDepositAmount(50000);
-    setPayAsYouGoRevPercent(10);
+    setPayAsYouGoRevPercent(18);
     setPayAsYouGoNote(
-      "Pay 50% deposit now to reserve your stall. Balance due 48 hours before exhibition setup."
+      "Pay a fixed upfront deposit now. Remit the agreed percentage of daily sales to the audit desk at the end of each day."
     );
     setStallsList(DEFAULT_ADMIN_STALLS);
     setTermsList([
@@ -1877,7 +1877,7 @@ export default function AdminDashboardPage() {
                       <p>Jump to core administrative sections</p>
                     </div>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                  <div className="admin-quick-actions-grid">
                     <button
                       type="button"
                       onClick={() => {
@@ -2396,7 +2396,7 @@ export default function AdminDashboardPage() {
                         const installmentDueNow = Math.round(basePrice * (depositPct / 100));
                         const installmentBalance = basePrice - installmentDueNow;
                         const revDeposit = stall.revenueDepositAmount ?? 50000;
-                        const revPct = stall.revenuePercentage ?? 20;
+                        const revPct = stall.revenuePercentage ?? 18;
 
                         return (
                           <div

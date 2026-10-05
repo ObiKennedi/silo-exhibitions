@@ -345,7 +345,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                         {activePlan.isRevenueShare && (
                             <div className="stall-success__ticket-row">
                                 <span>Daily Share of Total Sales</span>
-                                <b style={{ color: "#d97706" }}>{activePlan.revenuePercentage || 20}% of Daily Total Sales (remitted by 8:30pm)</b>
+                                <b style={{ color: "#d97706" }}>{activePlan.revenuePercentage || 18}% of Daily Total Sales (remitted by 8:30pm)</b>
                             </div>
                         )}
                         <div className="stall-success__ticket-row">
@@ -530,7 +530,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                     <div style={{ fontSize: "19px", lineHeight: "1.25" }}>
                                                         <span>₦{(stall.price || defaultPlan?.dueNow || 0).toLocaleString()} <small style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>flat once</small></span>
                                                         <span style={{ fontSize: "12px", color: "var(--muted)", margin: "0 4px", fontWeight: 400 }}>or</span>
-                                                        <span style={{ color: "#d97706" }}>₦{revPlan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ {revPlan.revenuePercentage || 20}% daily sales</small></span>
+                                                        <span style={{ color: "#d97706" }}>₦{revPlan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ {revPlan.revenuePercentage || 18}% daily sales</small></span>
                                                     </div>
                                                 ) : (
                                                     `₦${(stall.price || defaultPlan?.dueNow || 0).toLocaleString()}`
@@ -645,15 +645,15 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 <div className="revenue-warning-box">
                                     <AlertTriangle size={24} className="revenue-warning-box__icon" />
                                     <div className="revenue-warning-box__content">
-                                        <h4>Important Policy: Option 3 • Pay As You Go ({activePlan.revenuePercentage || 20}% of Daily Total Sales)</h4>
+                                        <h4>Important Policy: Option 3 • Pay As You Go ({activePlan.revenuePercentage || 18}% of Daily Total Sales)</h4>
                                         <p>
                                             Under the {activeStall?.title || "Selected Stand"} Pay As You Go structure, you pay an admin-selected fixed deposit of{" "}
                                             <b>₦{(activePlan.dueNow).toLocaleString()} today via direct bank transfer (not a % of stand price)</b>. At the close
-                                            of each day (8:30 PM), exactly <b>{activePlan.revenuePercentage || 20}% of your TOTAL SALES</b> must be
+                                            of each day (8:30 PM), exactly <b>{activePlan.revenuePercentage || 18}% of your TOTAL SALES</b> must be
                                             remitted to the Silo Exhibitions Audit Desk.
                                             <br />
                                             <br />
-                                            <strong>PLEASE NOTE:</strong> This {activePlan.revenuePercentage || 20}% is calculated strictly on your{" "}
+                                            <strong>PLEASE NOTE:</strong> This {activePlan.revenuePercentage || 18}% is calculated strictly on your{" "}
                                             <strong>TOTAL SALES</strong>, <strong>NOT ON NET PROFIT</strong>. Operational overhead, stock cost,
                                             or vendor expenses are NOT deductible from this calculation.
                                         </p>
@@ -688,7 +688,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     </h3>
                                     <p className="stall-selected-banner__price">
                                         <strong>₦{(activePlan?.dueNow || 0).toLocaleString()}</strong> to confirm booking
-                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 20}% daily total sales share)`}
+                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 18}% daily total sales share)`}
                                     </p>
                                 </div>
                             </div>
@@ -1060,7 +1060,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                         </div>
                                         <p style={{ fontSize: "12.5px", color: "#334155", margin: 0, lineHeight: 1.55 }}>
                                             {activePlan?.isRevenueShare ? (
-                                                <>Under the Pay As You Go structure, you pay an admin-selected fixed deposit of <b>₦{(activePlan.dueNow).toLocaleString()} today</b> via direct bank transfer (not a percentage of total stand price). Exactly <b>{activePlan.revenuePercentage || 20}% of daily total sales</b> must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
+                                                <>Under the Pay As You Go structure, you pay an admin-selected fixed deposit of <b>₦{(activePlan.dueNow).toLocaleString()} today</b> via direct bank transfer (not a percentage of total stand price). Exactly <b>{activePlan.revenuePercentage || 18}% of daily total sales</b> must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
                                             ) : activePlan?.id === "installment" ? (
                                                 <>Under this 2-part installment plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} deposit today</b> ({activeStall?.installmentDepositPercent ?? 50}%) to hold your space. The remaining balance of <b>₦{((activeStall?.price || 0) - (activePlan.dueNow || 0)).toLocaleString()}</b> is due 7 days before the exhibition opening.</>
                                             ) : (
@@ -1123,7 +1123,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 <span>
                                     I have read, understood, and accept the official <strong>Vendor Terms &amp; Conditions</strong> and the <strong>Stand Plans</strong> for <strong>{event.title}</strong>.
                                     {activePlan?.isRevenueShare && (
-                                        <> I explicitly acknowledge and agree that under the Pay As You Go plan, the {activePlan.revenuePercentage || 20}% daily share is calculated strictly on <strong>TOTAL SALES and NOT on profit</strong>.</>
+                                        <> I explicitly acknowledge and agree that under the Pay As You Go plan, the {activePlan.revenuePercentage || 18}% daily share is calculated strictly on <strong>TOTAL SALES and NOT on profit</strong>.</>
                                     )}
                                 </span>
                             </label>
@@ -1135,7 +1135,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     <h3>₦{(activePlan?.dueNow || 0).toLocaleString()}</h3>
                                     <p>
                                         {activeStall?.title} · {activePlan?.name}
-                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 20}% Daily Total Sales)`}
+                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 18}% Daily Total Sales)`}
                                     </p>
                                 </div>
 
