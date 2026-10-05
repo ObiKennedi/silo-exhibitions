@@ -126,6 +126,27 @@
   }
 }
 
+.event-page__disclaimer-wrapper {
+  margin-bottom: 44px;
+
+  .event-page__notice {
+    margin-bottom: 16px;
+  }
+}
+
+.event-page__disclaimer-download {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  @media (max-width: 580px) {
+    .event-page__pdf-download-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+}
+
 .event-page__notice {
   display: flex;
   align-items: flex-start;

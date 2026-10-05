@@ -127,33 +127,47 @@ export default async function EventMicroPage({ params }: Props) {
                 </div>
             </section>
 
-            {/* ---------- Dynamic Cashless policy & Important Terms (uploaded by admin) ---------- */}
-            {(event.cashlessPolicy || event.importantTerms) && (
-                <div className="event-page__notice">
-                    <Wallet size={18} />
-                    <div className="event-page__notice-content">
-                        {event.cashlessPolicy && <p>{event.cashlessPolicy}</p>}
-                        {event.importantTerms && (
-                            <div className="event-page__notice-terms">
-                                <strong>Important Notice &amp; Terms:</strong>
-                                {event.importantTerms.includes("\n") ? (
-                                    <ul className="event-page__notice-terms-list">
-                                        {event.importantTerms
-                                            .split("\n")
-                                            .map((t: string) => t.trim())
-                                            .filter(Boolean)
-                                            .map((term: string, idx: number) => (
-                                                <li key={idx}>{term}</li>
-                                            ))}
-                                    </ul>
-                                ) : (
-                                    <span> {event.importantTerms}</span>
-                                )}
-                            </div>
-                        )}
+            {/* ---------- Dynamic Cashless policy & Important Terms / Disclaimer (uploaded by admin) ---------- */}
+            <div className="event-page__disclaimer-wrapper">
+                {(event.cashlessPolicy || event.importantTerms) && (
+                    <div className="event-page__notice">
+                        <Wallet size={18} />
+                        <div className="event-page__notice-content">
+                            {event.cashlessPolicy && <p>{event.cashlessPolicy}</p>}
+                            {event.importantTerms && (
+                                <div className="event-page__notice-terms">
+                                    <strong>Important Notice &amp; Terms:</strong>
+                                    {event.importantTerms.includes("\n") ? (
+                                        <ul className="event-page__notice-terms-list">
+                                            {event.importantTerms
+                                                .split("\n")
+                                                .map((t: string) => t.trim())
+                                                .filter(Boolean)
+                                                .map((term: string, idx: number) => (
+                                                    <li key={idx}>{term}</li>
+                                                ))}
+                                        </ul>
+                                    ) : (
+                                        <span> {event.importantTerms}</span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
                     </div>
+                )}
+
+                <div className="event-page__disclaimer-download">
+                    <a
+                        href={`/api/events/${event.slug}/terms-pdf`}
+                        download
+                        className="event-page__pdf-download-btn"
+                        title="Download official exhibitor terms & conditions document as PDF"
+                    >
+                        <Download size={16} />
+                        <span>Download Terms &amp; Conditions (PDF)</span>
+                    </a>
                 </div>
-            )}
+            </div>
 
             {/* ---------- Write-up ---------- */}
             <section className="event-page__section">
@@ -243,18 +257,8 @@ export default async function EventMicroPage({ params }: Props) {
                     </div>
                 )}
 
-                <div className="event-page__downloads">
-                    <a
-                        href={`/api/events/${event.slug}/terms-pdf`}
-                        download
-                        className="event-page__pdf-download-btn"
-                        title="Download official exhibitor terms & conditions document as PDF"
-                    >
-                        <Download size={16} />
-                        <span>Download Terms &amp; Conditions (PDF)</span>
-                    </a>
-
-                    {event.exhibitionPlan.documentUrl && (
+                {event.exhibitionPlan.documentUrl && (
+                    <div className="event-page__downloads">
                         <a
                             href={event.exhibitionPlan.documentUrl}
                             target="_blank"
@@ -265,8 +269,8 @@ export default async function EventMicroPage({ params }: Props) {
                             <Layers size={16} />
                             <span>Official Stand Plan &amp; Floor Layout (PDF)</span>
                         </a>
-                    )}
-                </div>
+                    </div>
+                )}
             </section>
 
             {/* ---------- Sponsors ---------- */}
