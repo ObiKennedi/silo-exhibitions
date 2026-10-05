@@ -258,9 +258,9 @@ export const PaymentConditionModal = ({
                                             <CreditCard size={18} />
                                         </div>
                                         <div className="condition-item__content">
-                                            <h5>Fixed Deposit Selected by Admin (₦{plan.dueNow.toLocaleString()})</h5>
+                                            <h5>Fixed Deposit (₦{plan.dueNow.toLocaleString()})</h5>
                                             <p>
-                                                Under this Pay As You Go plan, your upfront commitment is an admin-selected fixed deposit of <strong>₦{plan.dueNow.toLocaleString()}</strong> today via direct bank transfer (not calculated as a percentage of the total booth price). This secures your <strong>{stall.title}</strong> reservation.
+                                                Under this Pay As You Go plan, pay a fixed commitment deposit of <strong>₦{plan.dueNow.toLocaleString()}</strong> today via direct bank transfer to secure your <strong>{stall.title}</strong> reservation.
                                             </p>
                                         </div>
                                     </div>

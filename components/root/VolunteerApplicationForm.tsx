@@ -66,8 +66,8 @@ export const VolunteerApplicationForm = ({ event }: Props) => {
 
         setLoading(true);
         const volunteerId = `SILO-VOL-${Math.floor(1000 + Math.random() * 9000)}`;
-        const fallbackGroupUrl = event.whatsappUrl || "https://wa.me/2349063508366";
-        let targetGroupUrl = fallbackGroupUrl;
+        const VOLUNTEER_GROUP_CHAT_URL = "https://chat.whatsapp.com/BQEXl4sXObzFbqsOAnqeJC?s=cl&p=i&mlu=4&ilr=4";
+        let targetGroupUrl = VOLUNTEER_GROUP_CHAT_URL;
 
         try {
             const res = await fetch(`/api/events/${event.slug}/volunteer`, {

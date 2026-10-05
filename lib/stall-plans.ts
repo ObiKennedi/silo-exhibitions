@@ -43,7 +43,7 @@ export function computeStallPlans(stall: {
             name: "Option 3 • Pay As You Go",
             dueNow: deposit,
             totalAmountText: `₦${deposit.toLocaleString()} Fixed Deposit + ${revPct}% Daily Revenue`,
-            description: `Pay a fixed deposit of ₦${deposit.toLocaleString()} today (not a % of stand price), then remit ${revPct}% of daily total sales at the close of each exhibition day.`,
+            description: `Pay a fixed deposit of ₦${deposit.toLocaleString()} today to secure your spot, then remit ${revPct}% of daily total sales at the close of each exhibition day.`,
             isRevenueShare: true,
             revenuePercentage: revPct,
         });

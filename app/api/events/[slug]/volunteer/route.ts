@@ -80,7 +80,7 @@ export async function POST(
     return NextResponse.json({
         success: true,
         volunteerId: volunteerCode,
-        groupChatUrl: eventWhatsappUrl || "https://wa.me/2349063508366",
+        groupChatUrl: "https://chat.whatsapp.com/BQEXl4sXObzFbqsOAnqeJC?s=cl&p=i&mlu=4&ilr=4",
         message: "Volunteer application recorded successfully",
     });
 }

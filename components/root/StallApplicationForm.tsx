@@ -451,7 +451,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                 <section id="stall-packages-section" className="stall-section">
                     <div className="stall-section__head">
                         <h2>Step 1: Choose Your Stand</h2>
-                        <p>Select the booth dimension that fits your merchandise and brand presence, then click &quot;I want this&quot; to choose your payment structure.</p>
+                        <p>Select the booth dimension that fits your goods and brand perception and capacity , then click &quot;I want this&quot; to choose your payment structure.</p>
                     </div>
 
                     {/* Official Stand Plan & Floor Layout Document Link */}
@@ -647,8 +647,8 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     <div className="revenue-warning-box__content">
                                         <h4>Important Policy: Option 3 • Pay As You Go ({activePlan.revenuePercentage || 18}% of Daily Total Sales)</h4>
                                         <p>
-                                            Under the {activeStall?.title || "Selected Stand"} Pay As You Go structure, you pay an admin-selected fixed deposit of{" "}
-                                            <b>₦{(activePlan.dueNow).toLocaleString()} today via direct bank transfer (not a % of stand price)</b>. At the close
+                                            Under the {activeStall?.title || "Selected Stand"} Pay As You Go structure, you pay a fixed commitment deposit of{" "}
+                                            <b>₦{(activePlan.dueNow).toLocaleString()} today via direct bank transfer to secure your spot</b>. At the close
                                             of each day (8:30 PM), exactly <b>{activePlan.revenuePercentage || 18}% of your TOTAL SALES</b> must be
                                             remitted to the Silo Exhibitions Audit Desk.
                                             <br />
@@ -1060,7 +1060,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                         </div>
                                         <p style={{ fontSize: "12.5px", color: "#334155", margin: 0, lineHeight: 1.55 }}>
                                             {activePlan?.isRevenueShare ? (
-                                                <>Under the Pay As You Go structure, you pay an admin-selected fixed deposit of <b>₦{(activePlan.dueNow).toLocaleString()} today</b> via direct bank transfer (not a percentage of total stand price). Exactly <b>{activePlan.revenuePercentage || 18}% of daily total sales</b> must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
+                                                <>Under the Pay As You Go structure, you pay a fixed commitment deposit of <b>₦{(activePlan.dueNow).toLocaleString()} today</b> via direct bank transfer to secure your reservation. Exactly <b>{activePlan.revenuePercentage || 18}% of daily total sales</b> must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
                                             ) : activePlan?.id === "installment" ? (
                                                 <>Under this 2-part installment plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} deposit today</b> ({activeStall?.installmentDepositPercent ?? 50}%) to hold your space. The remaining balance of <b>₦{((activeStall?.price || 0) - (activePlan.dueNow || 0)).toLocaleString()}</b> is due 7 days before the exhibition opening.</>
                                             ) : (
