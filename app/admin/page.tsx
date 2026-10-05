@@ -105,6 +105,7 @@ interface UserTradefairApplication {
   paymentReference?: string | null;
   transactionId?: string | null;
   channel?: string | null;
+  paymentProofUrl?: string | null;
   createdAt: string;
   event?: {
     id: string;
@@ -176,6 +177,7 @@ interface RecentApp {
   paymentStatus: string;
   transactionId?: string | null;
   channel?: string | null;
+  paymentProofUrl?: string | null;
   createdAt: string;
   paidAt?: string | null;
   event: {
@@ -200,7 +202,7 @@ export function computeStallPlans(stall: {
   // 1. Full Upfront Payment
   plans.push({
     id: "full",
-    name: "Option 1",
+    name: "Option 1 • Pay Once",
     dueNow: price,
     totalAmountText: `₦${price.toLocaleString()} one-off`,
     description: "Pay 100% now for instant confirmed allocation.",
@@ -213,7 +215,7 @@ export function computeStallPlans(stall: {
     const balance = price - dueNow;
     plans.push({
       id: "installment",
-      name: "Option 2",
+      name: "Option 2 • Pay Twice",
       dueNow,
       totalAmountText: `₦${dueNow.toLocaleString()} now + ₦${balance.toLocaleString()} later`,
       description: `Pay ₦${dueNow.toLocaleString()} deposit today to hold your space. Remainder due 7 days prior.`,
@@ -223,10 +225,10 @@ export function computeStallPlans(stall: {
   // 3. Pay As You Go (Admin-Selected Fixed Deposit + % Daily Revenue Share)
   if (stall.enableRevenueShare) {
     const deposit = stall.revenueDepositAmount ?? 50000;
-    const revPct = stall.revenuePercentage ?? 10;
+    const revPct = stall.revenuePercentage ?? 20;
     plans.push({
       id: "revenue_percentage",
-      name: "Option 3",
+      name: "Option 3 • Pay As You Go",
       dueNow: deposit,
       totalAmountText: `₦${deposit.toLocaleString()} Fixed Deposit + ${revPct}% Daily Revenue`,
       description: `Pay a fixed deposit of ₦${deposit.toLocaleString()} today, then remit ${revPct}% of daily total sales at the close of each exhibition day.`,
@@ -279,7 +281,7 @@ const DEFAULT_ADMIN_STALLS: StallConfig[] = [
     installmentDepositPercent: 50,
     enableRevenueShare: false,
     revenueDepositAmount: 50000,
-    revenuePercentage: 10,
+    revenuePercentage: 20,
   };
   return {
     ...withToggles,
@@ -311,6 +313,7 @@ export default function AdminDashboardPage() {
   const [recentApplications, setRecentApplications] = useState<RecentApp[]>([]);
   const [confirmingAppId, setConfirmingAppId] = useState<string | null>(null);
   const [recentAppFilter, setRecentAppFilter] = useState<"ALL" | "PENDING" | "SUCCESS">("ALL");
+  const [viewingProofUrl, setViewingProofUrl] = useState<string | null>(null);
 
   // Feedback Notification Banner
   const [notification, setNotification] = useState<{
@@ -353,7 +356,7 @@ export default function AdminDashboardPage() {
   const [enableOneTime, setEnableOneTime] = useState(true);
   const [enablePayAsYouGo, setEnablePayAsYouGo] = useState(true);
   const [payAsYouGoDepositAmount, setPayAsYouGoDepositAmount] = useState(50000);
-  const [payAsYouGoRevPercent, setPayAsYouGoRevPercent] = useState(10);
+  const [payAsYouGoRevPercent, setPayAsYouGoRevPercent] = useState(20);
   const [payAsYouGoNote, setPayAsYouGoNote] = useState(
     "Pay a fixed upfront deposit now. Remit the agreed percentage of daily sales to the audit desk at the end of each day."
   );
@@ -392,7 +395,7 @@ export default function AdminDashboardPage() {
       installmentDepositPercent: 50,
       enableRevenueShare: false,
       revenueDepositAmount: 50000,
-      revenuePercentage: 10,
+      revenuePercentage: 20,
       availablePlans: [],
     };
     newStall.availablePlans = computeStallPlans(newStall);
@@ -440,6 +443,11 @@ export default function AdminDashboardPage() {
       id: "4",
       text: "Merchandise and exhibitor conduct must comply with venue rules and trade fair guidelines.",
       isImportant: false,
+    },
+    {
+      id: "5",
+      text: "Strict No-Cancellation & No-Refund Policy: There is no cancellation or refund plan whatsoever. Stand reservation fees, deposits, and booth payments are strictly 100% non-refundable and non-cancellable under any circumstances.",
+      isImportant: true,
     },
   ]);
   const [newTermInput, setNewTermInput] = useState("");
@@ -1186,13 +1194,23 @@ export default function AdminDashboardPage() {
 
       {/* ── SIDEBAR NAVIGATION ───────────────────────────────────── */}
       <aside className={`admin-sidebar ${sidebarOpen ? "is-open" : ""}`}>
-        <Link href="/" className="admin-sidebar__brand">
-          <Image src="/favicon.png" alt="Silo Logo" width={30} height={30} priority />
-          <div>
-            <span>SILO CONSOLE</span>
-            <small>Admin Dashboard</small>
-          </div>
-        </Link>
+        <div className="admin-sidebar__header-row">
+          <Link href="/" className="admin-sidebar__brand">
+            <Image src="/favicon.png" alt="Silo Logo" width={30} height={30} priority />
+            <div>
+              <span>SILO CONSOLE</span>
+              <small>Admin Dashboard</small>
+            </div>
+          </Link>
+          <button
+            type="button"
+            className="admin-sidebar__mobile-close"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close sidebar"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
         <nav className="admin-sidebar__nav">
           <button
@@ -1420,8 +1438,8 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Filter and Search controls */}
-                <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
-                  <div style={{ position: "relative" }}>
+                <div className="admin-filter-bar">
+                  <div style={{ position: "relative", flex: 1, minWidth: 200, maxWidth: 360 }}>
                     <Search size={14} style={{ position: "absolute", left: 10, top: 11, color: "#94a3b8" }} />
                     <input
                       type="text"
@@ -1433,7 +1451,7 @@ export default function AdminDashboardPage() {
                         borderRadius: 10,
                         border: "1.5px solid #cbd5e1",
                         fontSize: 13,
-                        minWidth: 260,
+                        width: "100%",
                       }}
                     />
                     {overviewUserSearch && (
@@ -1612,7 +1630,7 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Quick Actions & Recent Applications Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 24 }}>
+            <div className="admin-overview-grid">
               {/* Recent Applications Card */}
               <div className="admin-card">
                 <div className="admin-card__head">
@@ -1763,6 +1781,31 @@ export default function AdminDashboardPage() {
                                       <small style={{ color: "#94a3b8", fontSize: 11 }}>
                                         {app.channel || "Direct Transfer"}
                                       </small>
+                                    )}
+                                    {app.paymentProofUrl && (
+                                      <button
+                                        type="button"
+                                        onClick={() => setViewingProofUrl(app.paymentProofUrl!)}
+                                        style={{
+                                          display: "inline-flex",
+                                          alignItems: "center",
+                                          gap: 5,
+                                          background: "#eff6ff",
+                                          color: "#1d4ed8",
+                                          border: "1px solid #bfdbfe",
+                                          borderRadius: 6,
+                                          padding: "3px 8px",
+                                          fontSize: 11,
+                                          fontWeight: 600,
+                                          cursor: "pointer",
+                                          marginTop: 4,
+                                          width: "fit-content",
+                                        }}
+                                        title="Click to view payment proof screenshot"
+                                      >
+                                        <ImageIcon size={12} />
+                                        <span>Receipt Proof</span>
+                                      </button>
                                     )}
                                     <small style={{ color: "#94a3b8", fontSize: 10.5 }}>
                                       {new Date(app.createdAt).toLocaleDateString("en-GB")}
@@ -2097,7 +2140,7 @@ export default function AdminDashboardPage() {
                       Enter the exhibition title, tag theme, and event location. The slug will automatically derive from the location.
                     </p>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 16, marginBottom: 14 }}>
+                    <div className="admin-form-grid-2">
                       <div>
                         <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
                           Exhibition Title *
@@ -2148,7 +2191,7 @@ export default function AdminDashboardPage() {
                       </div>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
+                    <div className="admin-form-grid-2-equal">
                       <div>
                         <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
                           Location (City / Venue / Campus) *
@@ -2245,7 +2288,7 @@ export default function AdminDashboardPage() {
                       Set both date and time for opening and closing sessions.
                     </p>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14 }}>
+                    <div className="admin-form-grid-4">
                       <div>
                         <label style={{ display: "block", fontSize: 12, fontWeight: 700, marginBottom: 4 }}>
                           Start Date *
@@ -2353,7 +2396,7 @@ export default function AdminDashboardPage() {
                         const installmentDueNow = Math.round(basePrice * (depositPct / 100));
                         const installmentBalance = basePrice - installmentDueNow;
                         const revDeposit = stall.revenueDepositAmount ?? 50000;
-                        const revPct = stall.revenuePercentage ?? 10;
+                        const revPct = stall.revenuePercentage ?? 20;
 
                         return (
                           <div
@@ -2466,14 +2509,7 @@ export default function AdminDashboardPage() {
                             {/* Stall Card Body */}
                             <div style={{ padding: 16 }}>
                               {/* Price and Badge Row */}
-                              <div
-                                style={{
-                                  display: "grid",
-                                  gridTemplateColumns: "1.2fr 1fr",
-                                  gap: 16,
-                                  marginBottom: 14,
-                                }}
-                              >
+                              <div className="admin-form-grid-2">
                                 <div
                                   style={{
                                     background: "#eff6ff",
@@ -2581,14 +2617,7 @@ export default function AdminDashboardPage() {
                               </div>
 
                               {/* Description & Features */}
-                              <div
-                                style={{
-                                  display: "grid",
-                                  gridTemplateColumns: "1fr 1fr",
-                                  gap: 16,
-                                  marginBottom: 16,
-                                }}
-                              >
+                              <div className="admin-form-grid-2-equal">
                                 <div>
                                   <label
                                     style={{
@@ -3238,7 +3267,7 @@ export default function AdminDashboardPage() {
                       <span>5. Media Assets &amp; Description</span>
                     </h4>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
+                    <div className="admin-form-grid-2-equal">
                       <CloudinaryImageUpload
                         label="Flier Poster Image (Main Display)"
                         folder="silo-exhibitions/events/fliers"
@@ -3611,7 +3640,7 @@ export default function AdminDashboardPage() {
               </div>
 
               <form onSubmit={handleAddMedia}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 14 }}>
+                <div className="admin-form-grid-2-equal">
                   <div>
                     <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, marginBottom: 4 }}>
                       Attach to Exhibition *
@@ -3741,7 +3770,7 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Filters */}
-              <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+              <div className="admin-filter-bar">
                 <div style={{ position: "relative" }}>
                   <Search size={14} style={{ position: "absolute", left: 10, top: 11, color: "#94a3b8" }} />
                   <input
@@ -4119,6 +4148,33 @@ export default function AdminDashboardPage() {
                                 <strong style={{ color: "#14532d", fontSize: 13 }}>{app.transactionId}</strong>
                               </div>
                             )}
+                            {app.paymentProofUrl && (
+                              <div style={{ background: "#eff6ff", padding: "8px 12px", borderRadius: 8, border: "1px solid #bfdbfe", gridColumn: "1 / -1", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                  <ImageIcon size={14} color="#1d4ed8" />
+                                  <span style={{ color: "#1e40af", fontWeight: 700, fontSize: 12 }}>Proof of Payment:</span>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => setViewingProofUrl(app.paymentProofUrl!)}
+                                  style={{
+                                    background: "#2563eb",
+                                    color: "#ffffff",
+                                    border: "none",
+                                    borderRadius: 6,
+                                    padding: "4px 10px",
+                                    fontSize: 11.5,
+                                    fontWeight: 600,
+                                    cursor: "pointer",
+                                    display: "inline-flex",
+                                    alignItems: "center",
+                                    gap: 4,
+                                  }}
+                                >
+                                  <span>View Receipt Image</span>
+                                </button>
+                              </div>
+                            )}
                           </div>
 
                           <div className="tradefair-reg-card__footer">
@@ -4292,14 +4348,7 @@ export default function AdminDashboardPage() {
                       <h4 style={{ margin: "0 0 12px", color: "#0a0f2e", fontSize: 15 }}>
                         Account Metadata
                       </h4>
-                      <div
-                        style={{
-                          display: "grid",
-                          gridTemplateColumns: "repeat(2, 1fr)",
-                          gap: 12,
-                          fontSize: 13,
-                        }}
-                      >
+                      <div className="admin-metadata-grid">
                         <div>
                           <span style={{ color: "#64748b", display: "block", fontSize: 11.5 }}>
                             User ID
@@ -4335,6 +4384,64 @@ export default function AdminDashboardPage() {
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Payment Proof Lightbox Modal */}
+        {viewingProofUrl && (
+          <div
+            className="admin-proof-lightbox"
+            onClick={() => setViewingProofUrl(null)}
+          >
+            <div
+              className="admin-proof-lightbox__dialog"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="admin-proof-lightbox__head">
+                <div className="admin-proof-lightbox__title">
+                  <ImageIcon size={18} color="#0015f8" />
+                  <h3>Payment Proof Receipt</h3>
+                </div>
+                <div className="admin-proof-lightbox__actions">
+                  <a
+                    href={viewingProofUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="admin-proof-lightbox__link"
+                  >
+                    <ExternalLink size={13} />
+                    <span>Open Full Size</span>
+                  </a>
+                  <button
+                    type="button"
+                    onClick={() => setViewingProofUrl(null)}
+                    className="admin-proof-lightbox__close"
+                    aria-label="Close modal"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+              </div>
+              <div className="admin-proof-lightbox__content">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={viewingProofUrl}
+                  alt="Proof of Payment Screenshot"
+                />
+              </div>
+              <div className="admin-proof-lightbox__foot">
+                <span className="admin-proof-lightbox__caption">
+                  Verify that the amount, bank, and transaction timestamp match the bank deposit statement.
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setViewingProofUrl(null)}
+                  className="admin-proof-lightbox__btn-close"
+                >
+                  Close
+                </button>
               </div>
             </div>
           </div>

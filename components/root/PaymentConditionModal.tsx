@@ -69,7 +69,7 @@ export const PaymentConditionModal = ({
     const isFull = plan.id === "full";
     const depositPct = stall.installmentDepositPercent ?? 50;
     const remainingBalance = Math.max(0, basePrice - plan.dueNow);
-    const revPct = plan.revenuePercentage || stall.revenuePercentage || 10;
+    const revPct = plan.revenuePercentage || stall.revenuePercentage || 20;
 
     const handleAccept = () => {
         if (!acknowledged) return;
@@ -118,9 +118,9 @@ export const PaymentConditionModal = ({
                     {/* Financial Summary Card */}
                     <div className="payment-condition-summary">
                         <div className="payment-condition-summary__item">
-                            <span className="label">Amount Due Today</span>
+                            <span className="label">Amount Payable</span>
                             <span className="value value--highlight">₦{plan.dueNow.toLocaleString()}</span>
-                            <span className="sub">via Monnify secure checkout</span>
+                            <span className="sub">via direct bank transfer</span>
                         </div>
 
                         <div className="payment-condition-summary__divider" />
@@ -128,9 +128,9 @@ export const PaymentConditionModal = ({
                         <div className="payment-condition-summary__item">
                             <span className="label">Structure Schedule</span>
                             <span className="value">
-                                {isFull && "Option 1 • 100% Upfront Settlement"}
-                                {isInstallment && `Option 2 • ₦${remainingBalance.toLocaleString()} Due Later`}
-                                {isRevenueShare && `Option 3 • ₦${plan.dueNow.toLocaleString()} Deposit + ${revPct}% Revenue Share`}
+                                {isFull && "Option 1 • Pay Once"}
+                                {isInstallment && `Option 2 • Pay Twice (₦${remainingBalance.toLocaleString()} Balance)`}
+                                {isRevenueShare && `Option 3 • Pay As You Go (₦${plan.dueNow.toLocaleString()} Deposit + ${revPct}% Share)`}
                             </span>
                             <span className="sub">
                                 {isFull && "Zero ongoing cuts or daily audits"}
@@ -173,14 +173,14 @@ export const PaymentConditionModal = ({
                                         </div>
                                     </div>
 
-                                    <div className="condition-item">
-                                        <div className="condition-item__icon icon--blue">
-                                            <ShieldCheck size={18} />
+                                    <div className="condition-item condition-item--warning">
+                                        <div className="condition-item__icon icon--red">
+                                            <AlertTriangle size={18} />
                                         </div>
                                         <div className="condition-item__content">
-                                            <h5>Cancellation &amp; Refund Policy</h5>
+                                            <h5>Strict No-Cancellation &amp; No-Refund Policy</h5>
                                             <p>
-                                                Stand reservation fees are non-refundable within 14 days of the scheduled exhibition opening date.
+                                                There is no cancellation or refund plan whatsoever. All stand reservation fees and booth payments are strictly 100% non-refundable, and bookings cannot be cancelled under any circumstances.
                                             </p>
                                         </div>
                                     </div>
@@ -194,9 +194,9 @@ export const PaymentConditionModal = ({
                                             <CreditCard size={18} />
                                         </div>
                                         <div className="condition-item__content">
-                                            <h5>Part 1: Initial {depositPct}% Deposit Due Today</h5>
+                                            <h5>Part 1: Initial {depositPct}% Deposit</h5>
                                             <p>
-                                                You are paying an initial reservation deposit of <strong>₦{plan.dueNow.toLocaleString()}</strong> ({depositPct}% of stand value) today via Monnify to reserve your stand space.
+                                                You are paying an initial reservation deposit of <strong>₦{plan.dueNow.toLocaleString()}</strong> ({depositPct}% of stand value) today via direct bank transfer to reserve your stand space.
                                             </p>
                                         </div>
                                     </div>
@@ -225,6 +225,18 @@ export const PaymentConditionModal = ({
                                         </div>
                                     </div>
 
+                                    <div className="condition-item condition-item--warning">
+                                        <div className="condition-item__icon icon--red">
+                                            <AlertTriangle size={18} />
+                                        </div>
+                                        <div className="condition-item__content">
+                                            <h5>Strict No-Cancellation &amp; No-Refund Policy</h5>
+                                            <p>
+                                                There is no cancellation or refund plan whatsoever. The initial deposit and subsequent installments are strictly 100% non-refundable, and bookings cannot be cancelled.
+                                            </p>
+                                        </div>
+                                    </div>
+
                                     <div className="condition-item">
                                         <div className="condition-item__icon icon--red">
                                             <AlertTriangle size={18} />
@@ -248,7 +260,7 @@ export const PaymentConditionModal = ({
                                         <div className="condition-item__content">
                                             <h5>Fixed Deposit Selected by Admin (₦{plan.dueNow.toLocaleString()})</h5>
                                             <p>
-                                                Under this Pay As You Go plan, your upfront commitment is an admin-selected fixed deposit of <strong>₦{plan.dueNow.toLocaleString()}</strong> today via Monnify (not calculated as a percentage of the total booth price). This secures your <strong>{stall.title}</strong> reservation.
+                                                Under this Pay As You Go plan, your upfront commitment is an admin-selected fixed deposit of <strong>₦{plan.dueNow.toLocaleString()}</strong> today via direct bank transfer (not calculated as a percentage of the total booth price). This secures your <strong>{stall.title}</strong> reservation.
                                             </p>
                                         </div>
                                     </div>
@@ -259,7 +271,7 @@ export const PaymentConditionModal = ({
                                         </div>
                                         <div className="condition-item__content">
                                             <h5 style={{ color: "#92400e" }}>
-                                                Strict Policy: {revPct}% of TOTAL SALES (NOT Net Profit)
+                                                 Strict Policy: {revPct}% of TOTAL SALES (NOT Net Profit)
                                             </h5>
                                             <p style={{ color: "#78350f" }}>
                                                 Under this Pay As You Go plan, you agree that exactly <strong>{revPct}% of your DAILY GROSS SALES</strong> must be remitted to the Silo Exhibitions Audit Desk. This percentage is calculated on total customer transaction volume — operational overhead, stock costs, staff fees, and vendor expenses are <strong>NOT deductible</strong>.
@@ -287,6 +299,18 @@ export const PaymentConditionModal = ({
                                             <h5>Next-Day Stand Operating Clearance</h5>
                                             <p>
                                                 Timely remittance of daily revenue entitles your brand to continued stand operation and security badge validation for subsequent exhibition days.
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="condition-item condition-item--warning">
+                                        <div className="condition-item__icon icon--red">
+                                            <AlertTriangle size={18} />
+                                        </div>
+                                        <div className="condition-item__content">
+                                            <h5>Strict No-Cancellation &amp; No-Refund Policy</h5>
+                                            <p>
+                                                There is no cancellation or refund plan whatsoever. The upfront commitment deposit and all daily revenue shares are strictly 100% non-refundable under any circumstances.
                                             </p>
                                         </div>
                                     </div>

@@ -14,7 +14,7 @@ export function computeStallPlans(stall: {
     // 1. Full Upfront Payment
     plans.push({
         id: "full",
-        name: "Option 1",
+        name: "Option 1 • Pay Once",
         dueNow: price,
         totalAmountText: `₦${price.toLocaleString()} one-off`,
         description: "Pay 100% now for instant confirmed allocation.",
@@ -27,7 +27,7 @@ export function computeStallPlans(stall: {
         const balance = price - dueNow;
         plans.push({
             id: "installment",
-            name: "Option 2",
+            name: "Option 2 • Pay Twice",
             dueNow,
             totalAmountText: `₦${dueNow.toLocaleString()} now + ₦${balance.toLocaleString()} later`,
             description: `Pay ₦${dueNow.toLocaleString()} deposit today to hold your space. Remainder due 7 days prior.`,
@@ -37,10 +37,10 @@ export function computeStallPlans(stall: {
     // 3. Pay As You Go (Admin-Selected Fixed Deposit + % Daily Revenue Share)
     if (stall.enableRevenueShare) {
         const deposit = Math.max(0, Number(stall.revenueDepositAmount) || 50000);
-        const revPct = Math.max(1, Number(stall.revenuePercentage) || 10);
+        const revPct = Math.max(1, Number(stall.revenuePercentage) || 20);
         plans.push({
             id: "revenue_percentage",
-            name: "Option 3",
+            name: "Option 3 • Pay As You Go",
             dueNow: deposit,
             totalAmountText: `₦${deposit.toLocaleString()} Fixed Deposit + ${revPct}% Daily Revenue`,
             description: `Pay a fixed deposit of ₦${deposit.toLocaleString()} today (not a % of stand price), then remit ${revPct}% of daily total sales at the close of each exhibition day.`,
@@ -109,7 +109,7 @@ export const DEFAULT_STALL_CONFIGS: StallConfig[] = [
         installmentDepositPercent: 50,
         enableRevenueShare: true,
         revenueDepositAmount: 50000,
-        revenuePercentage: 10,
+        revenuePercentage: 20,
         availablePlans: [],
     },
 ].map((s) => ({

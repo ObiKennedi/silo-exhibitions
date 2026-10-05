@@ -134,6 +134,7 @@ export async function GET() {
                 paidAmount: true,
                 paymentStatus: true,
                 transactionId: true,
+                paymentProofUrl: true,
                 channel: true,
                 createdAt: true,
                 paidAt: true,

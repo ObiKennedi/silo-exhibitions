@@ -13,6 +13,7 @@ export interface TelegramVendorNotificationPayload {
     productsSelling?: string;
     businessAddress?: string;
     socialHandle?: string;
+    paymentProofUrl?: string;
 }
 
 export async function sendTelegramVendorAlert(payload: TelegramVendorNotificationPayload) {
@@ -50,7 +51,7 @@ ${payload.socialHandle ? `🔗 <b>Social:</b> ${escapeHtml(payload.socialHandle)
 👤 <b>Sender Account Name:</b> <b>${escapeHtml(payload.senderAccountName)}</b>
 🏦 <b>Transferred To:</b> OPay — 6105607790 (Silo campus tradefair)
 🔢 <b>Booking Ref:</b> <code>${escapeHtml(payload.bookingCode)}</code>
-
+${payload.paymentProofUrl ? `🧾 <b>Payment Proof:</b> <a href="${escapeHtml(payload.paymentProofUrl)}">View Transfer Receipt Screenshot</a>\n` : ""}
 ⚠️ <i>Please verify credit alert in your OPay account matching <b>${escapeHtml(payload.senderAccountName)}</b> (₦${formattedAmount}) before approving this stand in the Admin Dashboard.</i>
 `.trim();
 

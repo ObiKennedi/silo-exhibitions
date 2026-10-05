@@ -250,6 +250,194 @@
         line-height: 1.4;
       }
     }
+
+    /* Proof Upload Dropzone */
+    .proof-upload-dropzone {
+      border: 2px dashed #cbd5e1;
+      border-radius: 14px;
+      padding: 20px 16px;
+      background: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s ease;
+
+      &:hover {
+        border-color: #0015f8;
+        background: #f0f4ff;
+
+        .proof-upload-icon-circle {
+          transform: scale(1.08);
+          background: #e0e7ff;
+        }
+      }
+
+      &.is-dragging {
+        border-color: #0015f8;
+        background: #eff6ff;
+        box-shadow: 0 0 0 4px rgba(0, 21, 248, 0.1);
+      }
+
+      .proof-upload-icon-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #eef2ff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 10px;
+        transition: transform 0.18s ease, background 0.18s ease;
+      }
+
+      .proof-upload-text {
+        font-size: 13.5px;
+        color: #1e293b;
+        margin-bottom: 4px;
+
+        strong {
+          color: #0015f8;
+        }
+      }
+
+      .proof-upload-subtext {
+        font-size: 11.5px;
+        color: #64748b;
+      }
+    }
+
+    /* Proof Preview Card */
+    .proof-preview-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #ffffff;
+      border: 1.5px solid #bfdbfe;
+      border-radius: 14px;
+      padding: 10px 14px;
+      box-shadow: 0 2px 8px rgba(0, 21, 248, 0.04);
+
+      .proof-preview-thumb {
+        width: 46px;
+        height: 46px;
+        border-radius: 8px;
+        overflow: hidden;
+        background: #f1f5f9;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e2e8f0;
+
+        img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+      }
+
+      .proof-preview-info {
+        flex: 1;
+        min-width: 0;
+
+        .proof-file-name {
+          font-size: 13px;
+          font-weight: 700;
+          color: #0f172a;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .proof-file-meta {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11.5px;
+          color: #64748b;
+          margin-top: 2px;
+
+          .meta-dot {
+            color: #cbd5e1;
+          }
+
+          .proof-status-uploading {
+            color: #0015f8;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+
+            .spin-icon {
+              animation: bt-spin 1s linear infinite;
+            }
+          }
+
+          .proof-status-success {
+            color: #16a34a;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+          }
+
+          .proof-status-error {
+            color: #dc2626;
+            font-weight: 700;
+          }
+        }
+      }
+
+      .proof-preview-actions {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .proof-retry-btn {
+          background: #eff6ff;
+          border: 1px solid #bfdbfe;
+          color: #0015f8;
+          border-radius: 8px;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: background 0.15s ease;
+
+          &:hover {
+            background: #dbeafe;
+          }
+        }
+
+        .proof-remove-btn {
+          background: #fee2e2;
+          border: 1px solid #fecaca;
+          color: #dc2626;
+          border-radius: 8px;
+          width: 32px;
+          height: 32px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.15s ease;
+
+          &:hover {
+            background: #fca5a5;
+            color: #991b1b;
+          }
+        }
+      }
+    }
+  }
+
+  .spin-icon {
+    animation: bt-spin 1s linear infinite;
   }
 
   &__footer {
@@ -318,3 +506,13 @@
     transform: scale(1) translateY(0);
   }
 }
+
+@keyframes bt-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+

@@ -140,7 +140,7 @@ ${leftMargin} ${currentY - 4} m ${leftMargin + contentWidth} ${currentY - 4} l S
             "Stand Plans & Allocation: Reserved booth space is guaranteed upon successful payment of the chosen stand plan. Vendors must operate strictly within assigned dimensions.",
             "Cashless Payment Compliance: Vendors must offer digital payments (POS terminal, direct bank transfer, or QR paypoint) to buyers for fast queues and seamless audits.",
             "Booth Cleanliness & Safety: Exhibitors must keep their assigned space clean, hazard-free, and dispose of packaging in designated bins. Open flames are prohibited without clearance.",
-            "Cancellations & Forfeiture: Stand reservation fees and deposits are non-refundable within 14 days of the scheduled exhibition opening date.",
+            "Strict No-Cancellation & No-Refund Policy: There is no cancellation or refund plan whatsoever. All stand reservation fees, deposits, and booth payments are strictly 100% non-refundable and non-cancellable under any circumstances.",
         ];
 
     termsToRender.forEach((term, idx) => {

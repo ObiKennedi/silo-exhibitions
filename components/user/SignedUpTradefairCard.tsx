@@ -208,6 +208,19 @@ export function SignedUpTradefairCard({ booking, onOpenPass }: SignedUpTradefair
               </Link>
             )}
 
+            {booking.paymentProofUrl && (
+              <a
+                href={booking.paymentProofUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="ud-btn ud-btn--outline ud-btn--sm"
+                title="View uploaded payment receipt"
+              >
+                <FileText size={15} />
+                Payment Proof
+              </a>
+            )}
+
             {event?.exhibitionPlanDocUrl && (
               <a
                 href={event.exhibitionPlanDocUrl}

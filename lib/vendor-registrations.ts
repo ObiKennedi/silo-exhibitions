@@ -96,6 +96,7 @@ export interface DashboardVendorBooking {
     paymentStatus: string;
     paymentReference: string | null;
     transactionId: string | null;
+    paymentProofUrl: string | null;
     channel: string | null;
     paidAt: string | null;
     createdAt: string;
@@ -224,6 +225,7 @@ export async function getUserVendorRegistrations(
             paymentStatus: app.paymentStatus,
             paymentReference: app.paymentReference,
             transactionId: app.transactionId,
+            paymentProofUrl: app.paymentProofUrl || null,
             channel: app.channel,
             paidAt: app.paidAt ? app.paidAt.toISOString() : null,
             createdAt: app.createdAt.toISOString(),

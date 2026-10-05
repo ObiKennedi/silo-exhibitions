@@ -264,6 +264,8 @@ model VendorApplication {
   channel            String?
   paidAt             DateTime?
   holdExpiresAt      DateTime?     // Expirable reservation hold (e.g., 15 minutes)
+  paymentProofUrl    String?       @db.Text
+  paymentProofPublicId String?
 
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt

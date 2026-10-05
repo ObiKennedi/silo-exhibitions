@@ -140,7 +140,6 @@ export const StallApplicationForm = ({ event }: Props) => {
     const [estimatedGoodsWorth, setEstimatedGoodsWorth] = useState("");
     const [majorProductPrice, setMajorProductPrice] = useState("");
     const [discountPercentage, setDiscountPercentage] = useState("");
-    const [powerNeeds, setPowerNeeds] = useState("Standard (phone/POS charging)");
 
     // Terms agreement
     const [termsAccepted, setTermsAccepted] = useState(false);
@@ -158,6 +157,7 @@ export const StallApplicationForm = ({ event }: Props) => {
         stallTitle: string;
         planName: string;
         dueNow: number;
+        paymentProofUrl?: string;
     } | null>(null);
 
     // Categories Available browsing modal state
@@ -169,7 +169,7 @@ export const StallApplicationForm = ({ event }: Props) => {
         activeStall?.availablePlans?.find((p) => p.id === selectedPlanId) ??
         activeStall?.availablePlans?.[0] ?? {
             id: "full",
-            name: "Full Upfront Payment",
+            name: "Option 1 • Pay Once",
             dueNow: activeStall?.price || 0,
             totalAmountText: `₦${(activeStall?.price || 0).toLocaleString()} one-off`,
             description: "Pay 100% now for instant confirmed allocation.",
@@ -238,7 +238,7 @@ export const StallApplicationForm = ({ event }: Props) => {
         setIsBankTransferOpen(true);
     };
 
-    const handleSubmitBankTransfer = async (senderAccountName: string) => {
+    const handleSubmitBankTransfer = async (senderAccountName: string, paymentProofUrl?: string) => {
         setIsSubmittingTransfer(true);
         const bookingCode = `SILO-VND-${Math.floor(1000 + Math.random() * 9000)}`;
 
@@ -272,8 +272,9 @@ export const StallApplicationForm = ({ event }: Props) => {
                     estimatedGoodsWorth,
                     majorProductPrice,
                     discountPercentage,
-                    powerNeeds,
+                    powerNeeds: null,
                     senderAccountName,
+                    paymentProofUrl: paymentProofUrl || null,
                     channel: "OPay Bank Transfer",
                     paymentReference: `OPAY-${Date.now().toString().slice(-6)}`,
                 }),
@@ -291,6 +292,7 @@ export const StallApplicationForm = ({ event }: Props) => {
             stallTitle: activeStall.title,
             planName: activePlan.name,
             dueNow: activePlan.dueNow,
+            paymentProofUrl,
         });
     };
 
@@ -343,7 +345,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                         {activePlan.isRevenueShare && (
                             <div className="stall-success__ticket-row">
                                 <span>Daily Share of Total Sales</span>
-                                <b style={{ color: "#d97706" }}>{activePlan.revenuePercentage || 10}% of Daily Total Sales (remitted by 8:30pm)</b>
+                                <b style={{ color: "#d97706" }}>{activePlan.revenuePercentage || 20}% of Daily Total Sales (remitted by 8:30pm)</b>
                             </div>
                         )}
                         <div className="stall-success__ticket-row">
@@ -354,6 +356,26 @@ export const StallApplicationForm = ({ event }: Props) => {
                             <span>Transfer Sender Name</span>
                             <b style={{ color: "#0f172a" }}>{applicationReviewState.senderAccountName}</b>
                         </div>
+                        {applicationReviewState.paymentProofUrl && (
+                            <div className="stall-success__ticket-row">
+                                <span>Proof of Payment</span>
+                                <a
+                                    href={applicationReviewState.paymentProofUrl}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{
+                                        color: "#2563eb",
+                                        fontWeight: 600,
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "4px",
+                                        textDecoration: "underline",
+                                    }}
+                                >
+                                    View Receipt Image ↗
+                                </a>
+                            </div>
+                        )}
                         <div className="stall-success__ticket-row">
                             <span>Bank Paid To</span>
                             <b>OPay (6105607790 - Silo campus tradefair)</b>
@@ -508,7 +530,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                     <div style={{ fontSize: "19px", lineHeight: "1.25" }}>
                                                         <span>₦{(stall.price || defaultPlan?.dueNow || 0).toLocaleString()} <small style={{ fontSize: "12px", color: "var(--muted)", fontWeight: 500 }}>flat once</small></span>
                                                         <span style={{ fontSize: "12px", color: "var(--muted)", margin: "0 4px", fontWeight: 400 }}>or</span>
-                                                        <span style={{ color: "#d97706" }}>₦{revPlan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ {revPlan.revenuePercentage || 10}% daily sales</small></span>
+                                                        <span style={{ color: "#d97706" }}>₦{revPlan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#d97706", fontWeight: 600 }}>+ {revPlan.revenuePercentage || 20}% daily sales</small></span>
                                                     </div>
                                                 ) : (
                                                     `₦${(stall.price || defaultPlan?.dueNow || 0).toLocaleString()}`
@@ -571,12 +593,12 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     const isPlanSelected = plan.id === selectedPlanId;
                                     const optionLabel =
                                         plan.id === "full"
-                                            ? "Option 1"
+                                            ? "Option 1 • Pay Once"
                                             : plan.id === "installment"
-                                            ? "Option 2"
+                                            ? "Option 2 • Pay Twice"
                                             : plan.id === "revenue_percentage"
-                                            ? "Option 3"
-                                            : (plan.name?.startsWith("Option") ? plan.name : `Option ${index + 1}`);
+                                            ? "Option 3 • Pay As You Go"
+                                            : plan.name;
 
                                     return (
                                         <div
@@ -589,7 +611,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                 <div className="plan-option__radio" />
                                             </div>
                                             <div className="plan-option__due-now">
-                                                ₦{plan.dueNow.toLocaleString()} <small style={{ fontSize: "12px", color: "#64748b" }}>due now</small>
+                                                ₦{plan.dueNow.toLocaleString()}
                                             </div>
                                             <p className="plan-option__desc">{plan.description}</p>
 
@@ -613,7 +635,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 <div style={{ marginTop: "16px", padding: "14px 18px", background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: "12px", display: "flex", gap: "12px", alignItems: "center" }}>
                                     <CheckCircle2 size={22} color="#16a34a" style={{ flexShrink: 0 }} />
                                     <p style={{ fontSize: "13.5px", color: "#166534", margin: 0, lineHeight: 1.5 }}>
-                                        <b>Option 1 Selected: One-time Flat Rate.</b> Pay ₦{(activeStall.price || activePlan.dueNow).toLocaleString()} once today. Zero daily audits, no revenue sharing — keep 100% of your sales throughout the exhibition.
+                                        <b>Option 1 Selected: Pay Once.</b> Pay ₦{(activeStall.price || activePlan.dueNow).toLocaleString()} once today. Zero daily audits, no revenue sharing — keep 100% of your sales throughout the exhibition.
                                     </p>
                                 </div>
                             )}
@@ -623,15 +645,15 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 <div className="revenue-warning-box">
                                     <AlertTriangle size={24} className="revenue-warning-box__icon" />
                                     <div className="revenue-warning-box__content">
-                                        <h4>Important Policy: Pay As You Go ({activePlan.revenuePercentage || 10}% of Daily Total Sales)</h4>
+                                        <h4>Important Policy: Option 3 • Pay As You Go ({activePlan.revenuePercentage || 20}% of Daily Total Sales)</h4>
                                         <p>
                                             Under the {activeStall?.title || "Selected Stand"} Pay As You Go structure, you pay an admin-selected fixed deposit of{" "}
                                             <b>₦{(activePlan.dueNow).toLocaleString()} today via direct bank transfer (not a % of stand price)</b>. At the close
-                                            of each day (8:30 PM), exactly <b>{activePlan.revenuePercentage || 10}% of your TOTAL SALES</b> must be
+                                            of each day (8:30 PM), exactly <b>{activePlan.revenuePercentage || 20}% of your TOTAL SALES</b> must be
                                             remitted to the Silo Exhibitions Audit Desk.
                                             <br />
                                             <br />
-                                            <strong>PLEASE NOTE:</strong> This {activePlan.revenuePercentage || 10}% is calculated strictly on your{" "}
+                                            <strong>PLEASE NOTE:</strong> This {activePlan.revenuePercentage || 20}% is calculated strictly on your{" "}
                                             <strong>TOTAL SALES</strong>, <strong>NOT ON NET PROFIT</strong>. Operational overhead, stock cost,
                                             or vendor expenses are NOT deductible from this calculation.
                                         </p>
@@ -665,8 +687,8 @@ export const StallApplicationForm = ({ event }: Props) => {
                                         {activeStall?.title} ({activeStall?.size}) — {activePlan?.name}
                                     </h3>
                                     <p className="stall-selected-banner__price">
-                                        <strong>₦{(activePlan?.dueNow || 0).toLocaleString()}</strong> due now to confirm booking
-                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 10}% daily total sales share)`}
+                                        <strong>₦{(activePlan?.dueNow || 0).toLocaleString()}</strong> to confirm booking
+                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 20}% daily total sales share)`}
                                     </p>
                                 </div>
                             </div>
@@ -891,26 +913,6 @@ export const StallApplicationForm = ({ event }: Props) => {
                                         onChange={(e) => setDiscountPercentage(e.target.value)}
                                     />
                                 </div>
-
-                                {/* Power Requirements */}
-                                <div className="stall-field">
-                                    <label htmlFor="power">Power &amp; Electrical Requirements</label>
-                                    <select
-                                        id="power"
-                                        value={powerNeeds}
-                                        onChange={(e) => setPowerNeeds(e.target.value)}
-                                    >
-                                        <option value="Standard (phone/POS charging)">
-                                            Standard (Phone charging, POS terminal, lighting)
-                                        </option>
-                                        <option value="Medium (laptops, display screens, blenders)">
-                                            Medium (Laptops, display monitors, low-power appliances)
-                                        </option>
-                                        <option value="Heavy (fryers, microwaves, sound speakers)">
-                                            Heavy (Electric fryers, microwaves, audio — requires approval)
-                                        </option>
-                                    </select>
-                                </div>
                             </div>
                         </section>
 
@@ -922,34 +924,53 @@ export const StallApplicationForm = ({ event }: Props) => {
                             </div>
 
                             <div className="stall-terms">
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
-                                    <h4 className="stall-terms__title" style={{ margin: 0 }}>Silo Exhibitions Vendor Agreement &amp; Stand Plans</h4>
-                                    <a
-                                        href={`/api/events/${event.slug}/terms-pdf`}
-                                        download
-                                        style={{
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            gap: 6,
-                                            background: "var(--blue, #0015f8)",
-                                            color: "#fff",
-                                            fontSize: "12px",
-                                            fontWeight: 600,
-                                            padding: "6px 12px",
-                                            borderRadius: "6px",
-                                            textDecoration: "none",
-                                        }}
-                                        title="Download official Terms & Conditions as PDF"
-                                    >
-                                        <Download size={13} /> Download Terms (PDF)
-                                    </a>
-                                </div>
+                                <h4 className="stall-terms__title">Silo Exhibitions Vendor Agreement &amp; Stand Plans</h4>
 
                                 {/* 1. Official Terms Uploaded by Admin */}
                                 {(() => {
                                     const uploadedTerms = event.importantTerms
                                         ? event.importantTerms.split("\n").map((t) => t.trim()).filter(Boolean)
                                         : [];
+
+                                    const downloadTermsButton = (
+                                        <div
+                                            style={{
+                                                marginTop: 16,
+                                                paddingTop: 14,
+                                                borderTop: "1px dashed #e2e8f0",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "space-between",
+                                                flexWrap: "wrap",
+                                                gap: 10,
+                                            }}
+                                        >
+                                            <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#475569", fontSize: "12.5px" }}>
+                                                <FileText size={14} color="var(--blue, #0015f8)" />
+                                                <span>Finished reading? Download an official copy for your records:</span>
+                                            </div>
+                                            <a
+                                                href={`/api/events/${event.slug}/terms-pdf`}
+                                                download
+                                                style={{
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    gap: 6,
+                                                    background: "var(--blue, #0015f8)",
+                                                    color: "#fff",
+                                                    fontSize: "12.5px",
+                                                    fontWeight: 600,
+                                                    padding: "8px 16px",
+                                                    borderRadius: "6px",
+                                                    textDecoration: "none",
+                                                    boxShadow: "0 1px 3px rgba(0, 21, 248, 0.18)",
+                                                }}
+                                                title="Download official Terms & Conditions as PDF"
+                                            >
+                                                <Download size={13} /> Download Terms (PDF)
+                                            </a>
+                                        </div>
+                                    );
 
                                     if (uploadedTerms.length > 0) {
                                         return (
@@ -966,6 +987,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                         </li>
                                                     ))}
                                                 </ul>
+                                                {downloadTermsButton}
                                             </div>
                                         );
                                     }
@@ -995,9 +1017,10 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                 </li>
                                                 <li>
                                                     <span className="rule-num">5</span>
-                                                    <span><b>Cancellation &amp; Refunds:</b> Stand reservation fees and deposits are non-refundable within 14 days of the scheduled exhibition opening date.</span>
+                                                    <span><b>Strict No-Cancellation &amp; No-Refund Policy:</b> There is no cancellation or refund plan whatsoever. All stand reservation fees, deposits, and booth payments are strictly 100% non-refundable and non-cancellable under any circumstances.</span>
                                                 </li>
                                             </ul>
+                                            {downloadTermsButton}
                                         </div>
                                     );
                                 })()}
@@ -1032,12 +1055,12 @@ export const StallApplicationForm = ({ event }: Props) => {
                                                 Selected Allocation: {activeStall?.title} ({activeStall?.size}) — {activePlan?.name}
                                             </strong>
                                             <span style={{ fontSize: "12px", fontWeight: 700, color: "var(--blue, #0015f8)", background: "#dbeafe", padding: "2px 8px", borderRadius: 4 }}>
-                                                ₦{(activePlan?.dueNow || 0).toLocaleString()} Due Now
+                                                ₦{(activePlan?.dueNow || 0).toLocaleString()}
                                             </span>
                                         </div>
                                         <p style={{ fontSize: "12.5px", color: "#334155", margin: 0, lineHeight: 1.55 }}>
                                             {activePlan?.isRevenueShare ? (
-                                                <>Under the Pay As You Go structure, you pay an admin-selected fixed deposit of <b>₦{(activePlan.dueNow).toLocaleString()} today</b> via direct bank transfer (not a percentage of total stand price). Exactly <b>{activePlan.revenuePercentage || 10}% of daily total sales</b> must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
+                                                <>Under the Pay As You Go structure, you pay an admin-selected fixed deposit of <b>₦{(activePlan.dueNow).toLocaleString()} today</b> via direct bank transfer (not a percentage of total stand price). Exactly <b>{activePlan.revenuePercentage || 20}% of daily total sales</b> must be remitted to the Silo Audit Desk daily by 8:30 PM. Operational costs and product expenses are not deductible.</>
                                             ) : activePlan?.id === "installment" ? (
                                                 <>Under this 2-part installment plan, you pay <b>₦{(activePlan.dueNow).toLocaleString()} deposit today</b> ({activeStall?.installmentDepositPercent ?? 50}%) to hold your space. The remaining balance of <b>₦{((activeStall?.price || 0) - (activePlan.dueNow || 0)).toLocaleString()}</b> is due 7 days before the exhibition opening.</>
                                             ) : (
@@ -1100,7 +1123,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                 <span>
                                     I have read, understood, and accept the official <strong>Vendor Terms &amp; Conditions</strong> and the <strong>Stand Plans</strong> for <strong>{event.title}</strong>.
                                     {activePlan?.isRevenueShare && (
-                                        <> I explicitly acknowledge and agree that under the Pay As You Go plan, the {activePlan.revenuePercentage || 10}% daily share is calculated strictly on <strong>TOTAL SALES and NOT on profit</strong>.</>
+                                        <> I explicitly acknowledge and agree that under the Pay As You Go plan, the {activePlan.revenuePercentage || 20}% daily share is calculated strictly on <strong>TOTAL SALES and NOT on profit</strong>.</>
                                     )}
                                 </span>
                             </label>
@@ -1112,7 +1135,7 @@ export const StallApplicationForm = ({ event }: Props) => {
                                     <h3>₦{(activePlan?.dueNow || 0).toLocaleString()}</h3>
                                     <p>
                                         {activeStall?.title} · {activePlan?.name}
-                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 10}% Daily Total Sales)`}
+                                        {activePlan?.isRevenueShare && ` (+ ${activePlan.revenuePercentage || 20}% Daily Total Sales)`}
                                     </p>
                                 </div>
 

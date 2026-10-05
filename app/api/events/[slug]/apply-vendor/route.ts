@@ -14,10 +14,13 @@ export async function POST(
     const effectiveOwnerName = body.ownerName || body.contactName || effectiveBrandName;
     const effectiveSocialHandle = body.socialHandle || body.instagram || null;
     const senderAccountName = (body.senderAccountName || "").trim();
+    const paymentProofUrl = (body.paymentProofUrl || "").trim() || null;
+    const paymentProofPublicId = (body.paymentProofPublicId || "").trim() || null;
 
     const structuredDescription = [
         body.productsSelling || body.description,
         senderAccountName ? `Bank Transfer Sender Name: ${senderAccountName}` : null,
+        paymentProofUrl ? `Payment Proof Screenshot: ${paymentProofUrl}` : null,
         body.businessAddress ? `Business Address: ${body.businessAddress}` : null,
         body.estimatedGoodsWorth ? `Estimated Goods Worth: ${body.estimatedGoodsWorth}` : null,
         body.majorProductPrice ? `Major Product Price: ${body.majorProductPrice}` : null,
@@ -92,6 +95,8 @@ export async function POST(
                 transactionId: senderAccountName || body.transactionId || null,
                 paidAmount: body.paidAmount != null ? String(body.paidAmount) : String(body.dueNow ?? 0),
                 channel: "OPay Bank Transfer",
+                paymentProofUrl,
+                paymentProofPublicId,
                 paidAt: null, // set to null until verified by admin
             },
         });
@@ -140,6 +145,7 @@ export async function POST(
         productsSelling: body.productsSelling,
         businessAddress: body.businessAddress,
         socialHandle: effectiveSocialHandle,
+        paymentProofUrl: paymentProofUrl || undefined,
     }).catch((err) => {
         console.error("[Telegram Alert] Error sending admin telegram notification:", err);
     });
