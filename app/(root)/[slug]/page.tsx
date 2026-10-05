@@ -1,6 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 import { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import {
     CalendarDays,
     MapPin,
@@ -216,11 +217,20 @@ export default async function EventMicroPage({ params }: Props) {
                 </div>
             </section>
 
-            {/* ---------- Ride booking (optional) ---------- */}
-            {event.rideBooking?.enabled && (
-                <section className="event-page__section">
-                    <h2>Book a ride to the venue</h2>
-                    <div className="event-page__ride">
+            {/* ---------- Book a ride to the venue ---------- */}
+            <section className="event-page__section">
+                <h2>Book a ride to the venue</h2>
+                <div className="event-page__ride">
+                    <div className="event-page__ride-header">
+                        <span className="event-page__card-icon">
+                            <Bus size={22} />
+                        </span>
+                        <div>
+                            <h3>Campus &amp; City Shuttle Service</h3>
+                            <p>Direct scheduled transit and pickup points to {event.venue}</p>
+                        </div>
+                    </div>
+                    {event.rideBooking?.pickupPoints && event.rideBooking.pickupPoints.length > 0 ? (
                         <ul className="event-page__pickups">
                             {event.rideBooking.pickupPoints.map((p) => (
                                 <li key={p.id}>
@@ -232,54 +242,17 @@ export default async function EventMicroPage({ params }: Props) {
                                 </li>
                             ))}
                         </ul>
-                        <a className="event-page__link-btn" href={event.rideBooking.bookUrl}>
-                            Book a seat
-                        </a>
+                    ) : (
+                        <p className="event-page__ride-desc">
+                            Need convenient, safe transit to the exhibition grounds? Silo is organizing designated campus shuttle buses and central city pickup points to ensure seamless arrival for attendees and exhibitors.
+                        </p>
+                    )}
+                    <div>
+                        <Link className="event-page__link-btn" href={`/${event.slug}/book-ride`}>
+                            Book a ride
+                        </Link>
                     </div>
-                </section>
-            )}
-
-            {/* ---------- Exhibition plan & Stand Plans ---------- */}
-            <section className="event-page__section">
-                <h2>Exhibition &amp; Stand Plans</h2>
-                <div className="event-page__plan">
-                    <FileText size={18} />
-                    <p>{event.exhibitionPlan.summary || "Official vendor stand allocations, packages, and payment schedules."}</p>
                 </div>
-
-                {event.stallsConfig && event.stallsConfig.length > 0 && (
-                    <div className="event-page__stalls-grid">
-                        {event.stallsConfig.map((stall) => (
-                            <div key={stall.id} className="event-page__stall-card">
-                                <div className="event-page__stall-card-head">
-                                    <strong>{stall.title}</strong>
-                                    <span>{stall.size}</span>
-                                </div>
-                                <div className="event-page__stall-card-price">
-                                    ₦{(stall.price || 0).toLocaleString()}
-                                </div>
-                                <p className="event-page__stall-card-desc">
-                                    {stall.description}
-                                </p>
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {event.exhibitionPlan.documentUrl && (
-                    <div className="event-page__downloads">
-                        <a
-                            href={event.exhibitionPlan.documentUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="event-page__pdf-download-btn event-page__pdf-download-btn--secondary"
-                            title="Open official stand plan and floor layout document"
-                        >
-                            <Layers size={16} />
-                            <span>Official Stand Plan &amp; Floor Layout (PDF)</span>
-                        </a>
-                    </div>
-                )}
             </section>
 
             {/* ---------- Sponsors ---------- */}

@@ -304,11 +304,37 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-  max-width: 600px;
+  max-width: 640px;
 
   @media (max-width: 580px) {
     padding: 20px 16px;
     border-radius: var(--radius-md);
+  }
+
+  &-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    p {
+      font-size: 13px;
+      color: var(--muted);
+      margin: 2px 0 0;
+    }
+  }
+
+  &-desc {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin: 0;
   }
 }
 
