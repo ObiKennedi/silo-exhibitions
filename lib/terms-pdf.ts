@@ -20,8 +20,9 @@ interface TermsPdfOptions {
 }
 
 // Sanitize ASCII text for PDF literal strings (escape (, ), \)
-function escapePdfText(str: string): string {
-    return str
+function escapePdfText(str: string | undefined | null): string {
+    if (!str) return "";
+    return String(str)
         .replace(/\\/g, "\\\\")
         .replace(/\(/g, "\\(")
         .replace(/\)/g, "\\)")
@@ -77,7 +78,7 @@ export function generateTermsPdf(options: TermsPdfOptions): Buffer {
             // Draw continuing header on subsequent pages
             currentStream += `
 0.04 0.09 0.18 rg
-BT /F2 9 Tf ${leftMargin} ${currentY} Td (${escapePdfText(options.eventTitle)} - Terms & Conditions) ET
+BT /F2 9 Tf ${leftMargin} ${currentY} Td (${escapePdfText(options.eventTitle)} - Terms & Conditions) Tj ET
 0.7 0.75 0.85 RG 0.5 w
 ${leftMargin} ${currentY - 6} m ${leftMargin + contentWidth} ${currentY - 6} l S
 `;
@@ -96,14 +97,14 @@ ${leftMargin} ${currentY - 4} ${contentWidth} 4 re f
     // Brand Title
     currentStream += `
 0.0 0.08 0.97 rg
-BT /F2 16 Tf ${leftMargin} ${currentY} Td (SILO EXHIBITIONS) ET
+BT /F2 16 Tf ${leftMargin} ${currentY} Td (SILO EXHIBITIONS) Tj ET
 `;
     currentY -= 16;
 
     // Document Title
     currentStream += `
 0.04 0.06 0.18 rg
-BT /F2 14 Tf ${leftMargin} ${currentY} Td (OFFICIAL EXHIBITOR TERMS, CONDITIONS & STAND PLANS) ET
+BT /F2 14 Tf ${leftMargin} ${currentY} Td (OFFICIAL EXHIBITOR TERMS, CONDITIONS & STAND PLANS) Tj ET
 `;
     currentY -= 18;
 
@@ -117,9 +118,9 @@ BT /F2 14 Tf ${leftMargin} ${currentY} Td (OFFICIAL EXHIBITOR TERMS, CONDITIONS 
 0.82 0.88 0.96 RG 1 w
 ${leftMargin} ${currentY - 36} ${contentWidth} 36 re b
 0.1 0.2 0.5 rg
-BT /F2 10 Tf ${leftMargin + 12} ${currentY - 14} Td (Event: ${escapePdfText(options.eventTitle)}) ET
+BT /F2 10 Tf ${leftMargin + 12} ${currentY - 14} Td (Event: ${escapePdfText(options.eventTitle)}) Tj ET
 0.3 0.35 0.45 rg
-BT /F1 9 Tf ${leftMargin + 12} ${currentY - 28} Td (Venue: ${escapePdfText(options.venue)}  |  Dates: ${escapePdfText(dateStr)}) ET
+BT /F1 9 Tf ${leftMargin + 12} ${currentY - 28} Td (Venue: ${escapePdfText(options.venue)}  |  Dates: ${escapePdfText(dateStr)}) Tj ET
 `;
     currentY -= 54;
 
@@ -127,7 +128,7 @@ BT /F1 9 Tf ${leftMargin + 12} ${currentY - 28} Td (Venue: ${escapePdfText(optio
     checkPageBreak(30);
     currentStream += `
 0.0 0.08 0.97 rg
-BT /F2 11 Tf ${leftMargin} ${currentY} Td (1. OFFICIAL EXHIBITOR RULES & TERMS) ET
+BT /F2 11 Tf ${leftMargin} ${currentY} Td (1. OFFICIAL EXHIBITOR RULES & TERMS) Tj ET
 0.8 0.85 0.92 RG 0.5 w
 ${leftMargin} ${currentY - 4} m ${leftMargin + contentWidth} ${currentY - 4} l S
 `;
@@ -152,7 +153,7 @@ ${leftMargin} ${currentY - 4} m ${leftMargin + contentWidth} ${currentY - 4} l S
             const fontName = lineIdx === 0 ? "/F2" : "/F1";
             currentStream += `
 0.15 0.2 0.25 rg
-BT ${fontName} 9.5 Tf ${leftMargin + 6} ${currentY} Td (${escapePdfText(line)}) ET
+BT ${fontName} 9.5 Tf ${leftMargin + 6} ${currentY} Td (${escapePdfText(line)}) Tj ET
 `;
             currentY -= 13;
         });
@@ -165,7 +166,7 @@ BT ${fontName} 9.5 Tf ${leftMargin + 6} ${currentY} Td (${escapePdfText(line)}) 
         currentY -= 6;
         currentStream += `
 0.0 0.08 0.97 rg
-BT /F2 11 Tf ${leftMargin} ${currentY} Td (2. CASHLESS & DIGITAL PAYMENT POLICY) ET
+BT /F2 11 Tf ${leftMargin} ${currentY} Td (2. CASHLESS & DIGITAL PAYMENT POLICY) Tj ET
 0.8 0.85 0.92 RG 0.5 w
 ${leftMargin} ${currentY - 4} m ${leftMargin + contentWidth} ${currentY - 4} l S
 `;
@@ -176,7 +177,7 @@ ${leftMargin} ${currentY - 4} m ${leftMargin + contentWidth} ${currentY - 4} l S
             checkPageBreak(14);
             currentStream += `
 0.15 0.2 0.25 rg
-BT /F1 9.5 Tf ${leftMargin + 6} ${currentY} Td (${escapePdfText(line)}) ET
+BT /F1 9.5 Tf ${leftMargin + 6} ${currentY} Td (${escapePdfText(line)}) Tj ET
 `;
             currentY -= 13;
         });
@@ -189,7 +190,7 @@ BT /F1 9.5 Tf ${leftMargin + 6} ${currentY} Td (${escapePdfText(line)}) ET
         currentY -= 6;
         currentStream += `
 0.0 0.08 0.97 rg
-BT /F2 11 Tf ${leftMargin} ${currentY} Td (3. CONFIGURED STAND PLANS & PACKAGES) ET
+BT /F2 11 Tf ${leftMargin} ${currentY} Td (3. CONFIGURED STAND PLANS & PACKAGES) Tj ET
 0.8 0.85 0.92 RG 0.5 w
 ${leftMargin} ${currentY - 4} m ${leftMargin + contentWidth} ${currentY - 4} l S
 `;
@@ -206,9 +207,9 @@ ${leftMargin} ${currentY - 4} m ${leftMargin + contentWidth} ${currentY - 4} l S
 0.85 0.9 0.96 RG 0.5 w
 ${leftMargin + 6} ${currentY - 26} ${contentWidth - 12} 26 re b
 0.04 0.09 0.18 rg
-BT /F2 9.5 Tf ${leftMargin + 14} ${currentY - 11} Td (${escapePdfText(stallHeader)}) ET
+BT /F2 9.5 Tf ${leftMargin + 14} ${currentY - 11} Td (${escapePdfText(stallHeader)}) Tj ET
 0.4 0.45 0.5 rg
-BT /F1 8.5 Tf ${leftMargin + 14} ${currentY - 22} Td (${escapePdfText(stall.description || "Official vendor space allocation.")}) ET
+BT /F1 8.5 Tf ${leftMargin + 14} ${currentY - 22} Td (${escapePdfText(stall.description || "Official vendor space allocation.")}) Tj ET
 `;
             currentY -= 34;
         });
@@ -222,10 +223,10 @@ BT /F1 8.5 Tf ${leftMargin + 14} ${currentY - 22} Td (${escapePdfText(stall.desc
 0.8 0.82 0.88 RG 0.5 w
 ${leftMargin} ${currentY - 50} ${contentWidth} 50 re b
 0.04 0.09 0.18 rg
-BT /F2 9 Tf ${leftMargin + 12} ${currentY - 14} Td (ORGANIZER AUTHORIZATION & VENDOR ACCEPTANCE) ET
+BT /F2 9 Tf ${leftMargin + 12} ${currentY - 14} Td (ORGANIZER AUTHORIZATION & VENDOR ACCEPTANCE) Tj ET
 0.35 0.4 0.48 rg
-BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 28} Td (By booking a stand at ${escapePdfText(options.eventTitle)}, the vendor agrees to abide by all rules above.) ET
-BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 40} Td (Issued electronically by Silo Exhibitions Secretariat  |  https://siloexhibitions.com.ng/${escapePdfText(options.slug)}) ET
+BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 28} Td (By booking a stand at ${escapePdfText(options.eventTitle)}, the vendor agrees to abide by all rules above.) Tj ET
+BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 40} Td (Issued electronically by Silo Exhibitions Secretariat  |  https://siloexhibitions.com.ng/${escapePdfText(options.slug)}) Tj ET
 `;
     currentY -= 65;
 
@@ -242,7 +243,7 @@ BT /F1 8.5 Tf ${leftMargin + 12} ${currentY - 40} Td (Issued electronically by S
         const footerText = `Page ${pageNum} of ${totalPages}  |  Official Documentation  |  Silo Exhibitions`;
         return `${stream}
 0.6 0.65 0.72 rg
-BT /F1 8 Tf ${leftMargin} 30 Td (${escapePdfText(footerText)}) ET
+BT /F1 8 Tf ${leftMargin} 30 Td (${escapePdfText(footerText)}) Tj ET
 0.8 0.85 0.9 RG 0.5 w
 ${leftMargin} 42 m ${leftMargin + contentWidth} 42 l S
 `;
